@@ -14,11 +14,13 @@
 
 ### 1. GitHub仓库设置
 
-#### 启用GitHub Pages
+#### 启用GitHub Pages（必须手动完成）
 1. 进入GitHub仓库页面
 2. 点击 **Settings** 选项卡
 3. 在左侧菜单中找到 **Pages**
 4. 在 **Source** 部分选择 **GitHub Actions**
+
+⚠️ **重要提示**：必须先手动启用GitHub Pages，否则Actions工作流会失败。如果看到"Not Found"错误，请确保已完成此步骤。
 
 #### 配置仓库权限
 1. 在 **Settings** → **Actions** → **General**
@@ -141,21 +143,23 @@ export default withMermaid(
 
 #### 常见问题
 
-**问题1：Actions权限不足**
+**问题1：Pages未启用（最常见）**
+```
+Error: Get Pages site failed. Please verify that the repository has Pages enabled
+Error: HttpError: Not Found
+```
+解决方案：
+- 进入GitHub仓库 → Settings → Pages
+- Source选择"GitHub Actions"
+- 必须手动启用，无法通过Actions自动启用
+
+**问题2：Actions权限不足**
 ```
 Error: Resource not accessible by integration
 ```
 解决方案：
 - 检查仓库Settings → Actions → General
 - 确保Workflow permissions设置正确
-
-**问题2：Pages未启用**
-```
-Error: Pages is not enabled for this repository
-```
-解决方案：
-- 进入Settings → Pages
-- Source选择"GitHub Actions"
 
 **问题3：构建失败**
 ```
