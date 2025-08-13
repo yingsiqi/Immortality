@@ -29,7 +29,7 @@
 
 1. 克隆仓库
    ```
-   git clone https://github.com/yourusername/Immortality.git
+   git clone https://github.com/yingsiqi/Immortality.git
    cd Immortality
    ```
 
@@ -222,9 +222,9 @@ Immortality/
 
 ## 联系方式
 
-- 项目仓库: [GitHub](https://github.com/yourusername/Immortality)
-- 问题反馈: [Issues](https://github.com/yourusername/Immortality/issues)
-- 讨论交流: [Discussions](https://github.com/yourusername/Immortality/discussions)
+- 项目仓库: [GitHub](https://github.com/yingsiqi/Immortality)
+- 问题反馈: [Issues](https://github.com/yingsiqi/Immortality/issues)
+- 讨论交流: [Discussions](https://github.com/yingsiqi/Immortality/discussions)
 
 ## 许可证
 
