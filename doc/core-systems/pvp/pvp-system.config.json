@@ -1,0 +1,18 @@
+{
+  "title": "PVP系统",
+  "path": "core-systems/pvp/pvp-system",
+  "description": "详细介绍游戏中的玩家对战机制，包括竞技场、宗门战争、野外PK、排行榜等PVP功能的设计与实现",
+  "tags": ["核心系统", "PVP系统", "竞技场", "宗门战争", "野外PK", "排行榜", "对战机制"],
+  "category": "core-systems",
+  "subcategory": "pvp",
+  "priority": "high",
+  "status": "draft",
+  "author": "游戏设计团队",
+  "lastModified": "2024-12-19",
+  "relatedPages": [
+    "core-system-design",
+    "skill-system",
+    "combat-system",
+    "social-system"
+  ]
+}

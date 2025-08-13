@@ -1,0 +1,6 @@
+{
+  "title": "装备系统",
+  "path": "core-systems/equipment/equipment-system",
+  "description": "装备系统核心设计，包括法宝分类、品质等级、强化升级等装备核心机制",
+  "tags": ["装备系统", "法宝", "装备强化", "装备品质"]
+}

@@ -1,0 +1,36 @@
+/* 自定义主题样式 */
+
+/* 确保回到顶部按钮不会被其他元素遮挡 */
+.back-to-top-btn {
+  z-index: 9999 !important;
+}
+
+/* 优化页面滚动体验 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 为长页面优化阅读体验 */
+.vp-doc {
+  position: relative;
+}
+
+/* 确保在所有主题下都有良好的对比度 */
+:root {
+  --back-to-top-bg: var(--vp-c-brand-1);
+  --back-to-top-hover-bg: var(--vp-c-brand-2);
+  --back-to-top-shadow: rgba(0, 0, 0, 0.15);
+  --back-to-top-hover-shadow: rgba(0, 0, 0, 0.2);
+}
+
+.dark {
+  --back-to-top-shadow: rgba(0, 0, 0, 0.3);
+  --back-to-top-hover-shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .back-to-top-btn {
+    bottom: 80px !important; /* 避免与移动端底部导航冲突 */
+  }
+}

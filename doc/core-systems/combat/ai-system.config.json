@@ -1,0 +1,6 @@
+{
+  "title": "战斗AI系统",
+  "path": "core-systems/combat/ai-system",
+  "description": "战斗AI系统设计，包括敌人AI行为、难度调节、学习机制等智能战斗系统",
+  "tags": ["AI系统", "战斗AI", "难度调节", "智能行为"]
+}

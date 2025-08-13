@@ -1,0 +1,18 @@
+{
+  "title": "副本系统",
+  "path": "core-systems/dungeon/dungeon-system",
+  "description": "详细介绍游戏中的副本机制，包括单人副本、团队副本、秘境探索、BOSS挑战等副本功能的设计与实现",
+  "tags": ["核心系统", "副本系统", "单人副本", "团队副本", "秘境探索", "BOSS挑战", "奖励机制"],
+  "category": "core-systems",
+  "subcategory": "dungeon",
+  "priority": "high",
+  "status": "draft",
+  "author": "游戏设计团队",
+  "lastModified": "2024-12-19",
+  "relatedPages": [
+    "core-system-design",
+    "combat-system",
+    "equipment-system",
+    "ai-system"
+  ]
+}

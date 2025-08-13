@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>凡人修仙传 - 项目管理面板</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="py-4 text-center">
+      <h1 class="display-4">凡人修仙传 Web游戏项目</h1>
+      <p class="lead">项目管理与开发控制面板</p>
+    </header>
+
+    <div class="row mt-4">
+      <div class="col-md-4">
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">系统控制</h5>
+          </div>
+          <div class="card-body">
+            <div class="d-grid gap-2">
+              <button id="start-all" class="btn btn-success">一键启动所有服务</button>
+              <button id="stop-all" class="btn btn-danger">停止所有服务</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-info text-white">
+            <h5 class="card-title mb-0">服务状态</h5>
+          </div>
+          <div class="card-body" id="services-status">
+            <div class="service-item">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span><strong>Wiki 服务</strong></span>
+                <span class="badge bg-secondary" id="wiki-status">未运行</span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-success" id="start-wiki">启动</button>
+                <button class="btn btn-sm btn-danger" id="stop-wiki">停止</button>
+                <a href="http://localhost:8080" target="_blank" class="btn btn-sm btn-primary" id="open-wiki">打开</a>
+              </div>
+            </div>
+            <!-- 未来可以添加更多服务 -->
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header bg-success text-white">
+            <h5 class="card-title mb-0">项目开发指南</h5>
+          </div>
+          <div class="card-body">
+            <h5>开发流程</h5>
+            <ol>
+              <li>启动Wiki服务，访问 <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></li>
+              <li>在Wiki中记录和讨论游戏设计，包括：
+                <ul>
+                  <li>开发计划与路线图</li>
+                  <li>系统架构设计</li>
+                  <li>游戏系统（地图、时间、角色、战斗等）</li>
+                  <li>游戏设定集</li>
+                </ul>
+              </li>
+              <li>完成Wiki内容后，根据文档开始实际开发</li>
+            </ol>
+
+            <h5 class="mt-4">Wiki使用指南</h5>
+            <p>首次启动Wiki服务时，需要完成以下步骤：</p>
+            <ol>
+              <li>访问 <a href="http://localhost:8080" target="_blank">http://localhost:8080</a></li>
+              <li>按照向导完成Wiki的初始化设置</li>
+              <li>创建管理员账户</li>
+              <li>开始编辑Wiki内容</li>
+            </ol>
+
+            <div class="alert alert-info mt-3">
+              <strong>提示：</strong> Wiki中的所有内容都将保存在 <code>wiki-data</code> 目录中，请确保定期备份该目录。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

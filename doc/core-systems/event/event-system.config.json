@@ -1,0 +1,17 @@
+{
+  "title": "活动系统",
+  "path": "core-systems/event/event-system",
+  "description": "详细介绍游戏中的活动机制，包括节日活动、限时活动、签到活动、充值活动等各类活动的设计与实现",
+  "tags": ["核心系统", "活动系统", "节日活动", "限时活动", "签到活动", "充值活动", "奖励机制"],
+  "category": "core-systems",
+  "subcategory": "event",
+  "priority": "medium",
+  "status": "draft",
+  "author": "游戏设计团队",
+  "lastModified": "2024-12-19",
+  "relatedPages": [
+    "core-system-design",
+    "operations",
+    "economy-system"
+  ]
+}

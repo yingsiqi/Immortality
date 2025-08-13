@@ -1,0 +1,6 @@
+{
+  "title": "技能系统",
+  "path": "core-systems/combat/skill-system",
+  "description": "战斗技能系统设计，包括技能分类、释放机制、冷却时间、技能树等核心机制",
+  "tags": ["战斗系统", "技能", "核心机制", "平衡性"]
+}

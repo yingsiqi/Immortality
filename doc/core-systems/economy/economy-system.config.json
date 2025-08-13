@@ -1,0 +1,6 @@
+{
+  "title": "经济系统",
+  "path": "core-systems/economy/economy-system",
+  "description": "游戏经济系统设计，包括货币体系、交易机制、通胀控制等经济核心机制",
+  "tags": ["经济系统", "货币体系", "交易系统", "通胀控制"]
+}

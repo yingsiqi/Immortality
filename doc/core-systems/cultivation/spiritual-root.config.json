@@ -1,0 +1,6 @@
+{
+  "title": "灵根系统",
+  "path": "core-systems/cultivation/spiritual-root",
+  "description": "灵根天赋系统设计，包括灵根类型、品质等级、觉醒机制等天赋核心系统",
+  "tags": ["灵根系统", "天赋系统", "五行属性", "角色天赋"]
+}

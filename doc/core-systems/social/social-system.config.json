@@ -1,0 +1,17 @@
+{
+  "title": "社交系统",
+  "path": "core-systems/social/social-system",
+  "description": "详细介绍游戏中的社交互动机制，包括好友系统、师徒系统、宗门系统、结婚系统等社交功能的设计与实现",
+  "tags": ["核心系统", "社交系统", "好友", "师徒", "宗门", "结婚", "互动"],
+  "category": "core-systems",
+  "subcategory": "social",
+  "priority": "high",
+  "status": "draft",
+  "author": "游戏设计团队",
+  "lastModified": "2024-12-19",
+  "relatedPages": [
+    "core-system-design",
+    "world-setting",
+    "operations"
+  ]
+}

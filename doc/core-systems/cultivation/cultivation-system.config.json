@@ -1,0 +1,6 @@
+{
+  "title": "修炼系统",
+  "path": "core-systems/cultivation/cultivation-system",
+  "description": "修炼系统核心设计，包括境界划分、突破机制、修炼方法等修仙核心玩法",
+  "tags": ["修炼系统", "境界突破", "修仙玩法", "角色成长"]
+}

@@ -1,0 +1,31 @@
+{
+  "title": "角色系统",
+  "description": "深度整合修炼系统的角色属性体系，包含核心属性、状态系统、种族特性等",
+  "tags": ["角色", "属性", "种族", "状态", "修炼整合"],
+  "category": "core-systems",
+  "subcategory": "character",
+"path": "core-systems/character-system",
+  "priority": "high",
+  "status": "active",
+  "lastUpdated": "2024-12-19",
+  "relatedSystems": [
+    "cultivation-system",
+    "combat-system",
+    "equipment-system",
+    "spiritual-root"
+  ],
+  "keyFeatures": [
+    "六大核心属性体系",
+    "动态状态系统",
+    "种族特性与化形机制",
+    "天劫抗性矩阵",
+    "境界成长联动",
+    "属性验证工具"
+  ],
+  "balanceFactors": {
+    "attributeGrowth": "指数级增长与境界匹配",
+    "tribulationResistance": "专用抗性对应天劫类型",
+    "raceBalance": "种族优势与劣势平衡",
+    "stateEffects": "状态影响有时限和代价"
+  }
+}
