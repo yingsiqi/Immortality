@@ -27,7 +27,13 @@
 
 ### 架构文档
 
+- [Alpha技术栈总览](./alpha-tech-stack.md) - Alpha版本技术选型和架构概览
 - [技术架构设计](./architecture-design.md) - 完整的架构设计方案
+- [前端架构设计](./frontend-architecture.md) - React + TypeScript + 轻量化图形的前端架构
+- [后端架构设计](./backend-architecture.md) - NestJS + EventStoreDB + PostgreSQL的微服务架构
+- [数据库设计](./database-design.md) - 事件溯源与关系型数据库的混合设计
+- [开发环境配置](./development-environment.md) - Docker容器化开发环境配置指南
+- [项目路线图](./project-roadmap.md) - Alpha版本开发计划和里程碑管理
 - [实施计划](./implementation-plan.md) - 分阶段实施路线图
 - [单台VPS部署方案](./single-vps-deployment-plan.md) - Alpha阶段单服务器部署详细方案
 - [GitHub Pages部署](./github-pages-deployment.md) - 文档网站在线部署指南

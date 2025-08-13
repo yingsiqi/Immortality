@@ -17,6 +17,9 @@ export default withMermaid(
         items: [
           { text: '项目管理', link: '/guides/project-management/' },
           { text: '技术文档', link: '/guides/technical/' },
+          { text: 'Alpha技术栈', link: '/guides/technical/alpha-tech-stack' },
+          { text: '架构设计', link: '/guides/technical/architecture-design' },
+          { text: '开发环境', link: '/guides/technical/development-environment' },
           { text: '运营指南', link: '/guides/operations/' }
         ]
       },
@@ -195,7 +198,8 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: '项目管理概述', link: '/guides/project-management/' },
-            { text: 'Alpha开发计划', link: '/guides/project-management/alpha-development-plan' }
+            { text: 'Alpha开发计划', link: '/guides/project-management/alpha-development-plan' },
+            { text: '项目路线图', link: '/guides/technical/project-roadmap' }
           ]
         },
         {
@@ -203,7 +207,12 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: '技术概述', link: '/guides/technical/' },
+            { text: 'Alpha技术栈总览', link: '/guides/technical/alpha-tech-stack' },
             { text: '架构设计', link: '/guides/technical/architecture-design' },
+            { text: '前端架构设计', link: '/guides/technical/frontend-architecture' },
+            { text: '后端架构设计', link: '/guides/technical/backend-architecture' },
+            { text: '数据库设计', link: '/guides/technical/database-design' },
+            { text: '开发环境配置', link: '/guides/technical/development-environment' },
             { text: '实施计划', link: '/guides/technical/implementation-plan' },
             { text: '单台VPS部署方案', link: '/guides/technical/single-vps-deployment-plan' },
             { text: 'GitHub Pages部署', link: '/guides/technical/github-pages-deployment' }

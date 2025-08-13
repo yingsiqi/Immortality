@@ -185,7 +185,8 @@ Immortality/
    ```bash
    cd doc
    npm run docs:dev
-   # 访问 https://yingsiqi.github.io/Immortality/
+   # 本地访问 http://localhost:5174/
+   # 在线访问 https://yingsiqi.github.io/Immortality/
    ```
 
 3. **Docker部署** (推荐):
