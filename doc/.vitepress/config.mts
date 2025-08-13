@@ -5,8 +5,9 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(
   defineConfig({
     title: "Immortality - 游戏开发文档",
-  description: "Web RPG游戏开发文档",
-  lang: 'zh-Hans',
+    description: "Web RPG游戏开发文档",
+    lang: 'zh-Hans',
+    base: '/Immortality/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
@@ -204,7 +205,8 @@ export default withMermaid(
             { text: '技术概述', link: '/guides/technical/' },
             { text: '架构设计', link: '/guides/technical/architecture-design' },
             { text: '实施计划', link: '/guides/technical/implementation-plan' },
-            { text: '单台VPS部署方案', link: '/guides/technical/single-vps-deployment-plan' }
+            { text: '单台VPS部署方案', link: '/guides/technical/single-vps-deployment-plan' },
+            { text: 'GitHub Pages部署', link: '/guides/technical/github-pages-deployment' }
           ]
         }
       ]

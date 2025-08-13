@@ -30,6 +30,7 @@
 - [技术架构设计](./architecture-design.md) - 完整的架构设计方案
 - [实施计划](./implementation-plan.md) - 分阶段实施路线图
 - [单台VPS部署方案](./single-vps-deployment-plan.md) - Alpha阶段单服务器部署详细方案
+- [GitHub Pages部署](./github-pages-deployment.md) - 文档网站在线部署指南
 
 ### 服务器架构
 
