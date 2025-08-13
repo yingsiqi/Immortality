@@ -7,8 +7,8 @@ hero:
   tagline: 一个基于Web技术的修仙题材RPG游戏
   actions:
     - theme: brand
-      text: 开始阅读
-      link: /technical-documentation
+      text: 现在开始阅读
+      link: /guides/
     - theme: alt
       text: 核心系统
       link: /core-systems/

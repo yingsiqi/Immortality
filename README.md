@@ -120,7 +120,7 @@ npm run preview
 - **推荐配置**: 8核32GB内存，500GB NVMe SSD
 - **最小配置**: 4核16GB内存，200GB SSD
 - **容器化部署**: Docker Compose 一键部署
-- **详细部署文档**: [单台VPS部署方案](doc/guides/technical/single-vps-deployment-plan.md)
+- **详细部署文档**: [单台VPS部署方案](https://yingsiqi.github.io/Immortality/guides/technical/single-vps-deployment-plan.html)
 
 ## 开发路线
 
@@ -167,11 +167,11 @@ Immortality/
 
 本项目使用VitePress构建了完整的文档系统，包含：
 
-- **[核心系统设计](doc/core-systems/)**: 角色、战斗、修炼、装备等系统设计
-- **[游戏设计](doc/design/)**: 世界观、玩法机制、数值设计
-- **[技术指南](doc/guides/technical/)**: 架构设计、部署方案、开发规范
-- **[项目管理](doc/guides/project-management/)**: Alpha开发计划、里程碑管理
-- **[运营指南](doc/guides/operations/)**: 运营策略、数据分析
+- **[核心系统设计](https://yingsiqi.github.io/Immortality/core-systems/)**: 角色、战斗、修炼、装备等系统设计
+- **[游戏设计](https://yingsiqi.github.io/Immortality/design/)**: 世界观、玩法机制、数值设计
+- **[技术指南](https://yingsiqi.github.io/Immortality/guides/technical/)**: 架构设计、部署方案、开发规范
+- **[项目管理](https://yingsiqi.github.io/Immortality/guides/project-management/)**: Alpha开发计划、里程碑管理
+- **[运营指南](https://yingsiqi.github.io/Immortality/guides/operations/)**: 运营策略、数据分析
 
 ## 快速体验
 
@@ -185,12 +185,12 @@ Immortality/
    ```bash
    cd doc
    npm run docs:dev
-   # 访问 http://localhost:5173
+   # 访问 https://yingsiqi.github.io/Immortality/
    ```
 
 3. **Docker部署** (推荐):
    ```bash
-   # 详见 doc/guides/technical/single-vps-deployment-plan.md
+   # 详见 https://yingsiqi.github.io/Immortality/guides/technical/single-vps-deployment-plan.html
    docker-compose up -d
    ```
 
@@ -218,7 +218,7 @@ Immortality/
 - 遵循TypeScript编码规范
 - 提交前运行测试用例
 - 遵循Git提交信息规范
-- 详见[开发指南](doc/guides/technical/)
+- 详见[开发指南](https://yingsiqi.github.io/Immortality/guides/technical/)
 
 ## 联系方式
 
