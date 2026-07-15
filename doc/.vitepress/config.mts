@@ -192,7 +192,8 @@ export default withMermaid(
           items: [
             { text: '总览', link: '/specs/' },
             { text: '第1层 - 角色属性体系', link: '/specs/layer-01-character-attributes' },
-            { text: '第2层 - 行动原子', link: '/specs/layer-02-action-atoms' }
+            { text: '第2层 - 行动原子', link: '/specs/layer-02-action-atoms' },
+            { text: '第3层 - 战斗系统', link: '/specs/layer-03-combat-system' }
           ]
         }
       ],
