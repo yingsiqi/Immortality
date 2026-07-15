@@ -32,6 +32,7 @@ export default withMermaid(
           { text: 'UI/UX设计', link: '/design/ui-ux/' }
         ]
       },
+      { text: '详细规则', link: '/specs/' },
       {
         text: '核心系统',
         items: [
@@ -184,6 +185,17 @@ export default withMermaid(
         }
       ],
       
+      '/specs/': [
+        {
+          text: '详细规则书',
+          collapsed: false,
+          items: [
+            { text: '总览', link: '/specs/' },
+            { text: '第1层 - 角色属性体系', link: '/specs/layer-01-character-attributes' }
+          ]
+        }
+      ],
+
       '/guides/': [
         {
           text: '指南文档',
