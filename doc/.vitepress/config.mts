@@ -214,7 +214,8 @@ export default withMermaid(
             { text: '第1层 - 角色属性体系', link: '/specs/layer-01-character-attributes' },
             { text: '第2层 - 行动原子', link: '/specs/layer-02-action-atoms' },
             { text: '第3层 - 战斗系统', link: '/specs/layer-03-combat-system' },
-            { text: '第4层 - 成长系统', link: '/specs/layer-04-growth-system' }
+            { text: '第4层 - 成长系统', link: '/specs/layer-04-growth-system' },
+            { text: '第5层 - 经济系统', link: '/specs/layer-05-economy-system' }
           ]
         }
       ],
