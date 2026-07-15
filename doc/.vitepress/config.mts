@@ -8,6 +8,26 @@ export default withMermaid(
     description: "Web RPG游戏开发文档",
     lang: 'zh-Hans',
     base: '/Immortality/',
+    
+    markdown: {
+      theme: {
+        light: 'github-light',
+        dark: 'github-dark'
+      },
+      languages: [
+        'javascript',
+        'typescript',
+        'json',
+        'html',
+        'css',
+        'bash',
+        'shell',
+        'yaml',
+        'xml',
+        'markdown',
+        'txt'
+      ]
+    },
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
@@ -193,7 +213,8 @@ export default withMermaid(
             { text: '总览', link: '/specs/' },
             { text: '第1层 - 角色属性体系', link: '/specs/layer-01-character-attributes' },
             { text: '第2层 - 行动原子', link: '/specs/layer-02-action-atoms' },
-            { text: '第3层 - 战斗系统', link: '/specs/layer-03-combat-system' }
+            { text: '第3层 - 战斗系统', link: '/specs/layer-03-combat-system' },
+            { text: '第4层 - 成长系统', link: '/specs/layer-04-growth-system' }
           ]
         }
       ],
