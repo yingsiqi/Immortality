@@ -230,7 +230,9 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: '总览', link: '/data/' },
-            { text: '技能表', link: '/data/skills' },
+            { text: '技能表', link: '/data/skills/' },
+            { text: '├ 功法', link: '/data/skills/gongfa' },
+            { text: '├ 术法', link: '/data/skills/shufa' },
             { text: '采集物/材料表', link: '/data/materials' },
             { text: '丹药/配方表', link: '/data/alchemy' },
             { text: '装备/法宝表', link: '/data/equipment' },
