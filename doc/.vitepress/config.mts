@@ -53,6 +53,7 @@ export default withMermaid(
         ]
       },
       { text: '详细规则', link: '/specs/' },
+      { text: '游戏数据库', link: '/data/' },
       {
         text: '核心系统',
         items: [
@@ -217,7 +218,27 @@ export default withMermaid(
             { text: '第4层 - 成长系统', link: '/specs/layer-04-growth-system' },
             { text: '第5层 - 经济系统', link: '/specs/layer-05-economy-system' },
             { text: '第6层 - 社交系统', link: '/specs/layer-06-social-system' },
-            { text: '第7层 - 世界系统', link: '/specs/layer-07-world-system' }
+            { text: '第7层 - 世界系统', link: '/specs/layer-07-world-system' },
+            { text: '→ 游戏数据库', link: '/data/' }
+          ]
+        }
+      ],
+
+      '/data/': [
+        {
+          text: '游戏数据库',
+          collapsed: false,
+          items: [
+            { text: '总览', link: '/data/' },
+            { text: '技能表', link: '/data/skills' },
+            { text: '采集物/材料表', link: '/data/materials' },
+            { text: '丹药/配方表', link: '/data/alchemy' },
+            { text: '装备/法宝表', link: '/data/equipment' },
+            { text: '灵宠表', link: '/data/pets' },
+            { text: '怪物/NPC表', link: '/data/monsters' },
+            { text: '地图/副本表', link: '/data/maps' },
+            { text: '奇遇/事件表', link: '/data/events' },
+            { text: '→ 详细规则书', link: '/specs/' }
           ]
         }
       ],
