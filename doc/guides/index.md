@@ -11,8 +11,8 @@
 
 - [Alpha技术栈总览](./technical/alpha-tech-stack.md) - Alpha版本技术选型和架构概览
 - [架构设计](./technical/architecture-design.md) - 系统架构设计文档
-- [前端架构设计](./technical/frontend-architecture.md) - React + TypeScript + 轻量化图形架构
-- [后端架构设计](./technical/backend-architecture.md) - NestJS + EventStoreDB + PostgreSQL微服务架构
+- [客户端架构设计](./technical/frontend-architecture.md) - C# + Tuanjie 引擎 + 轻量化图形架构
+- [后端架构设计](./technical/backend-architecture.md) - ASP.NET Core + EventStoreDB + PostgreSQL微服务架构
 - [数据库设计](./technical/database-design.md) - 事件溯源与关系型数据库混合设计
 - [开发环境配置](./technical/development-environment.md) - Docker容器化开发环境
 - [项目路线图](./technical/project-roadmap.md) - Alpha版本开发计划和里程碑

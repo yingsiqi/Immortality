@@ -5,7 +5,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(
   defineConfig({
     title: "Immortality - 游戏开发文档",
-    description: "Web RPG游戏开发文档",
+    description: "游戏开发文档",
     lang: 'zh-Hans',
     base: '/Immortality/',
     
@@ -113,7 +113,7 @@ export default withMermaid(
               collapsed: false,
               items: [
                 { text: 'UI/UX设计概述', link: '/design/ui-ux/' },
-                { text: 'Web界面设计', link: '/design/ui-ux/web-interface' },
+                { text: 'Tuanjie界面设计', link: '/design/ui-ux/web-interface' },
                 { text: '交互设计', link: '/design/ui-ux/interaction' },
                 { text: '视觉风格指南', link: '/design/ui-ux/visual-style' },
                 { text: '响应式设计', link: '/design/ui-ux/responsive' },
@@ -270,7 +270,7 @@ export default withMermaid(
             { text: '技术概述', link: '/guides/technical/' },
             { text: 'Alpha技术栈总览', link: '/guides/technical/alpha-tech-stack' },
             { text: '架构设计', link: '/guides/technical/architecture-design' },
-            { text: '前端架构设计', link: '/guides/technical/frontend-architecture' },
+            { text: '客户端架构设计', link: '/guides/technical/frontend-architecture' },
             { text: '后端架构设计', link: '/guides/technical/backend-architecture' },
             { text: '数据库设计', link: '/guides/technical/database-design' },
             { text: '开发环境配置', link: '/guides/technical/development-environment' },

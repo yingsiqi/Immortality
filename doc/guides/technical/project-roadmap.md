@@ -9,8 +9,8 @@
 ### 核心目标
 - **技术架构验证**: 验证事件溯源 + 微服务架构的可行性
 - **核心玩法实现**: 实现修炼、战斗、物品系统的基础功能
-- **轻量化图形**: 建立SVG + Canvas的图形渲染体系
-- **实时通信**: 实现WebSocket实时数据同步
+- **轻量化图形**: 建立 Tuanjie 引擎渲染体系（UGUI + Particle System）
+- **实时通信**: 实现 Unity Transport 实时数据同步
 - **性能基准**: 建立性能监控和优化基准
 
 ### 功能范围
@@ -20,7 +20,7 @@
 - 基础修炼系统（练气期 → 筑基期）
 - 简单战斗系统（玩家 vs 怪物）
 - 基础物品和装备系统
-- 轻量化图形界面（SVG图标 + 简单动画）
+- 轻量化图形界面（Sprite + 简单动画）
 - 实时状态同步
 - 基础排行榜系统
 
@@ -57,7 +57,7 @@ gantt
     战斗系统基础         :combat, after cultivation, 14d
     物品系统            :items, after combat, 10d
     
-    section 前端开发
+    section 客户端开发
     UI组件库            :ui, 2024-02-05, 2024-02-18
     图形渲染系统         :graphics, after ui, 14d
     游戏界面开发         :gameui, after graphics, 21d
@@ -106,27 +106,42 @@ gantt
 - [ ] 权限控制系统
 
 **技术实现**:
-```typescript
+```csharp
 // 认证服务架构
-@Module({
-  imports: [
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '7d' },
-    }),
-    PassportModule,
-  ],
-  providers: [AuthService, JwtStrategy, LocalStrategy],
-  controllers: [AuthController],
-})
-export class AuthModule {}
+public static class AuthModule
+{
+    public static IServiceCollection AddAuthServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(configuration["Jwt:Secret"])),
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                };
+            });
+
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IJwtStrategy, JwtStrategy>();
+        services.AddScoped<ILocalStrategy, LocalStrategy>();
+
+        return services;
+    }
+}
 ```
 
 **验收标准**:
 - 用户可以注册新账号
 - 用户可以登录获取JWT令牌
 - API接口正确验证用户权限
-- 密码安全存储（bcrypt加密）
+- 密码安全存储（BCrypt加密）
 
 #### 第6周：玩家管理系统
 
@@ -140,37 +155,39 @@ export class AuthModule {}
 - [ ] 基础数据CRUD
 
 **核心功能**:
-```typescript
+```csharp
 // 玩家实体
-@Entity()
-export class Player {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-  
-  @Column()
-  name: string;
-  
-  @Column({ default: 1 })
-  level: number;
-  
-  @Column({ default: '练气期' })
-  realm: string;
-  
-  @Column({ type: 'bigint', default: 0 })
-  experience: number;
-  
-  // 基础属性
-  @Column({ default: 10 })
-  strength: number;
-  
-  @Column({ default: 10 })
-  agility: number;
-  
-  @Column({ default: 10 })
-  intelligence: number;
-  
-  @Column({ default: 10 })
-  constitution: number;
+[Table("players")]
+public class Player
+{
+    [Key]
+    [Column("id")]
+    public Guid Id { get; set; }
+
+    [Column("name")]
+    public string Name { get; set; }
+
+    [Column("level")]
+    public int Level { get; set; } = 1;
+
+    [Column("realm")]
+    public string Realm { get; set; } = "练气期";
+
+    [Column("experience")]
+    public long Experience { get; set; } = 0;
+
+    // 基础属性
+    [Column("strength")]
+    public int Strength { get; set; } = 10;
+
+    [Column("agility")]
+    public int Agility { get; set; } = 10;
+
+    [Column("intelligence")]
+    public int Intelligence { get; set; } = 10;
+
+    [Column("constitution")]
+    public int Constitution { get; set; } = 10;
 }
 ```
 
@@ -192,23 +209,25 @@ export class Player {
 - [ ] 事件溯源集成
 
 **修炼系统架构**:
-```typescript
+```csharp
 // 修炼服务
-@Injectable()
-export class CultivationService {
-  async startCultivation(playerId: string, techniqueId: string): Promise<CultivationSession> {
-    // 1. 验证玩家状态
-    // 2. 检查能量消耗
-    // 3. 创建修炼会话
-    // 4. 发布修炼开始事件
-  }
-  
-  async processCultivationProgress(sessionId: string): Promise<void> {
-    // 1. 计算修炼进度
-    // 2. 更新经验值
-    // 3. 检查境界突破
-    // 4. 发布进度事件
-  }
+public class CultivationService
+{
+    public async Task<CultivationSession> StartCultivation(Guid playerId, string techniqueId)
+    {
+        // 1. 验证玩家状态
+        // 2. 检查能量消耗
+        // 3. 创建修炼会话
+        // 4. 发布修炼开始事件
+    }
+
+    public async Task ProcessCultivationProgress(Guid sessionId)
+    {
+        // 1. 计算修炼进度
+        // 2. 更新经验值
+        // 3. 检查境界突破
+        // 4. 发布进度事件
+    }
 }
 ```
 
@@ -231,22 +250,24 @@ export class CultivationService {
 - [ ] 战利品系统
 
 **战斗系统设计**:
-```typescript
+```csharp
 // 战斗管理器
-@Injectable()
-export class CombatManager {
-  async initiateCombat(challengerId: string, targetId: string): Promise<Combat> {
-    // 1. 创建战斗实例
-    // 2. 初始化参与者状态
-    // 3. 开始回合制战斗
-  }
-  
-  async executeAction(combatId: string, action: CombatAction): Promise<CombatResult> {
-    // 1. 验证动作合法性
-    // 2. 计算伤害/效果
-    // 3. 更新战斗状态
-    // 4. 检查战斗结束条件
-  }
+public class CombatManager
+{
+    public async Task<Combat> InitiateCombat(Guid challengerId, Guid targetId)
+    {
+        // 1. 创建战斗实例
+        // 2. 初始化参与者状态
+        // 3. 开始回合制战斗
+    }
+
+    public async Task<CombatResult> ExecuteAction(Guid combatId, CombatAction action)
+    {
+        // 1. 验证动作合法性
+        // 2. 计算伤害/效果
+        // 3. 更新战斗状态
+        // 4. 检查战斗结束条件
+    }
 }
 ```
 
@@ -269,23 +290,25 @@ export class CombatManager {
 - [ ] 属性加成计算
 
 **物品系统架构**:
-```typescript
+```csharp
 // 物品管理服务
-@Injectable()
-export class ItemService {
-  async addItemToInventory(playerId: string, itemId: string, quantity: number): Promise<void> {
-    // 1. 验证物品存在
-    // 2. 检查背包空间
-    // 3. 添加到背包
-    // 4. 发布物品获得事件
-  }
-  
-  async equipItem(playerId: string, itemId: string, slot: EquipmentSlot): Promise<void> {
-    // 1. 验证装备条件
-    // 2. 卸下当前装备
-    // 3. 穿戴新装备
-    // 4. 重新计算属性
-  }
+public class ItemService
+{
+    public async Task AddItemToInventory(Guid playerId, string itemId, int quantity)
+    {
+        // 1. 验证物品存在
+        // 2. 检查背包空间
+        // 3. 添加到背包
+        // 4. 发布物品获得事件
+    }
+
+    public async Task EquipItem(Guid playerId, string itemId, EquipmentSlot slot)
+    {
+        // 1. 验证装备条件
+        // 2. 卸下当前装备
+        // 3. 穿戴新装备
+        // 4. 重新计算属性
+    }
 }
 ```
 
@@ -295,7 +318,7 @@ export class ItemService {
 - 属性加成正确计算
 - 背包管理功能完整
 
-### 第三阶段：前端开发（第5-10周）
+### 第三阶段：客户端开发（第5-10周）
 
 #### 第5-6周：UI组件库
 
@@ -304,37 +327,30 @@ export class ItemService {
 **任务清单**:
 - [ ] 基础组件（Button, Input, Modal等）
 - [ ] 游戏专用组件（ProgressBar, StatusPanel等）
-- [ ] 图标系统（SVG图标库）
+- [ ] 图标系统（Sprite图标库）
 - [ ] 主题系统（暗色主题）
 - [ ] 响应式布局
 
 **组件示例**:
-```tsx
+```csharp
 // 修炼进度条组件
-export const CultivationProgress: React.FC<{
-  progress: number;
-  realm: string;
-  technique: string;
-}> = ({ progress, realm, technique }) => {
-  return (
-    <div className="cultivation-progress">
-      <div className="realm-indicator">
-        <RealmIcon realm={realm} />
-        <span>{realm}</span>
-      </div>
-      <ProgressBar 
-        value={progress} 
-        max={100}
-        className="cultivation-bar"
-        animated
-      />
-      <div className="technique-info">
-        <TechniqueIcon technique={technique} />
-        <span>{technique}</span>
-      </div>
-    </div>
-  );
-};
+public class CultivationProgress : MonoBehaviour
+{
+    [SerializeField] private Image _realmIcon;
+    [SerializeField] private Text _realmText;
+    [SerializeField] private Slider _progressBar;
+    [SerializeField] private Image _techniqueIcon;
+    [SerializeField] private Text _techniqueText;
+
+    public void UpdateProgress(float progress, string realm, string technique)
+    {
+        _realmText.text = realm;
+        _techniqueText.text = technique;
+        _progressBar.value = progress / 100f;
+        _realmIcon.sprite = RealmIconLoader.GetIcon(realm);
+        _techniqueIcon.sprite = TechniqueIconLoader.GetIcon(technique);
+    }
+}
 ```
 
 #### 第7-8周：图形渲染系统
@@ -342,47 +358,37 @@ export const CultivationProgress: React.FC<{
 **目标**: 实现轻量化图形渲染
 
 **任务清单**:
-- [ ] SVG图标系统
-- [ ] Canvas渲染引擎
-- [ ] 动画系统（Framer Motion）
-- [ ] 粒子效果（简单）
+- [ ] Sprite 图标系统
+- [ ] Tuanjie 引擎渲染
+- [ ] 动画系统（Unity Animation System）
+- [ ] 粒子效果（Particle System）
 - [ ] 图形资源管理
 
 **图形系统架构**:
-```tsx
+```csharp
 // 图形渲染管理器
-export class GraphicsManager {
-  private svgRenderer: SVGRenderer;
-  private canvasRenderer: CanvasRenderer;
-  private animationController: AnimationController;
-  
-  renderPlayerAvatar(player: Player): React.ReactElement {
-    return (
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        className="player-avatar"
-      >
-        <SVGAvatar 
-          realm={player.realm}
-          level={player.level}
-          equipment={player.equipment}
-        />
-      </motion.div>
-    );
-  }
-  
-  renderCultivationEffect(technique: string): React.ReactElement {
-    return (
-      <Canvas>
-        <ParticleSystem 
-          type="cultivation"
-          technique={technique}
-          intensity={0.7}
-        />
-      </Canvas>
-    );
-  }
+public class GraphicsManager : MonoBehaviour
+{
+    [SerializeField] private ParticleSystem _cultivationEffect;
+
+    public void RenderPlayerAvatar(Player player)
+    {
+        var avatar = PlayerAvatarFactory.Create(
+            player.Realm,
+            player.Level,
+            player.Equipment
+        );
+        avatar.transform.localScale = Vector3.zero;
+        avatar.transform.DOScale(Vector3.one, 0.3f);
+    }
+
+    public void RenderCultivationEffect(string technique)
+    {
+        var effect = Instantiate(_cultivationEffect);
+        var mainModule = effect.main;
+        mainModule.startColor = TechniqueColorConfig.GetColor(technique);
+        effect.Play();
+    }
 }
 ```
 
@@ -400,88 +406,106 @@ export class GraphicsManager {
 - [ ] 排行榜界面
 
 **界面布局**:
-```tsx
-// 主游戏界面
-export const GameMainScreen: React.FC = () => {
-  return (
-    <div className="game-main">
-      <Header>
-        <PlayerStatus />
-        <NavigationMenu />
-      </Header>
-      
-      <main className="game-content">
-        <aside className="left-panel">
-          <PlayerAvatar />
-          <QuickActions />
-        </aside>
-        
-        <section className="center-area">
-          <GameCanvas />
-          <ActionPanel />
-        </section>
-        
-        <aside className="right-panel">
-          <ChatPanel />
-          <SystemNotifications />
-        </aside>
-      </main>
-      
-      <Footer>
-        <SystemStatus />
-      </Footer>
-    </div>
-  );
-};
+```csharp
+// 主游戏界面布局
+public class GameMainScreen : MonoBehaviour
+{
+    [Header("顶部区域")]
+    [SerializeField] private PlayerStatus _playerStatus;
+    [SerializeField] private NavigationMenu _navigationMenu;
+
+    [Header("左侧面板")]
+    [SerializeField] private PlayerAvatar _playerAvatar;
+    [SerializeField] private QuickActions _quickActions;
+
+    [Header("中央区域")]
+    [SerializeField] private GameCanvas _gameCanvas;
+    [SerializeField] private ActionPanel _actionPanel;
+
+    [Header("右侧面板")]
+    [SerializeField] private ChatPanel _chatPanel;
+    [SerializeField] private SystemNotifications _systemNotifications;
+
+    [Header("底部区域")]
+    [SerializeField] private SystemStatus _systemStatus;
+
+    private void Awake()
+    {
+        // 初始化界面组件
+        _playerStatus.Initialize();
+        _navigationMenu.Initialize();
+        _playerAvatar.Initialize();
+        _quickActions.Initialize();
+        _gameCanvas.Initialize();
+        _actionPanel.Initialize();
+        _chatPanel.Initialize();
+        _systemNotifications.Initialize();
+        _systemStatus.Initialize();
+    }
+}
 ```
 
 #### 第11周：实时通信集成
 
-**目标**: 集成WebSocket实时通信
+**目标**: 集成 Unity Transport 实时通信
 
 **任务清单**:
-- [ ] WebSocket连接管理
+- [ ] 网络连接管理
 - [ ] 实时状态同步
 - [ ] 事件广播系统
 - [ ] 断线重连机制
 - [ ] 消息队列处理
 
-**WebSocket集成**:
-```tsx
-// WebSocket Hook
-export const useWebSocket = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
-  
-  useEffect(() => {
-    const newSocket = io(process.env.VITE_WS_URL, {
-      auth: {
-        token: getAuthToken(),
-      },
-      transports: ['websocket'],
-    });
-    
-    newSocket.on('connect', () => {
-      setConnectionStatus('connected');
-    });
-    
-    newSocket.on('player:status:update', (data) => {
-      // 更新玩家状态
-    });
-    
-    newSocket.on('cultivation:progress', (data) => {
-      // 更新修炼进度
-    });
-    
-    setSocket(newSocket);
-    
-    return () => {
-      newSocket.close();
-    };
-  }, []);
-  
-  return { socket, connectionStatus };
-};
+**网络通信集成**:
+```csharp
+// 网络通信管理器
+public class NetworkManager : MonoBehaviour
+{
+    private UnityTransport _transport;
+    public ConnectionStatus Status { get; private set; } = ConnectionStatus.Disconnected;
+
+    private async void Start()
+    {
+        await ConnectToServer();
+    }
+
+    private async Task ConnectToServer()
+    {
+        Status = ConnectionStatus.Connecting;
+        _transport = GetComponent<UnityTransport>();
+        _transport.SetConnectionData(
+            ServerConfig.Url,
+            ServerConfig.Port
+        );
+
+        _transport.OnConnectionEvent += (_, connectionEvent) =>
+        {
+            if (connectionEvent.EventType == ConnectionEvent.Type.Connected)
+            {
+                Status = ConnectionStatus.Connected;
+                // 发送认证令牌
+                SendAuthentication(GetAuthToken());
+            }
+        };
+
+        _transport.OnPlayerStatusUpdate += (data) =>
+        {
+            // 更新玩家状态
+        };
+
+        _transport.OnCultivationProgress += (data) =>
+        {
+            // 更新修炼进度
+        };
+
+        await _transport.ConnectAsync();
+    }
+
+    private void OnApplicationQuit()
+    {
+        _transport?.Disconnect();
+    }
+}
 ```
 
 ### 第四阶段：集成测试与优化（第11-12周）
@@ -494,31 +518,35 @@ export const useWebSocket = () => {
 - [ ] 单元测试（覆盖率 > 80%）
 - [ ] 集成测试
 - [ ] API测试
-- [ ] 前端组件测试
+- [ ] 客户端组件测试
 - [ ] 端到端测试
 
 **测试策略**:
-```typescript
+```csharp
 // 修炼系统集成测试
-describe('Cultivation System Integration', () => {
-  it('should complete full cultivation cycle', async () => {
-    // 1. 创建测试玩家
-    const player = await createTestPlayer();
-    
-    // 2. 开始修炼
-    const session = await cultivationService.startCultivation(
-      player.id, 
-      'basic-qi-cultivation'
-    );
-    
-    // 3. 模拟修炼进度
-    await simulateCultivationProgress(session.id, 100);
-    
-    // 4. 验证结果
-    const updatedPlayer = await playerService.findById(player.id);
-    expect(updatedPlayer.experience).toBeGreaterThan(player.experience);
-  });
-});
+[TestFixture]
+public class CultivationSystemIntegrationTests
+{
+    [Test]
+    public async Task ShouldCompleteFullCultivationCycle()
+    {
+        // 1. 创建测试玩家
+        var player = await CreateTestPlayer();
+
+        // 2. 开始修炼
+        var session = await _cultivationService.StartCultivation(
+            player.Id,
+            "basic-qi-cultivation"
+        );
+
+        // 3. 模拟修炼进度
+        await SimulateCultivationProgress(session.Id, 100);
+
+        // 4. 验证结果
+        var updatedPlayer = await _playerService.FindById(player.Id);
+        Assert.Greater(updatedPlayer.Experience, player.Experience);
+    }
+}
 ```
 
 #### 第12周：性能优化与部署准备
@@ -527,14 +555,14 @@ describe('Cultivation System Integration', () => {
 
 **优化任务**:
 - [ ] 数据库查询优化
-- [ ] 前端代码分割
+- [ ] 客户端资源管理
 - [ ] 图片资源优化
 - [ ] 缓存策略优化
 - [ ] 监控系统集成
 
 **性能指标**:
 - API响应时间 < 200ms
-- 页面加载时间 < 3s
+- 客户端加载时间 < 3s
 - 内存使用 < 512MB
 - CPU使用率 < 70%
 
@@ -544,7 +572,7 @@ describe('Cultivation System Integration', () => {
 
 | 角色 | 工作量 | 主要职责 |
 |------|--------|----------|
-| 全栈开发者 | 100% | 后端API开发、前端界面开发、系统集成 |
+| 全栈开发者 | 100% | 后端API开发、客户端界面开发、系统集成 |
 | 产品设计师 | 20% | UI/UX设计、游戏平衡性设计 |
 | 测试工程师 | 30% | 功能测试、性能测试、自动化测试 |
 
@@ -564,7 +592,7 @@ describe('Cultivation System Integration', () => {
 | 风险 | 概率 | 影响 | 缓解措施 |
 |------|------|------|----------|
 | EventStoreDB学习曲线陡峭 | 中 | 高 | 提前技术调研，准备降级方案 |
-| WebSocket连接稳定性问题 | 中 | 中 | 实现断线重连，降级到HTTP轮询 |
+| 网络连接稳定性问题 | 中 | 中 | 实现断线重连，降级到HTTP轮询 |
 | 性能不达标 | 低 | 高 | 早期性能测试，渐进式优化 |
 | 第三方依赖问题 | 低 | 中 | 版本锁定，准备替代方案 |
 
@@ -599,7 +627,7 @@ describe('Cultivation System Integration', () => {
 ### 技术指标
 - [ ] 系统稳定运行7天无重大故障
 - [ ] API响应时间95%分位数 < 200ms
-- [ ] 前端页面加载时间 < 3秒
+- [ ] 客户端加载时间 < 3秒
 - [ ] 代码测试覆盖率 > 80%
 - [ ] 数据库查询性能达标
 
@@ -644,8 +672,8 @@ describe('Cultivation System Integration', () => {
 ### Alpha版本交付物
 
 #### 代码交付
-- [ ] 前端代码库（React + TypeScript）
-- [ ] 后端代码库（NestJS + TypeScript）
+- [ ] 客户端代码库（C# + Tuanjie 引擎）
+- [ ] 后端代码库（C# + ASP.NET Core）
 - [ ] 数据库迁移脚本
 - [ ] Docker部署配置
 - [ ] CI/CD流水线配置

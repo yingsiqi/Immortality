@@ -48,31 +48,31 @@
 
 ### 1. 客户端层实现
 
-**Web客户端**:
+**Tuanjie客户端**:
 ```yaml
 技术栈:
-  - 框架: React 18 + TypeScript
-  - 状态管理: Redux Toolkit
-  - UI组件: Ant Design
-  - 实时通信: Socket.io-client
-  - 构建工具: Vite
+  - 引擎: Tuanjie Engine (团结引擎)
+  - UI框架: UGUI / UI Toolkit
+  - 编程语言: C#
+  - 实时通信: Unity Transport / Mirror Networking
+  - 构建管线: Tuanjie Engine build pipeline
 
 部署方式:
-  - 静态文件托管在Nginx
+  - 构建输出托管在Nginx (WebGL构建)
   - CDN加速（可选）
-  - PWA支持离线访问
+  - 客户端构建通过Tuanjie Engine Editor导出
 
 资源占用:
   - 磁盘: ~50MB（构建后）
-  - 带宽: ~2MB首次加载
+  - 带宽: ~2MB首次加载（WebGL构建）
 ```
 
 **移动端客户端**:
 ```yaml
 实现方案:
-  - PWA应用（优先）
-  - 响应式设计适配移动端
-  - 原生App（后期考虑）
+  - 跨平台构建 (Android / iOS 通过 Tuanjie Engine)
+  - 响应式UI适配移动端
+  - 原生App（通过Tuanjie Engine导出）
 
 特性:
   - 离线缓存支持
@@ -115,17 +115,17 @@
   - 用户资料管理
 
 技术实现:
-  - 运行时: Node.js 18
-  - 框架: Express.js
-  - 认证: JWT + bcrypt
-  - 验证: joi数据验证
+  - 运行时: .NET 8 (ASP.NET Core)
+  - 框架: ASP.NET Core Web API
+  - 认证: JWT + BCrypt.Net
+  - 验证: FluentValidation
 
 容器配置:
-  - 镜像: node:18-alpine
+  - 镜像: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
   - 内存限制: 1GB
   - CPU限制: 1核
   - 端口: 3001
-  - 环境变量: JWT_SECRET, DB_URL
+  - 环境变量: JWT__Secret, ConnectionStrings__DefaultConnection
 
 性能指标:
   - 并发处理: 500 req/s
@@ -142,17 +142,17 @@
   - 实时事件处理
 
 技术实现:
-  - 运行时: Node.js 18
-  - 框架: Fastify（高性能）
-  - 实时通信: Socket.io
-  - 状态管理: 内存缓存 + Redis
+  - 运行时: .NET 8 (ASP.NET Core)
+  - 框架: ASP.NET Core Web API + SignalR
+  - 实时通信: Unity Transport / Mirror Networking
+  - 状态管理: IMemoryCache + Redis
 
 容器配置:
-  - 镜像: node:18-alpine
+  - 镜像: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
   - 内存限制: 4GB
   - CPU限制: 2核
   - 端口: 3002
-  - 环境变量: REDIS_URL, GAME_CONFIG
+  - 环境变量: ConnectionStrings__Redis, Game__Config
 
 性能指标:
   - 并发处理: 1000 connections
@@ -169,13 +169,13 @@
   - 数据一致性保证
 
 技术实现:
-  - 运行时: Node.js 18
-  - 事件存储: PostgreSQL + 自定义表结构
+  - 运行时: .NET 8 (ASP.NET Core)
+  - 事件存储: EventStoreDB (via C# client) + PostgreSQL + 自定义表结构
   - 快照策略: 每1000个事件生成快照
   - 压缩算法: LZ4压缩事件数据
 
 容器配置:
-  - 镜像: node:18-alpine
+  - 镜像: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
   - 内存限制: 2GB
   - CPU限制: 1核
   - 端口: 3003
@@ -196,13 +196,13 @@
   - 动态规则加载
 
 技术实现:
-  - 运行时: Node.js 18
-  - 规则引擎: 自研轻量级引擎
-  - 配置格式: YAML规则文件
+  - 运行时: .NET 8 (ASP.NET Core)
+  - 规则引擎: 自研轻量级引擎 (C#)
+  - 配置格式: YAML规则文件 (YamlDotnet)
   - 执行策略: 优先级队列
 
 容器配置:
-  - 镜像: node:18-alpine
+  - 镜像: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
   - 内存限制: 1.5GB
   - CPU限制: 1核
   - 端口: 3004
@@ -223,17 +223,17 @@
   - 连接池管理
 
 技术实现:
-  - 运行时: Node.js 18
-  - ORM: Prisma
-  - 缓存: Redis客户端
-  - 连接池: pg-pool
+  - 运行时: .NET 8 (ASP.NET Core)
+  - ORM: Entity Framework Core (via Npgsql)
+  - 缓存: StackExchange.Redis
+  - 连接池: Npgsql连接池
 
 容器配置:
-  - 镜像: node:18-alpine
+  - 镜像: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
   - 内存限制: 1GB
   - CPU限制: 0.5核
   - 端口: 3005
-  - 环境变量: DATABASE_URL, REDIS_URL
+  - 环境变量: ConnectionStrings__DefaultConnection, ConnectionStrings__Redis
 
 性能指标:
   - 查询处理: 3000 queries/s
@@ -337,7 +337,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl:/etc/nginx/ssl
-      - ./web/dist:/usr/share/nginx/html
+      - ./client/dist:/usr/share/nginx/html
     depends_on:
       - user-service
       - game-service
@@ -354,10 +354,10 @@ services:
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=production
-      - JWT_SECRET=${JWT_SECRET}
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - JWT__Secret=${JWT_SECRET}
+      - ConnectionStrings__DefaultConnection=${DATABASE_URL}
+      - ConnectionStrings__Redis=${REDIS_URL}
     depends_on:
       - postgres
       - redis
@@ -373,9 +373,9 @@ services:
     ports:
       - "3002:3002"
     environment:
-      - NODE_ENV=production
-      - REDIS_URL=${REDIS_URL}
-      - DATABASE_URL=${DATABASE_URL}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__Redis=${REDIS_URL}
+      - ConnectionStrings__DefaultConnection=${DATABASE_URL}
     depends_on:
       - postgres
       - redis
@@ -391,8 +391,8 @@ services:
     ports:
       - "3003:3003"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DATABASE_URL}
     volumes:
       - event-data:/app/data
     depends_on:
@@ -411,9 +411,9 @@ services:
     volumes:
       - ./config/rules:/app/rules:ro
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DATABASE_URL}
+      - ConnectionStrings__Redis=${REDIS_URL}
     depends_on:
       - postgres
       - redis
@@ -429,9 +429,9 @@ services:
     ports:
       - "3005:3005"
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DATABASE_URL}
+      - ConnectionStrings__Redis=${REDIS_URL}
     depends_on:
       - postgres
       - redis
@@ -582,16 +582,16 @@ HDD (1TB):
 ### PostgreSQL优化
 ```sql
 -- postgresql.conf关键配置
-shared_buffers = 8GB                    # 25%内存
-effective_cache_size = 24GB              # 75%内存
-work_mem = 256MB                         # 排序内存
-maintenance_work_mem = 2GB               # 维护内存
-max_connections = 200                    # 最大连接数
-checkpoint_completion_target = 0.9       # 检查点优化
-wal_buffers = 64MB                       # WAL缓冲
-default_statistics_target = 100          # 统计信息
-random_page_cost = 1.1                   # SSD优化
-effective_io_concurrency = 200           # 并发IO
+shared_buffers = 8GB                    -- 25%内存
+effective_cache_size = 24GB              -- 75%内存
+work_mem = 256MB                         -- 排序内存
+maintenance_work_mem = 2GB               -- 维护内存
+max_connections = 200                    -- 最大连接数
+checkpoint_completion_target = 0.9       -- 检查点优化
+wal_buffers = 64MB                       -- WAL缓冲
+default_statistics_target = 100          -- 统计信息
+random_page_cost = 1.1                   -- SSD优化
+effective_io_concurrency = 200           -- 并发IO
 
 -- 索引优化
 CREATE INDEX CONCURRENTLY idx_events_player_time 
@@ -623,26 +623,81 @@ rename-command FLUSHALL ""
 rename-command CONFIG ""
 ```
 
-### Node.js应用优化
-```javascript
-// 性能优化配置
-process.env.NODE_ENV = 'production';
-process.env.UV_THREADPOOL_SIZE = 128;
+### ASP.NET Core应用优化
+```csharp
+// ASP.NET Core 性能优化配置 (Program.cs)
+var builder = WebApplication.CreateBuilder(args);
 
-// PM2配置
-module.exports = {
-  apps: [{
-    name: 'game-service',
-    script: './dist/index.js',
-    instances: 'max',
-    exec_mode: 'cluster',
-    max_memory_restart: '3G',
-    node_args: '--max-old-space-size=3072',
-    env: {
-      NODE_ENV: 'production'
+// 启用服务器GC（Server Garbage Collection）
+builder.Configuration["System.Runtime.GC.Server"] = "true";
+builder.Configuration["System.GC.Server"] = "true";
+
+// 设置线程池
+ThreadPool.SetMinThreads(200, 200);
+
+// 配置Kestrel服务器
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxConcurrentConnections = 1000;
+    serverOptions.Limits.MaxConcurrentUpgradedConnections = 1000;
+    serverOptions.Limits.MinRequestBodyDataRate = null;
+    serverOptions.Limits.MinResponseDataRate = null;
+});
+
+builder.Services.AddControllers();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
+
+var app = builder.Build();
+
+app.UseResponseCompression();
+app.UseRouting();
+app.MapControllers();
+
+app.Run();
+```
+
+```ini
+# appsettings.Production.json 服务配置
+{
+  "Kestrel": {
+    "Limits": {
+      "MaxConcurrentConnections": 1000,
+      "MaxConcurrentUpgradedConnections": 1000
     }
-  }]
-};
+  },
+  "ThreadPoolSettings": {
+    "MinWorkerThreads": 200,
+    "MinIOThreads": 200
+  },
+  "GarbageCollection": {
+    "ServerGC": true,
+    "ConcurrentGC": true
+  }
+}
+```
+
+```ini
+# systemd 服务配置 (/etc/systemd/system/immortality-game.service)
+[Unit]
+Description=Immortality Game Logic Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/immortality/services/game
+ExecStart=/usr/bin/dotnet Immortality.GameService.dll --urls http://0.0.0.0:3002
+Restart=always
+RestartSec=10
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_GCServer=1
+Environment=DOTNET_ThreadPool_MinThreads=200
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
 ```
 
 ## 监控和告警配置
@@ -749,10 +804,10 @@ cat > .env << EOF
 # 数据库配置
 DB_USER=immortality
 DB_PASSWORD=$(openssl rand -base64 32)
-DATABASE_URL=postgresql://\${DB_USER}:\${DB_PASSWORD}@postgres:5432/immortality
+DATABASE_URL=Host=postgres;Database=immortality;Username=\${DB_USER};Password=\${DB_PASSWORD}
 
 # Redis配置
-REDIS_URL=redis://redis:6379
+REDIS_URL=redis:6379
 
 # JWT密钥
 JWT_SECRET=$(openssl rand -base64 64)
@@ -761,7 +816,7 @@ JWT_SECRET=$(openssl rand -base64 64)
 GRAFANA_PASSWORD=$(openssl rand -base64 16)
 
 # 应用配置
-NODE_ENV=production
+ASPNETCORE_ENVIRONMENT=Production
 LOG_LEVEL=info
 EOF
 ```
@@ -866,12 +921,16 @@ docker-compose exec redis redis-cli ping
 git clone https://github.com/your-org/immortality.git src
 cd src
 
-# 构建各个服务
+# 构建各个服务 (ASP.NET Core Docker镜像)
 docker build -t immortality/user-service ./services/user
 docker build -t immortality/game-service ./services/game
 docker build -t immortality/event-service ./services/event
 docker build -t immortality/rule-service ./services/rule
 docker build -t immortality/data-service ./services/data
+
+# 构建客户端 (Tuanjie Engine构建输出)
+# 客户端通过Tuanjie Engine Editor导出WebGL构建到 client/dist/
+# 然后由Nginx提供静态文件服务
 ```
 
 #### 2. 部署微服务
@@ -917,7 +976,7 @@ http {
         listen 80;
         server_name _;
         
-        # 静态文件
+        # 静态文件 (Tuanjie Engine WebGL构建输出)
         location / {
             root /usr/share/nginx/html;
             try_files \$uri \$uri/ /index.html;
@@ -936,8 +995,8 @@ http {
             proxy_set_header X-Real-IP \$remote_addr;
         }
         
-        # WebSocket支持
-        location /socket.io/ {
+        # WebSocket支持 (Unity Transport / Mirror Networking)
+        location /ws/ {
             proxy_pass http://game_service;
             proxy_http_version 1.1;
             proxy_set_header Upgrade \$http_upgrade;

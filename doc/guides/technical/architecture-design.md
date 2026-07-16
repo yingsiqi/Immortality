@@ -7,7 +7,7 @@
 ```mermaid
 flowchart TB
     subgraph "客户端层"
-        A[Web客户端]
+        A[Tuanjie客户端]
         B[移动端客户端]
     end
     
@@ -138,20 +138,24 @@ flowchart TD
 ```
 
 **技术实现**:
-```javascript
+```csharp
 // 事件结构标准
-const GameEvent = {
-    id: 'uuid',
-    playerId: 'uuid',
-    eventType: 'CULTIVATION_PROGRESS',
-    eventData: {
-        experience: 1000,
-        level: 5,
-        timestamp: Date.now()
-    },
-    schemaVersion: '1.0',
-    hash: 'sha256'
-};
+public class GameEvent
+{
+    public Guid Id { get; init; }
+    public Guid PlayerId { get; init; }
+    public string EventType { get; init; }
+    public GameEventData EventData { get; init; }
+    public string SchemaVersion { get; init; }
+    public string Hash { get; init; }
+}
+
+public class GameEventData
+{
+    public int Experience { get; init; }
+    public int Level { get; init; }
+    public DateTime Timestamp { get; init; }
+}
 ```
 
 ### 2. 分层存储架构
@@ -328,24 +332,24 @@ cultivation_rules:
 ## 技术栈选择
 
 ### 后端技术
-- **运行时**: Node.js 18+ / TypeScript
-- **Web框架**: Express.js / Fastify
-- **数据库**: PostgreSQL 15+ (主库) + Redis 7+ (缓存)
-- **消息队列**: Redis Streams / RabbitMQ
+- **运行时**: C# / .NET 8
+- **Web框架**: ASP.NET Core Web API
+- **数据库**: PostgreSQL 15+ (主库, 通过Npgsql访问) + Redis 7+ (缓存, 通过StackExchange.Redis访问)
+- **消息队列**: Hangfire / Channel<T> / Redis Pub/Sub (StackExchange.Redis)
 - **监控**: Prometheus + Grafana
 
-### 前端技术
-- **框架**: React 18+ / Vue 3+
-- **状态管理**: Redux Toolkit / Pinia
-- **UI库**: Ant Design / Element Plus
-- **图表**: D3.js / ECharts
-- **实时通信**: Socket.io / WebSocket
+### 客户端技术
+- **引擎**: Tuanjie Engine (UGUI / UI Toolkit)
+- **状态管理**: ScriptableObject / 单例模式
+- **UI系统**: UGUI / UI Toolkit 组件
+- **图表**: Unity UI 自定义图表组件
+- **实时通信**: Unity Transport / Mirror Networking
 
 ### 开发工具
 - **容器化**: Docker + Docker Compose
 - **CI/CD**: GitHub Actions
-- **代码质量**: ESLint + Prettier + Husky
-- **测试**: Jest + Cypress
+- **代码质量**: Roslyn Analyzers / EditorConfig
+- **测试**: Unity Test Framework / NUnit / xUnit
 
 ## 架构优势
 

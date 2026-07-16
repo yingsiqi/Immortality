@@ -53,11 +53,11 @@ flowchart LR
 
 ### 2. 系统架构图
 
-#### 微服务架构
+#### 客户端-服务器架构
 ```mermaid
 flowchart TB
     subgraph "客户端层"
-        Web[Web客户端]
+        Client[Tuanjie客户端]
         Mobile[移动端]
     end
     
@@ -78,7 +78,7 @@ flowchart TB
         MySQL[(MySQL)]
     end
     
-    Web --> Gateway
+    Client --> Gateway
     Mobile --> Gateway
     Gateway --> UserSvc
     Gateway --> GameSvc
@@ -255,7 +255,7 @@ gantt
 journey
     title 新手玩家体验旅程
     section 注册登录
-      访问游戏网站: 5: 玩家
+      启动游戏客户端: 5: 玩家
       注册账号: 4: 玩家
       首次登录: 5: 玩家
     section 角色创建
@@ -307,13 +307,13 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph "前端层"
-        A[React应用]
-        B[Vue组件]
+    subgraph "客户端层"
+        A[Tuanjie客户端]
+        B[UGUI组件]
     end
     
-    subgraph "后端层"
-        C[Node.js服务]
+    subgraph "服务端层"
+        C[C#游戏服务器]
         D[数据库]
     end
     

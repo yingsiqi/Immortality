@@ -7,7 +7,7 @@
 特别关注以下技术重点：
 - **单服务器承载验证**：目标支持1000并发用户
 - **时间敏感型事务设计**：现实时间与游戏时间的精确映射
-- **轻量化架构原则**：SVG+Emoji美术方案，事件溯源模式
+- **轻量化架构原则**：Tuanjie 引擎渲染（Sprite + Particle System + TuanjieGI），事件溯源模式
 - **性能监控体系**：实时监控、告警机制、数据安全
 
 ## 技术架构
@@ -29,8 +29,8 @@
 
 - [Alpha技术栈总览](./alpha-tech-stack.md) - Alpha版本技术选型和架构概览
 - [技术架构设计](./architecture-design.md) - 完整的架构设计方案
-- [前端架构设计](./frontend-architecture.md) - React + TypeScript + 轻量化图形的前端架构
-- [后端架构设计](./backend-architecture.md) - NestJS + EventStoreDB + PostgreSQL的微服务架构
+- [客户端架构设计](./frontend-architecture.md) - C# + Tuanjie 引擎 + 轻量化图形的客户端架构
+- [后端架构设计](./backend-architecture.md) - ASP.NET Core + EventStoreDB + PostgreSQL的微服务架构
 - [数据库设计](./database-design.md) - 事件溯源与关系型数据库的混合设计
 - [开发环境配置](./development-environment.md) - Docker容器化开发环境配置指南
 - [项目路线图](./project-roadmap.md) - Alpha版本开发计划和里程碑管理
@@ -62,8 +62,8 @@
 ### 技术栈
 
 #### 后端技术
-- **语言**: Node.js / TypeScript
-- **框架**: Express.js
+- **语言**: C# / .NET
+- **框架**: ASP.NET Core
 - **数据库**: PostgreSQL + Redis
 - **事件存储**: 自研事件溯源引擎 + 分层存储
 - **规则引擎**: 基于JSON配置的声明式规则系统
@@ -72,12 +72,12 @@
 - **监控**: Prometheus + Grafana
 - **日志**: ELK Stack (Elasticsearch + Logstash + Kibana)
 
-#### 前端技术
-- **引擎**: Unity 2022.3 LTS
+#### 客户端技术
+- **引擎**: Tuanjie Engine (UGUI / UI Toolkit)
 - **语言**: C#
-- **网络**: Mirror Networking
+- **网络**: Unity Transport / Mirror Networking
 - **UI框架**: UGUI + DOTween
-- **美术方案**: SVG + Emoji 轻量化设计
+- **美术方案**: Tuanjie 引擎渲染（Sprite + Particle System + TuanjieGI）
 
 #### 核心特性
 - **事件溯源**: 完整状态历史记录和时间回溯
@@ -173,9 +173,9 @@ CREATE TABLE player_snapshots (
 - **PUT /api/rules/:id** - 更新规则配置
 - **POST /api/rules/validate** - 验证规则配置
 
-#### WebSocket 协议
+#### 实时通信协议
 
-游戏实时通信采用 WebSocket 协议，支持事件驱动的消息传递：
+游戏实时通信采用 Unity Transport 协议，支持事件驱动的消息传递：
 
 ```json
 {
@@ -201,11 +201,11 @@ CREATE TABLE player_snapshots (
 - **API网关**: Kong/Zuul (路由、限流、认证)
 
 **应用层**
-- **用户服务**: Node.js (多实例，无状态)
-- **游戏逻辑服务**: Node.js (多实例，事件驱动)
-- **事件溯源服务**: Node.js (专用实例，高可用)
-- **规则引擎服务**: Node.js (独立部署，可扩展)
-- **数据服务**: Node.js (数据访问层)
+- **用户服务**: C# / ASP.NET Core (多实例，无状态)
+- **游戏逻辑服务**: C# / ASP.NET Core (多实例，事件驱动)
+- **事件溯源服务**: C# / ASP.NET Core (专用实例，高可用)
+- **规则引擎服务**: C# / ASP.NET Core (独立部署，可扩展)
+- **数据服务**: C# / ASP.NET Core (数据访问层)
 
 **存储层**
 - **主数据库**: PostgreSQL 主从复制 (事务数据)

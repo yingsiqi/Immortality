@@ -117,8 +117,8 @@
 ## 技术实现
 
 ### 架构设计
-- 微服务架构
-- 模块化开发
+- 模块化系统架构
+- Unity 组件化开发（ScriptableObject + MonoBehaviour）
 - 可扩展性设计
 
 ### 性能优化

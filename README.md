@@ -1,6 +1,6 @@
-# Immortality - 凡人修仙传 Web RPG
+# Immortality - 凡人修仙传 RPG
 
-一个基于《凡人修仙传》IP的开源Web修仙RPG游戏项目，采用"用规则替代数值，用时间沉淀替代付费捷径"的核心理念。
+一个基于《凡人修仙传》IP的开源修仙RPG游戏项目，采用"用规则替代数值，用时间沉淀替代付费捷径"的核心理念。
 
 ## 项目概述
 
@@ -99,19 +99,20 @@ npm run preview
 ## 技术架构
 
 ### 核心技术栈
-- **前端**: React 18 + TypeScript + Vite
-- **状态管理**: Zustand + React Query
-- **UI组件**: Ant Design + Tailwind CSS
-- **后端**: Node.js + Express + TypeScript
+- **游戏客户端**: Tuanjie Engine (团结引擎) + C# + UGUI / UI Toolkit
+- **状态管理**: ScriptableObject + Singleton Manager 模式
+- **UI组件**: Unity UI Toolkit + UGUI
+- **游戏服务端**: C# / .NET 8 + ASP.NET Core
 - **数据库**: PostgreSQL 14+ (主库) + Redis 6+ (缓存)
-- **消息队列**: Redis Pub/Sub + Bull Queue
-- **实时通信**: Socket.IO
+- **消息队列**: Hangfire + Redis Pub/Sub (StackExchange.Redis)
+- **实时通信**: Unity Transport / Mirror Networking
 - **文档系统**: VitePress + Vue 3 + Mermaid
 - **容器化**: Docker + Docker Compose
 
 ### 架构设计
-- **微服务架构**: 用户服务、游戏逻辑服务、数据服务等
-- **事件溯源**: 完整的事件存储和重放机制
+- **客户端架构**: Tuanjie Engine 客户端 + ScriptableObject 数据驱动 + Addressable Assets 资源管理
+- **服务端架构**: ASP.NET Core 微服务 — 用户服务、游戏逻辑服务、数据服务等
+- **事件溯源**: 基于 EventStoreDB 的完整事件存储和重放机制
 - **CQRS模式**: 命令查询职责分离
 - **API网关**: 统一的请求路由和认证
 - **监控告警**: Prometheus + Grafana
@@ -158,7 +159,7 @@ Immortality/
 │   ├── guides/          # 开发和运营指南
 │   └── reference/       # API参考文档
 ├── package.json         # 项目依赖配置
-├── setup.js            # 项目初始化脚本
+├── setup.js            # 项目项目初始化脚本
 ├── start.js            # 项目启动脚本
 └── README.md           # 项目说明文档
 ```
@@ -195,6 +196,12 @@ Immortality/
    docker-compose up -d
    ```
 
+4. **Tuanjie 引擎客户端开发**:
+   - 安装团结引擎 1.7.3+ (从 [Unity 中国官网](https://unity.cn/) 下载)
+   - 在引擎中打开或创建项目，导入项目配置和 ScriptableObject 数据
+   - 使用 Codely (CLI) 辅助编写 C# 脚本
+   - 通过 `Window → Package Manager` 安装 AI Graph 插件用于美术资产生成
+
 ## 开发状态
 
 - ✅ 项目架构设计完成
@@ -216,7 +223,7 @@ Immortality/
 - 🎮 参与Alpha测试
 
 ### 开发规范
-- 遵循TypeScript编码规范
+- 遵循C#编码规范（客户端）和ASP.NET Core规范（服务端）
 - 提交前运行测试用例
 - 遵循Git提交信息规范
 - 详见[开发指南](https://yingsiqi.github.io/Immortality/guides/technical/)

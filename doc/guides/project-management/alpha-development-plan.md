@@ -2,7 +2,7 @@
 
 ## 📋 计划概述
 
-本文档详细规划了《凡人修仙传》Web RPG游戏Alpha版本的开发计划，基于"用规则替代数值，用时间沉淀替代付费捷径"的核心理念，重点验证时间维度革命、天道法则系统等创新机制。
+本文档详细规划了《凡人修仙传》RPG游戏Alpha版本的开发计划，基于"用规则替代数值，用时间沉淀替代付费捷径"的核心理念，重点验证时间维度革命、天道法则系统等创新机制。
 
 ### 🎯 Alpha版本目标
 - **用户规模**：1000人封闭测试
@@ -16,18 +16,25 @@
 
 **构建最小化时间流模型**：
 
-```python
-# 伪代码：真实时间-游戏时间转换
-def game_time(real_time):
-    # 1现实秒 = 1游戏日
-    game_years = real_time * 365 / (24*60*60)
-    return game_years
+```csharp
+// 伪代码：真实时间-游戏时间转换
+public static class GameTimeConverter
+{
+    // 1现实秒 = 1游戏日
+    public static double ToGameTime(double realTime)
+    {
+        double gameYears = realTime * 365.0 / (24 * 60 * 60);
+        return gameYears;
+    }
 
-# 改进建议：增加时间加速调试模式
-def debug_game_time(real_time, acceleration=1):
-    # 支持时间加速，便于快速验证长周期事件
-    game_years = real_time * 365 * acceleration / (24*60*60)
-    return game_years
+    // 改进建议：增加时间加速调试模式
+    public static double ToGameTimeDebug(double realTime, double acceleration = 1)
+    {
+        // 支持时间加速，便于快速验证长周期事件
+        double gameYears = realTime * 365.0 * acceleration / (24 * 60 * 60);
+        return gameYears;
+    }
+}
 ```
 
 **测试用例**：
@@ -80,15 +87,15 @@ graph TD
 flowchart LR
     A[Markdown文档] --> B[解析器]
     B --> C[数据验证]
-    C --> D[JSON配置]
-    D --> E[游戏引擎]
+    C --> D[ScriptableObject配置]
+    D --> E[Tuanjie引擎]
     E --> F[实时热更新]
 ```
 
 **工具链**：
-- **Markdown解析**：markdown-it
-- **坐标转换**：Turf.js(地理空间计算)
-- **技能逻辑**：Node-RED(可视化规则编排)
+- **Markdown解析**：Markdig (C# Markdown 解析库)
+- **坐标转换**：C# 地理空间计算库
+- **技能逻辑**：ScriptableObject 规则编排
 - **新增**：内容版本管理系统
 - **新增**：内容校验工具，防止配置错误
 
@@ -96,9 +103,9 @@ flowchart LR
 
 | 资产类型 | 规格 | 示例 | 生成工具 | 改进建议 |
 |----------|------|------|----------|----------|
-| 角色头像 | 128x128 SVG | 🧑‍🦳[境界:元婴] | Figma+SVG导出 | 增加自动化生成脚本 |
-| 技能特效 | CSS动画+Emoji组合 | 🔥→🐉(火蛇术) | Anime.js | 建立特效库模板 |
-| 世界地图 | 矢量SVG分层渲染 | 灵脉区域用💎波纹动画 | D3.js | 支持动态加载 |
+| 角色头像 | 128x128 Sprite | 🧑‍🦳[境界:元婴] | Tuanjie 引擎 Sprite 渲染 | 增加自动化生成脚本 |
+| 技能特效 | Particle System | 🔥→🐉(火蛇术) | Tuanjie 引擎 Particle System | 建立特效库模板 |
+| 世界地图 | Sprite 分层渲染 | 灵脉区域用💎波纹动画 | Tuanjie 引擎渲染 | 支持动态加载 |
 
 ## 三、技术风险攻坚清单（2-3周）
 
@@ -118,28 +125,38 @@ flowchart LR
 
 ### 2. 时间敏感型事务设计
 
-```javascript
+```csharp
 // 时间锚定示例：天劫倒计时
-class HeavenlyTribulation {
-  constructor(player) {
-    this.startTime = Date.now(); // 现实开始时间
-    this.duration = 72 * 3600 * 1000; // 现实72小时=游戏72年
-    this.player = player;
-  }
-  
-  checkTrigger() {
-    if (Date.now() > this.startTime + this.duration) {
-      this.triggerTribulation(); // 自动触发天劫
+public class HeavenlyTribulation
+{
+    private readonly DateTime _startTime; // 现实开始时间
+    private readonly TimeSpan _duration;   // 现实72小时=游戏72年
+    private readonly Player _player;
+
+    public HeavenlyTribulation(Player player)
+    {
+        _startTime = DateTime.Now;
+        _duration = TimeSpan.FromHours(72);
+        _player = player;
     }
-  }
-  
-  // 改进：增加异常恢复机制
-  recoverFromCrash(lastCheckpoint) {
-    const elapsed = Date.now() - lastCheckpoint;
-    if (elapsed > this.duration) {
-      this.triggerTribulation();
+
+    public void CheckTrigger()
+    {
+        if (DateTime.Now > _startTime + _duration)
+        {
+            TriggerTribulation(); // 自动触发天劫
+        }
     }
-  }
+
+    // 改进：增加异常恢复机制
+    public void RecoverFromCrash(DateTime lastCheckpoint)
+    {
+        var elapsed = DateTime.Now - lastCheckpoint;
+        if (elapsed > _duration)
+        {
+            TriggerTribulation();
+        }
+    }
 }
 ```
 
@@ -276,7 +293,7 @@ gantt
 ### 开发团队
 - **技术负责人**：1人（架构设计、核心开发）
 - **后端开发**：2人（服务器逻辑、数据库）
-- **前端开发**：2人（UI/UX、客户端逻辑）
+- **客户端开发**：2人（UI/UX、客户端逻辑）
 - **测试工程师**：1人（自动化测试、性能测试）
 - **运维工程师**：1人（部署、监控、运维）
 

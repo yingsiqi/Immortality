@@ -81,270 +81,301 @@ sequenceDiagram
 
 ### 事件流结构
 
-```typescript
+```csharp
 // 事件流命名规范
-const StreamNaming = {
-  // 玩家聚合流
-  player: (playerId: string) => `player-${playerId}`,
-  
-  // 修炼会话流
-  cultivation: (sessionId: string) => `cultivation-${sessionId}`,
-  
-  // 战斗会话流
-  combat: (combatId: string) => `combat-${combatId}`,
-  
-  // 物品交易流
-  trade: (tradeId: string) => `trade-${tradeId}`,
-  
-  // 公会活动流
-  guild: (guildId: string) => `guild-${guildId}`,
-  
-  // 系统事件流
-  system: () => 'system-events',
-  
-  // 分类事件流
-  category: (category: string) => `$ce-${category}`
-};
+public static class StreamNaming
+{
+    // 玩家聚合流
+    public static string Player(Guid playerId) => $"player-{playerId}";
+
+    // 修炼会话流
+    public static string Cultivation(Guid sessionId) => $"cultivation-{sessionId}";
+
+    // 战斗会话流
+    public static string Combat(Guid combatId) => $"combat-{combatId}";
+
+    // 物品交易流
+    public static string Trade(Guid tradeId) => $"trade-{tradeId}";
+
+    // 公会活动流
+    public static string Guild(Guid guildId) => $"guild-{guildId}";
+
+    // 系统事件流
+    public static string System() => "system-events";
+
+    // 分类事件流
+    public static string Category(string category) => $"$ce-{category}";
+}
 ```
 
 ### 核心事件定义
 
-```typescript
-// 基础事件接口
-interface DomainEvent {
-  eventId: string;
-  eventType: string;
-  aggregateId: string;
-  aggregateType: string;
-  eventVersion: number;
-  timestamp: Date;
-  causationId?: string;
-  correlationId?: string;
-  metadata?: Record<string, any>;
+```csharp
+// Events/DomainEvent.cs
+public abstract class DomainEvent
+{
+    public Guid EventId { get; init; }
+    public string EventType { get; init; } = string.Empty;
+    public string AggregateId { get; init; } = string.Empty;
+    public string AggregateType { get; init; } = string.Empty;
+    public int EventVersion { get; init; }
+    public DateTime Timestamp { get; init; }
+    public string? CausationId { get; init; }
+    public string? CorrelationId { get; init; }
+    public Dictionary<string, object>? Metadata { get; init; }
 }
 
 // 玩家相关事件
-interface PlayerCreatedEvent extends DomainEvent {
-  eventType: 'PlayerCreated';
-  data: {
-    playerId: string;
-    userId: string;
-    playerName: string;
-    initialRealm: string;
-    initialLevel: number;
-    createdAt: Date;
-  };
+public class PlayerCreatedEvent : DomainEvent
+{
+    public PlayerCreatedData Data { get; init; } = new();
 }
 
-interface PlayerLevelUpEvent extends DomainEvent {
-  eventType: 'PlayerLevelUp';
-  data: {
-    playerId: string;
-    oldLevel: number;
-    newLevel: number;
-    oldRealm: string;
-    newRealm: string;
-    experienceGained: number;
-    timestamp: Date;
-  };
+public record PlayerCreatedData(
+    Guid PlayerId,
+    Guid UserId,
+    string PlayerName,
+    string InitialRealm,
+    int InitialLevel,
+    DateTime CreatedAt);
+
+public class PlayerLevelUpEvent : DomainEvent
+{
+    public PlayerLevelUpData Data { get; init; } = new();
 }
 
-interface PlayerEnergyChangedEvent extends DomainEvent {
-  eventType: 'PlayerEnergyChanged';
-  data: {
-    playerId: string;
-    oldEnergy: number;
-    newEnergy: number;
-    changeReason: 'cultivation' | 'combat' | 'rest' | 'item_use';
-    timestamp: Date;
-  };
+public record PlayerLevelUpData(
+    Guid PlayerId,
+    int OldLevel,
+    int NewLevel,
+    string OldRealm,
+    string NewRealm,
+    int ExperienceGained,
+    DateTime Timestamp);
+
+public class PlayerEnergyChangedEvent : DomainEvent
+{
+    public PlayerEnergyChangedData Data { get; init; } = new();
 }
+
+public record PlayerEnergyChangedData(
+    Guid PlayerId,
+    int OldEnergy,
+    int NewEnergy,
+    string ChangeReason, // cultivation | combat | rest | item_use
+    DateTime Timestamp);
 
 // 修炼相关事件
-interface CultivationStartedEvent extends DomainEvent {
-  eventType: 'CultivationStarted';
-  data: {
-    sessionId: string;
-    playerId: string;
-    techniqueId: string;
-    startTime: Date;
-    expectedDuration: number;
-    energyCost: number;
-    location?: string;
-  };
+public class CultivationStartedEvent : DomainEvent
+{
+    public CultivationStartedData Data { get; init; } = new();
 }
 
-interface CultivationProgressEvent extends DomainEvent {
-  eventType: 'CultivationProgress';
-  data: {
-    sessionId: string;
-    playerId: string;
-    progress: number; // 0-1
-    experienceGained: number;
-    currentStage: string;
-    timestamp: Date;
-  };
+public record CultivationStartedData(
+    Guid SessionId,
+    Guid PlayerId,
+    string TechniqueId,
+    DateTime StartTime,
+    long ExpectedDuration,
+    int EnergyCost,
+    string? Location);
+
+public class CultivationProgressEvent : DomainEvent
+{
+    public CultivationProgressData Data { get; init; } = new();
 }
 
-interface CultivationCompletedEvent extends DomainEvent {
-  eventType: 'CultivationCompleted';
-  data: {
-    sessionId: string;
-    playerId: string;
-    completedAt: Date;
-    totalDuration: number;
-    totalExperienceGained: number;
-    breakthroughAchieved: boolean;
-    newInsights?: string[];
-  };
+public record CultivationProgressData(
+    Guid SessionId,
+    Guid PlayerId,
+    double Progress, // 0-1
+    int ExperienceGained,
+    string CurrentStage,
+    DateTime Timestamp);
+
+public class CultivationCompletedEvent : DomainEvent
+{
+    public CultivationCompletedData Data { get; init; } = new();
 }
+
+public record CultivationCompletedData(
+    Guid SessionId,
+    Guid PlayerId,
+    DateTime CompletedAt,
+    long TotalDuration,
+    int TotalExperienceGained,
+    bool BreakthroughAchieved,
+    List<string>? NewInsights);
 
 // 战斗相关事件
-interface CombatInitiatedEvent extends DomainEvent {
-  eventType: 'CombatInitiated';
-  data: {
-    combatId: string;
-    challengerId: string;
-    defenderId: string;
-    combatType: 'duel' | 'arena' | 'tournament' | 'monster';
-    location: string;
-    initiatedAt: Date;
-  };
+public class CombatInitiatedEvent : DomainEvent
+{
+    public CombatInitiatedData Data { get; init; } = new();
 }
 
-interface CombatActionEvent extends DomainEvent {
-  eventType: 'CombatAction';
-  data: {
-    combatId: string;
-    actorId: string;
-    actionType: 'attack' | 'defend' | 'skill' | 'item';
-    targetId: string;
-    skillId?: string;
-    itemId?: string;
-    damage?: number;
-    healing?: number;
-    effects?: string[];
-    timestamp: Date;
-  };
+public record CombatInitiatedData(
+    Guid CombatId,
+    Guid ChallengerId,
+    Guid DefenderId,
+    string CombatType, // duel | arena | tournament | monster
+    string Location,
+    DateTime InitiatedAt);
+
+public class CombatActionEvent : DomainEvent
+{
+    public CombatActionData Data { get; init; } = new();
 }
 
-interface CombatEndedEvent extends DomainEvent {
-  eventType: 'CombatEnded';
-  data: {
-    combatId: string;
-    winnerId: string;
-    loserId: string;
-    endReason: 'victory' | 'surrender' | 'timeout' | 'draw';
-    duration: number;
-    rewards: {
-      experience: number;
-      items: string[];
-      reputation: number;
-    };
-    endedAt: Date;
-  };
+public record CombatActionData(
+    Guid CombatId,
+    Guid ActorId,
+    string ActionType, // attack | defend | skill | item
+    Guid TargetId,
+    string? SkillId,
+    string? ItemId,
+    int? Damage,
+    int? Healing,
+    List<string>? Effects,
+    DateTime Timestamp);
+
+public class CombatEndedEvent : DomainEvent
+{
+    public CombatEndedData Data { get; init; } = new();
 }
+
+public record CombatEndedData(
+    Guid CombatId,
+    Guid WinnerId,
+    Guid LoserId,
+    string EndReason, // victory | surrender | timeout | draw
+    long Duration,
+    CombatRewards Rewards,
+    DateTime EndedAt);
+
+public record CombatRewards(
+    int Experience,
+    List<string> Items,
+    int Reputation);
 
 // 物品相关事件
-interface ItemObtainedEvent extends DomainEvent {
-  eventType: 'ItemObtained';
-  data: {
-    playerId: string;
-    itemId: string;
-    itemType: string;
-    quantity: number;
-    source: 'combat' | 'cultivation' | 'trade' | 'quest' | 'system';
-    sourceId?: string;
-    obtainedAt: Date;
-  };
+public class ItemObtainedEvent : DomainEvent
+{
+    public ItemObtainedData Data { get; init; } = new();
 }
 
-interface ItemUsedEvent extends DomainEvent {
-  eventType: 'ItemUsed';
-  data: {
-    playerId: string;
-    itemId: string;
-    quantity: number;
-    effects: {
-      energyRestore?: number;
-      experienceBoost?: number;
-      temporaryBuffs?: string[];
-    };
-    usedAt: Date;
-  };
+public record ItemObtainedData(
+    Guid PlayerId,
+    string ItemId,
+    string ItemType,
+    int Quantity,
+    string Source, // combat | cultivation | trade | quest | system
+    string? SourceId,
+    DateTime ObtainedAt);
+
+public class ItemUsedEvent : DomainEvent
+{
+    public ItemUsedData Data { get; init; } = new();
 }
 
-interface ItemTradedEvent extends DomainEvent {
-  eventType: 'ItemTraded';
-  data: {
-    tradeId: string;
-    sellerId: string;
-    buyerId: string;
-    itemId: string;
-    quantity: number;
-    price: number;
-    currency: 'gold' | 'spirit_stones';
-    tradedAt: Date;
-  };
+public record ItemUsedData(
+    Guid PlayerId,
+    string ItemId,
+    int Quantity,
+    ItemEffects Effects,
+    DateTime UsedAt);
+
+public record ItemEffects(
+    int? EnergyRestore,
+    int? ExperienceBoost,
+    List<string>? TemporaryBuffs);
+
+public class ItemTradedEvent : DomainEvent
+{
+    public ItemTradedData Data { get; init; } = new();
 }
+
+public record ItemTradedData(
+    Guid TradeId,
+    Guid SellerId,
+    Guid BuyerId,
+    string ItemId,
+    int Quantity,
+    int Price,
+    string Currency, // gold | spirit_stones
+    DateTime TradedAt);
 ```
 
 ### 事件存储配置
 
-```typescript
-// eventstore.config.ts
-export const EventStoreConfig = {
-  // 连接配置
-  connection: {
-    connectionString: process.env.EVENTSTORE_CONNECTION_STRING,
-    defaultCredentials: {
-      username: 'admin',
-      password: process.env.EVENTSTORE_PASSWORD
-    },
-    gossipTimeout: 3000,
-    discoverAttempts: 3,
-    maxDiscoverAttempts: 10,
-    requireMaster: false,
-    reconnectionDelay: 100,
-    operationTimeout: 7000,
-    operationTimeoutCheckPeriod: 1000
-  },
-  
-  // 流配置
-  streams: {
+```csharp
+// Options/EventStoreOptions.cs
+public class EventStoreOptions
+{
+    public EventStoreConnectionOptions Connection { get; set; } = new();
+    public EventStoreStreamOptions Streams { get; set; } = new();
+    public EventStoreProjectionOptions Projections { get; set; } = new();
+}
+
+public class EventStoreConnectionOptions
+{
+    public string ConnectionString { get; set; } = string.Empty;
+    public string DefaultUsername { get; set; } = "admin";
+    public string DefaultPassword { get; set; } = string.Empty;
+    public int GossipTimeout { get; set; } = 3000;
+    public int DiscoverAttempts { get; set; } = 3;
+    public int MaxDiscoverAttempts { get; set; } = 10;
+    public bool RequireMaster { get; set; } = false;
+    public int ReconnectionDelay { get; set; } = 100;
+    public int OperationTimeout { get; set; } = 7000;
+    public int OperationTimeoutCheckPeriod { get; set; } = 1000;
+}
+
+public class EventStoreStreamOptions
+{
     // 最大事件数限制
-    maxCount: 10000,
-    
+    public int MaxCount { get; set; } = 10000;
+
     // 快照配置
-    snapshotFrequency: 100, // 每100个事件创建快照
-    
+    public int SnapshotFrequency { get; set; } = 100; // 每100个事件创建快照
+
     // 分片配置
-    partitioning: {
-      enabled: true,
-      strategy: 'hash', // hash | range | time
-      partitionCount: 16
-    }
-  },
-  
-  // 投影配置
-  projections: {
+    public PartitioningOptions Partitioning { get; set; } = new();
+}
+
+public class PartitioningOptions
+{
+    public bool Enabled { get; set; } = true;
+    public string Strategy { get; set; } = "hash"; // hash | range | time
+    public int PartitionCount { get; set; } = 16;
+}
+
+public class EventStoreProjectionOptions
+{
     // 系统投影
-    system: {
-      '$by_category': true,
-      '$by_event_type': true,
-      '$stream_by_category': true
-    },
-    
+    public bool ByCategory { get; set; } = true;
+    public bool ByEventType { get; set; } = true;
+    public bool StreamByCategory { get; set; } = true;
+
     // 自定义投影
-    custom: [
-      'player-statistics',
-      'cultivation-leaderboard',
-      'combat-rankings',
-      'item-market-data',
-      'guild-activities'
-    ]
-  }
-};
+    public List<string> Custom { get; set; } = new()
+    {
+        "player-statistics",
+        "cultivation-leaderboard",
+        "combat-rankings",
+        "item-market-data",
+        "guild-activities"
+    };
+}
+
+// appsettings.json 中的配置
+// "EventStore": {
+//   "Connection": {
+//     "ConnectionString": "esdb://admin:changeit@localhost:2113?tls=false",
+//     ...
+//   },
+//   "Streams": { "MaxCount": 10000, "SnapshotFrequency": 100, ... },
+//   "Projections": { "ByCategory": true, ... }
+// }
 ```
 
 ### 投影定义
@@ -956,288 +987,325 @@ ORDER BY bs.win_rate DESC, bs.total_combats DESC;
 
 ### 缓存键命名规范
 
-```typescript
-// cache-keys.ts
-export const CacheKeys = {
-  // 玩家相关
-  player: (playerId: string) => `player:${playerId}`,
-  playerStats: (playerId: string) => `player:stats:${playerId}`,
-  playerInventory: (playerId: string) => `player:inventory:${playerId}`,
-  playerTechniques: (playerId: string) => `player:techniques:${playerId}`,
-  
-  // 在线状态
-  onlinePlayer: (playerId: string) => `online:${playerId}`,
-  onlinePlayers: () => 'online:players',
-  
-  // 修炼相关
-  cultivationSession: (playerId: string) => `cultivation:${playerId}`,
-  cultivationQueue: () => 'cultivation:queue',
-  
-  // 战斗相关
-  combatSession: (combatId: string) => `combat:${combatId}`,
-  combatQueue: () => 'combat:queue',
-  
-  // 排行榜
-  leaderboard: (type: string) => `leaderboard:${type}`,
-  
-  // 市场数据
-  marketPrices: () => 'market:prices',
-  itemMarket: (itemId: string) => `market:item:${itemId}`,
-  
-  // 系统配置
-  gameConfig: () => 'config:game',
-  serverStatus: () => 'status:server',
-  
-  // 会话相关
-  userSession: (userId: string) => `session:${userId}`,
-  socketSession: (socketId: string) => `socket:${socketId}`,
-  
-  // 临时数据
-  tempData: (key: string) => `temp:${key}`,
-  lockKey: (resource: string) => `lock:${resource}`
-};
+```csharp
+// Cache/CacheKeys.cs
+public static class CacheKeys
+{
+    // 玩家相关
+    public static string Player(Guid playerId) => $"player:{playerId}";
+    public static string PlayerStats(Guid playerId) => $"player:stats:{playerId}";
+    public static string PlayerInventory(Guid playerId) => $"player:inventory:{playerId}";
+    public static string PlayerTechniques(Guid playerId) => $"player:techniques:{playerId}";
+
+    // 在线状态
+    public static string OnlinePlayer(Guid playerId) => $"online:{playerId}";
+    public static string OnlinePlayers() => "online:players";
+
+    // 修炼相关
+    public static string CultivationSession(Guid playerId) => $"cultivation:{playerId}";
+    public static string CultivationQueue() => "cultivation:queue";
+
+    // 战斗相关
+    public static string CombatSession(Guid combatId) => $"combat:{combatId}";
+    public static string CombatQueue() => "combat:queue";
+
+    // 排行榜
+    public static string Leaderboard(string type) => $"leaderboard:{type}";
+
+    // 市场数据
+    public static string MarketPrices() => "market:prices";
+    public static string ItemMarket(string itemId) => $"market:item:{itemId}";
+
+    // 系统配置
+    public static string GameConfig() => "config:game";
+    public static string ServerStatus() => "status:server";
+
+    // 会话相关
+    public static string UserSession(Guid userId) => $"session:{userId}";
+    public static string SocketSession(string socketId) => $"socket:{socketId}";
+
+    // 临时数据
+    public static string TempData(string key) => $"temp:{key}";
+    public static string LockKey(string resource) => $"lock:{resource}";
+}
 ```
 
 ### 缓存配置
 
-```typescript
-// cache.config.ts
-export const CacheConfig = {
-  // 默认TTL设置（秒）
-  ttl: {
-    // 玩家数据
-    playerData: 300, // 5分钟
-    playerStats: 600, // 10分钟
-    playerInventory: 180, // 3分钟
-    
-    // 在线状态
-    onlineStatus: 60, // 1分钟
-    
-    // 游戏会话
-    cultivationSession: 3600, // 1小时
-    combatSession: 1800, // 30分钟
-    
-    // 排行榜
-    leaderboard: 300, // 5分钟
-    
-    // 市场数据
-    marketData: 120, // 2分钟
-    
-    // 配置数据
-    gameConfig: 3600, // 1小时
-    
-    // 临时数据
-    tempData: 60, // 1分钟
-    
-    // 分布式锁
-    lockTtl: 30 // 30秒
-  },
-  
-  // 缓存策略
-  strategies: {
-    // 写入策略
-    writeThrough: ['playerData', 'playerStats'],
-    writeBack: ['playerInventory', 'marketData'],
-    writeAround: ['tempData'],
-    
-    // 失效策略
-    lru: ['playerData', 'playerStats'],
-    lfu: ['gameConfig', 'leaderboard'],
-    ttl: ['onlineStatus', 'tempData']
-  },
-  
-  // 预热配置
-  warmup: {
-    enabled: true,
-    keys: [
-      'config:game',
-      'leaderboard:cultivation',
-      'leaderboard:combat',
-      'market:prices'
-    ]
-  }
-};
+```csharp
+// Cache/CacheConfig.cs
+public static class CacheConfig
+{
+    // 默认TTL设置（秒）
+    public static class Ttl
+    {
+        // 玩家数据
+        public const int PlayerData = 300;       // 5分钟
+        public const int PlayerStats = 600;      // 10分钟
+        public const int PlayerInventory = 180;  // 3分钟
+
+        // 在线状态
+        public const int OnlineStatus = 60;      // 1分钟
+
+        // 游戏会话
+        public const int CultivationSession = 3600; // 1小时
+        public const int CombatSession = 1800;   // 30分钟
+
+        // 排行榜
+        public const int Leaderboard = 300;      // 5分钟
+
+        // 市场数据
+        public const int MarketData = 120;        // 2分钟
+
+        // 配置数据
+        public const int GameConfig = 3600;      // 1小时
+
+        // 临时数据
+        public const int TempData = 60;          // 1分钟
+
+        // 分布式锁
+        public const int LockTtl = 30;           // 30秒
+    }
+
+    // 缓存策略
+    public static class Strategies
+    {
+        // 写入策略
+        public static readonly string[] WriteThrough = { "playerData", "playerStats" };
+        public static readonly string[] WriteBack = { "playerInventory", "marketData" };
+        public static readonly string[] WriteAround = { "tempData" };
+
+        // 失效策略
+        public static readonly string[] LRU = { "playerData", "playerStats" };
+        public static readonly string[] LFU = { "gameConfig", "leaderboard" };
+        public static readonly string[] TTL = { "onlineStatus", "tempData" };
+    }
+
+    // 预热配置
+    public class WarmupOptions
+    {
+        public bool Enabled { get; set; } = true;
+        public List<string> Keys { get; set; } = new()
+        {
+            "config:game",
+            "leaderboard:cultivation",
+            "leaderboard:combat",
+            "market:prices"
+        };
+    }
+}
 ```
 
 ### 缓存服务实现
 
-```typescript
-// cache.service.ts
-@Injectable()
-export class CacheService {
-  constructor(
-    @Inject(CACHE_MANAGER)
-    private cacheManager: Cache,
-    private configService: ConfigService
-  ) {}
-  
-  // 获取缓存
-  async get<T>(key: string): Promise<T | null> {
-    try {
-      const value = await this.cacheManager.get<T>(key);
-      return value || null;
-    } catch (error) {
-      console.error(`Cache get error for key ${key}:`, error);
-      return null;
+```csharp
+// Services/CacheService.cs
+public class CacheService : ICacheService
+{
+    private readonly IDatabase _redis;
+    private readonly ILogger<CacheService> _logger;
+
+    public CacheService(IConnectionMultiplexer redis, ILogger<CacheService> logger)
+    {
+        _redis = redis.GetDatabase();
+        _logger = logger;
     }
-  }
-  
-  // 设置缓存
-  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
-    try {
-      const defaultTtl = this.getDefaultTtl(key);
-      await this.cacheManager.set(key, value, ttl || defaultTtl);
-    } catch (error) {
-      console.error(`Cache set error for key ${key}:`, error);
-    }
-  }
-  
-  // 删除缓存
-  async del(key: string): Promise<void> {
-    try {
-      await this.cacheManager.del(key);
-    } catch (error) {
-      console.error(`Cache delete error for key ${key}:`, error);
-    }
-  }
-  
-  // 批量删除
-  async delPattern(pattern: string): Promise<void> {
-    try {
-      const keys = await this.getKeys(pattern);
-      if (keys.length > 0) {
-        await Promise.all(keys.map(key => this.cacheManager.del(key)));
-      }
-    } catch (error) {
-      console.error(`Cache delete pattern error for ${pattern}:`, error);
-    }
-  }
-  
-  // 获取或设置缓存
-  async getOrSet<T>(
-    key: string,
-    factory: () => Promise<T>,
-    ttl?: number
-  ): Promise<T> {
-    let value = await this.get<T>(key);
-    
-    if (value === null) {
-      value = await factory();
-      await this.set(key, value, ttl);
-    }
-    
-    return value;
-  }
-  
-  // 分布式锁
-  async acquireLock(
-    resource: string,
-    ttl: number = 30,
-    retryDelay: number = 100,
-    maxRetries: number = 10
-  ): Promise<string | null> {
-    const lockKey = CacheKeys.lockKey(resource);
-    const lockValue = uuidv4();
-    
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        const result = await this.cacheManager.store.set(
-          lockKey,
-          lockValue,
-          'PX',
-          ttl * 1000,
-          'NX'
-        );
-        
-        if (result === 'OK') {
-          return lockValue;
+
+    // 获取缓存
+    public async Task<T?> GetAsync<T>(string key)
+    {
+        try
+        {
+            var value = await _redis.StringGetAsync(key);
+            if (!value.HasValue)
+                return default;
+            return JsonSerializer.Deserialize<T>(value!);
         }
-        
-        await new Promise(resolve => setTimeout(resolve, retryDelay));
-      } catch (error) {
-        console.error(`Lock acquisition error for ${resource}:`, error);
-      }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cache get error for key {Key}", key);
+            return default;
+        }
     }
-    
-    return null;
-  }
-  
-  // 释放锁
-  async releaseLock(resource: string, lockValue: string): Promise<boolean> {
-    const lockKey = CacheKeys.lockKey(resource);
-    
-    try {
-      const script = `
-        if redis.call('get', KEYS[1]) == ARGV[1] then
-          return redis.call('del', KEYS[1])
-        else
-          return 0
-        end
-      `;
-      
-      const result = await this.cacheManager.store.eval(
-        script,
-        1,
-        lockKey,
-        lockValue
-      );
-      
-      return result === 1;
-    } catch (error) {
-      console.error(`Lock release error for ${resource}:`, error);
-      return false;
+
+    // 设置缓存
+    public async Task SetAsync<T>(string key, T value, TimeSpan? ttl = null)
+    {
+        try
+        {
+            var defaultTtl = TimeSpan.FromSeconds(GetDefaultTtl(key));
+            await _redis.StringSetAsync(
+                key,
+                JsonSerializer.Serialize(value),
+                ttl ?? defaultTtl);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cache set error for key {Key}", key);
+        }
     }
-  }
-  
-  // 缓存预热
-  async warmupCache(): Promise<void> {
-    const warmupKeys = CacheConfig.warmup.keys;
-    
-    for (const key of warmupKeys) {
-      try {
-        await this.warmupKey(key);
-      } catch (error) {
-        console.error(`Cache warmup error for key ${key}:`, error);
-      }
+
+    // 删除缓存
+    public async Task DelAsync(string key)
+    {
+        try
+        {
+            await _redis.KeyDeleteAsync(key);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cache delete error for key {Key}", key);
+        }
     }
-  }
-  
-  private async warmupKey(key: string): Promise<void> {
-    switch (key) {
-      case 'config:game':
-        // 预热游戏配置
-        break;
-      case 'leaderboard:cultivation':
-        // 预热修炼排行榜
-        break;
-      case 'leaderboard:combat':
-        // 预热战斗排行榜
-        break;
-      case 'market:prices':
-        // 预热市场价格
-        break;
+
+    // 批量删除
+    public async Task DelPatternAsync(string pattern)
+    {
+        try
+        {
+            var server = _redis.Multiplexer.GetServer(_redis.Multiplexer.GetEndPoints()[0]);
+            foreach (var key in server.Keys(pattern: pattern))
+            {
+                await _redis.KeyDeleteAsync(key);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Cache delete pattern error for {Pattern}", pattern);
+        }
     }
-  }
-  
-  private getDefaultTtl(key: string): number {
-    // 根据键名确定默认TTL
-    if (key.startsWith('player:')) return CacheConfig.ttl.playerData;
-    if (key.startsWith('online:')) return CacheConfig.ttl.onlineStatus;
-    if (key.startsWith('cultivation:')) return CacheConfig.ttl.cultivationSession;
-    if (key.startsWith('combat:')) return CacheConfig.ttl.combatSession;
-    if (key.startsWith('leaderboard:')) return CacheConfig.ttl.leaderboard;
-    if (key.startsWith('market:')) return CacheConfig.ttl.marketData;
-    if (key.startsWith('config:')) return CacheConfig.ttl.gameConfig;
-    if (key.startsWith('temp:')) return CacheConfig.ttl.tempData;
-    
-    return 300; // 默认5分钟
-  }
-  
-  private async getKeys(pattern: string): Promise<string[]> {
-    // 实现键模式匹配
-    // 注意：在生产环境中应该避免使用KEYS命令
-    return [];
-  }
+
+    // 获取或设置缓存
+    public async Task<T> GetOrSetAsync<T>(string key, Func<Task<T>> factory, TimeSpan? ttl = null)
+    {
+        var value = await GetAsync<T>(key);
+
+        if (value is null)
+        {
+            value = await factory();
+            await SetAsync(key, value, ttl);
+        }
+
+        return value;
+    }
+
+    // 分布式锁
+    public async Task<string?> AcquireLockAsync(
+        string resource,
+        int ttl = 30,
+        int retryDelay = 100,
+        int maxRetries = 10)
+    {
+        var lockKey = CacheKeys.LockKey(resource);
+        var lockValue = Guid.NewGuid().ToString();
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                var result = await _redis.StringSetAsync(
+                    lockKey,
+                    lockValue,
+                    TimeSpan.FromSeconds(ttl),
+                    When.NotExists);
+
+                if (result)
+                {
+                    return lockValue;
+                }
+
+                await Task.Delay(retryDelay);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lock acquisition error for {Resource}", resource);
+            }
+        }
+
+        return null;
+    }
+
+    // 释放锁
+    public async Task<bool> ReleaseLockAsync(string resource, string lockValue)
+    {
+        var lockKey = CacheKeys.LockKey(resource);
+
+        try
+        {
+            // 使用 Lua 脚本确保原子性
+            var script = @"
+                if redis.call('get', KEYS[1]) == ARGV[1] then
+                  return redis.call('del', KEYS[1])
+                else
+                  return 0
+                end";
+
+            var result = (long?)await _redis.ScriptEvaluateAsync(
+                script,
+                new RedisKey[] { lockKey },
+                new RedisValue[] { lockValue });
+
+            return result == 1;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Lock release error for {Resource}", resource);
+            return false;
+        }
+    }
+
+    // 缓存预热
+    public async Task WarmupCacheAsync()
+    {
+        var warmupKeys = new[] { "config:game", "leaderboard:cultivation", "leaderboard:combat", "market:prices" };
+
+        foreach (var key in warmupKeys)
+        {
+            try
+            {
+                await WarmupKeyAsync(key);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Cache warmup error for key {Key}", key);
+            }
+        }
+    }
+
+    private async Task WarmupKeyAsync(string key)
+    {
+        switch (key)
+        {
+            case "config:game":
+                // 预热游戏配置
+                break;
+            case "leaderboard:cultivation":
+                // 预热修炼排行榜
+                break;
+            case "leaderboard:combat":
+                // 预热战斗排行榜
+                break;
+            case "market:prices":
+                // 预热市场价格
+                break;
+        }
+        await Task.CompletedTask;
+    }
+
+    private int GetDefaultTtl(string key)
+    {
+        // 根据键名确定默认TTL
+        if (key.StartsWith("player:")) return CacheConfig.Ttl.PlayerData;
+        if (key.StartsWith("online:")) return CacheConfig.Ttl.OnlineStatus;
+        if (key.StartsWith("cultivation:")) return CacheConfig.Ttl.CultivationSession;
+        if (key.StartsWith("combat:")) return CacheConfig.Ttl.CombatSession;
+        if (key.StartsWith("leaderboard:")) return CacheConfig.Ttl.Leaderboard;
+        if (key.StartsWith("market:")) return CacheConfig.Ttl.MarketData;
+        if (key.StartsWith("config:")) return CacheConfig.Ttl.GameConfig;
+        if (key.StartsWith("temp:")) return CacheConfig.Ttl.TempData;
+
+        return 300; // 默认5分钟
+    }
 }
 ```
 
@@ -1245,91 +1313,110 @@ export class CacheService {
 
 ### 最终一致性模型
 
-```typescript
-// consistency.service.ts
-@Injectable()
-export class ConsistencyService {
-  constructor(
-    private eventStore: EventStoreService,
-    private cacheService: CacheService,
-    @InjectRepository(Player)
-    private playerRepository: Repository<Player>
-  ) {}
-  
-  // 确保玩家数据一致性
-  async ensurePlayerConsistency(playerId: string): Promise<void> {
-    const lockValue = await this.cacheService.acquireLock(
-      `player-consistency-${playerId}`,
-      30
-    );
-    
-    if (!lockValue) {
-      throw new Error('无法获取一致性锁');
+```csharp
+// Services/ConsistencyService.cs
+public class ConsistencyService : IConsistencyService
+{
+    private readonly IEventStoreService _eventStore;
+    private readonly ICacheService _cacheService;
+    private readonly IPlayerRepository _playerRepository;
+    private readonly ILogger<ConsistencyService> _logger;
+
+    public ConsistencyService(
+        IEventStoreService eventStore,
+        ICacheService cacheService,
+        IPlayerRepository playerRepository,
+        ILogger<ConsistencyService> logger)
+    {
+        _eventStore = eventStore;
+        _cacheService = cacheService;
+        _playerRepository = playerRepository;
+        _logger = logger;
     }
-    
-    try {
-      // 从事件流重建玩家状态
-      const events = await this.eventStore.readStream(`player-${playerId}`);
-      const playerState = this.rebuildPlayerState(events);
-      
-      // 更新数据库
-      await this.playerRepository.update(playerId, playerState);
-      
-      // 清除缓存，强制重新加载
-      await this.cacheService.del(CacheKeys.player(playerId));
-      await this.cacheService.del(CacheKeys.playerStats(playerId));
-      
-    } finally {
-      await this.cacheService.releaseLock(
-        `player-consistency-${playerId}`,
-        lockValue
-      );
+
+    // 确保玩家数据一致性
+    public async Task EnsurePlayerConsistencyAsync(Guid playerId)
+    {
+        var lockValue = await _cacheService.AcquireLockAsync(
+            $"player-consistency-{playerId}", 30);
+
+        if (lockValue == null)
+        {
+            throw new InvalidOperationException("无法获取一致性锁");
+        }
+
+        try
+        {
+            // 从事件流重建玩家状态
+            var events = await _eventStore.ReadStreamAsync($"player-{playerId}");
+            var playerState = RebuildPlayerState(events);
+
+            // 更新数据库（通过 EF Core）
+            await _playerRepository.UpdateStateAsync(playerId, playerState);
+
+            // 清除缓存，强制重新加载
+            await _cacheService.DelAsync(CacheKeys.Player(playerId));
+            await _cacheService.DelAsync(CacheKeys.PlayerStats(playerId));
+        }
+        finally
+        {
+            await _cacheService.ReleaseLockAsync(
+                $"player-consistency-{playerId}", lockValue);
+        }
     }
-  }
-  
-  // 从事件重建玩家状态
-  private rebuildPlayerState(events: DomainEvent[]): Partial<Player> {
-    const state: Partial<Player> = {};
-    
-    for (const event of events) {
-      switch (event.eventType) {
-        case 'PlayerCreated':
-          Object.assign(state, event.data);
-          break;
-        case 'PlayerLevelUp':
-          state.level = event.data.newLevel;
-          state.realm = event.data.newRealm;
-          break;
-        case 'PlayerEnergyChanged':
-          state.energy = event.data.newEnergy;
-          break;
-        // 处理其他事件类型
-      }
+
+    // 从事件重建玩家状态
+    private PlayerStateUpdate RebuildPlayerState(List<DomainEvent> events)
+    {
+        var state = new PlayerStateUpdate();
+
+        foreach (var @event in events)
+        {
+            switch (@event.EventType)
+            {
+                case "PlayerCreated":
+                    // 应用玩家创建事件数据
+                    break;
+                case "PlayerLevelUp":
+                    // state.Level = @event.Data.NewLevel;
+                    // state.Realm = @event.Data.NewRealm;
+                    break;
+                case "PlayerEnergyChanged":
+                    // state.Energy = @event.Data.NewEnergy;
+                    break;
+                // 处理其他事件类型
+            }
+        }
+
+        return state;
     }
-    
-    return state;
-  }
-  
-  // 数据修复
-  async repairDataInconsistency(): Promise<void> {
-    // 检查并修复数据不一致问题
-    const inconsistentPlayers = await this.findInconsistentPlayers();
-    
-    for (const playerId of inconsistentPlayers) {
-      try {
-        await this.ensurePlayerConsistency(playerId);
-        console.log(`修复玩家 ${playerId} 的数据一致性`);
-      } catch (error) {
-        console.error(`修复玩家 ${playerId} 数据失败:`, error);
-      }
+
+    // 数据修复
+    public async Task RepairDataInconsistencyAsync()
+    {
+        // 检查并修复数据不一致问题
+        var inconsistentPlayers = await FindInconsistentPlayersAsync();
+
+        foreach (var playerId in inconsistentPlayers)
+        {
+            try
+            {
+                await EnsurePlayerConsistencyAsync(playerId);
+                _logger.LogInformation("修复玩家 {PlayerId} 的数据一致性", playerId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "修复玩家 {PlayerId} 数据失败", playerId);
+            }
+        }
     }
-  }
-  
-  private async findInconsistentPlayers(): Promise<string[]> {
-    // 实现数据一致性检查逻辑
-    // 比较事件流和数据库状态
-    return [];
-  }
+
+    private async Task<List<Guid>> FindInconsistentPlayersAsync()
+    {
+        // 实现数据一致性检查逻辑
+        // 比较事件流和数据库状态
+        return new List<Guid>();
+    }
 }
 ```
 
@@ -1474,7 +1561,7 @@ SELECT cron.schedule('archive-old-data', '0 3 * * 0', 'SELECT archive_old_record
 ### 3. 安全规范
 - 数据加密存储
 - 访问权限控制
-- SQL注入防护
+- SQL注入防护（EF Core参数化查询）
 - 审计日志记录
 
 ### 4. 性能要求

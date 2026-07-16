@@ -20,100 +20,218 @@
 
 ### 按钮 (Button)
 
-#### 组件变体
-```vue
-<template>
-  <button 
-    :class="buttonClasses" 
-    :disabled="disabled"
-    @click="handleClick"
-  >
-    <Icon v-if="icon" :name="icon" />
-    <span v-if="$slots.default"><slot /></span>
-    <LoadingSpinner v-if="loading" />
-  </button>
-</template>
+#### 组件实现
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using DG.Tweening;
 
-<script setup>
-const props = defineProps({
-  variant: {
-    type: String,
-    default: 'primary',
-    validator: (value) => ['primary', 'secondary', 'success', 'warning', 'error'].includes(value)
-  },
-  size: {
-    type: String,
-    default: 'medium',
-    validator: (value) => ['small', 'medium', 'large'].includes(value)
-  },
-  icon: String,
-  loading: Boolean,
-  disabled: Boolean,
-  fullWidth: Boolean
-});
+public enum ButtonVariant { Primary, Secondary, Success, Warning, Error }
+public enum ButtonSize { Small, Medium, Large }
 
-const emit = defineEmits(['click']);
+public class GameButton : MonoBehaviour
+{
+    [Header("变体设置")]
+    [SerializeField] private ButtonVariant variant = ButtonVariant.Primary;
+    [SerializeField] private ButtonSize size = ButtonSize.Medium;
 
-const buttonClasses = computed(() => [
-  'btn',
-  `btn--${props.variant}`,
-  `btn--${props.size}`,
-  {
-    'btn--loading': props.loading,
-    'btn--disabled': props.disabled,
-    'btn--full-width': props.fullWidth
-  }
-]);
+    [Header("图标设置")]
+    [SerializeField] private Image iconImage;
+    [SerializeField] private Sprite iconSprite;
 
-const handleClick = (event) => {
-  if (!props.disabled && !props.loading) {
-    emit('click', event);
-  }
-};
-</script>
+    [Header("状态")]
+    [SerializeField] private bool isLoading;
+    [SerializeField] private bool isDisabled;
+    [SerializeField] private bool isFullWidth;
+
+    [Header("事件")]
+    public UnityEvent onClick = new UnityEvent();
+
+    private Button button;
+    private Image backgroundImage;
+    private Text labelText;
+    private GameObject loadingSpinner;
+    private RectTransform rectTransform;
+
+    // 各变体颜色配置
+    private static readonly Color PrimaryColor = new Color(0.29f, 0.56f, 0.89f);
+    private static readonly Color SecondaryColor = Color.clear;
+    private static readonly Color SuccessColor = new Color(0.15f, 0.68f, 0.38f);
+    private static readonly Color WarningColor = new Color(0.95f, 0.61f, 0.07f);
+    private static readonly Color ErrorColor = new Color(0.90f, 0.30f, 0.24f);
+
+    // 各尺寸配置
+    private static readonly Vector2 PaddingSmall = new Vector2(8, 16);
+    private static readonly Vector2 PaddingMedium = new Vector2(12, 20);
+    private static readonly Vector2 PaddingLarge = new Vector2(16, 24);
+
+    private void Awake()
+    {
+        button = GetComponent<Button>();
+        backgroundImage = GetComponent<Image>();
+        labelText = GetComponentInChildren<Text>();
+        rectTransform = GetComponent<RectTransform>();
+    }
+
+    private void Start()
+    {
+        ApplyVariant();
+        ApplySize();
+        ApplyState();
+
+        button.onClick.AddListener(HandleClick);
+    }
+
+    private void ApplyVariant()
+    {
+        Color color;
+        switch (variant)
+        {
+            case ButtonVariant.Primary:
+                color = PrimaryColor;
+                break;
+            case ButtonVariant.Secondary:
+                color = SecondaryColor;
+                break;
+            case ButtonVariant.Success:
+                color = SuccessColor;
+                break;
+            case ButtonVariant.Warning:
+                color = WarningColor;
+                break;
+            case ButtonVariant.Error:
+                color = ErrorColor;
+                break;
+            default:
+                color = PrimaryColor;
+                break;
+        }
+        backgroundImage.color = color;
+    }
+
+    private void ApplySize()
+    {
+        Vector2 padding;
+        int fontSize;
+        float minHeight;
+
+        switch (size)
+        {
+            case ButtonSize.Small:
+                padding = PaddingSmall;
+                fontSize = 14;
+                minHeight = 36f;
+                break;
+            case ButtonSize.Large:
+                padding = PaddingLarge;
+                fontSize = 18;
+                minHeight = 52f;
+                break;
+            default:
+                padding = PaddingMedium;
+                fontSize = 16;
+                minHeight = 44f;
+                break;
+        }
+
+        if (labelText != null) labelText.fontSize = fontSize;
+        rectTransform.sizeDelta = new Vector2(rectTransform.sizeDelta.x, minHeight);
+
+        if (isFullWidth)
+        {
+            rectTransform.anchorMin = new Vector2(0, 0.5f);
+            rectTransform.anchorMax = new Vector2(1, 0.5f);
+            rectTransform.offsetMin = new Vector2(padding.y, -minHeight / 2);
+            rectTransform.offsetMax = new Vector2(-padding.y, minHeight / 2);
+        }
+    }
+
+    private void ApplyState()
+    {
+        // 图标显示
+        if (iconImage != null)
+        {
+            iconImage.sprite = iconSprite;
+            iconImage.gameObject.SetActive(iconSprite != null);
+        }
+
+        // 加载状态
+        if (loadingSpinner != null)
+        {
+            loadingSpinner.SetActive(isLoading);
+        }
+
+        // 禁用状态
+        button.interactable = !isDisabled && !isLoading;
+        if (isDisabled)
+        {
+            var colors = button.colors;
+            colors.disabledColor = new Color(1, 1, 1, 0.6f);
+            button.colors = colors;
+        }
+    }
+
+    private void HandleClick()
+    {
+        if (!isDisabled && !isLoading)
+        {
+            // 按压动画
+            rectTransform.DOScale(0.95f, 0.1f).SetEase(Ease.OutQuad)
+                .OnComplete(() => rectTransform.DOScale(1f, 0.1f).SetEase(Ease.OutQuad));
+
+            onClick?.Invoke();
+        }
+    }
+
+    // 设置变体
+    public void SetVariant(ButtonVariant newVariant)
+    {
+        variant = newVariant;
+        ApplyVariant();
+    }
+
+    // 设置加载状态
+    public void SetLoading(bool loading)
+    {
+        isLoading = loading;
+        ApplyState();
+    }
+
+    // 设置禁用状态
+    public void SetDisabled(bool disabled)
+    {
+        isDisabled = disabled;
+        ApplyState();
+    }
+}
 ```
 
-#### 样式定义
+#### USS样式定义
 ```css
 .btn {
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   padding: 12px 20px;
-  border: none;
   border-radius: 6px;
   font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
   min-height: 44px;
 }
 
-/* 变体样式 */
 .btn--primary {
-  background: var(--primary-color);
+  background-color: var(--primary-color);
   color: var(--text-inverse);
-}
-
-.btn--primary:hover {
-  background: var(--primary-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
 }
 
 .btn--secondary {
-  background: transparent;
+  background-color: transparent;
   color: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  border-color: var(--primary-color);
+  border-width: 1px;
 }
 
-.btn--secondary:hover {
-  background: var(--primary-color);
-  color: var(--text-inverse);
-}
-
-/* 尺寸样式 */
 .btn--small {
   padding: 8px 16px;
   font-size: 14px;
@@ -125,950 +243,1201 @@ const handleClick = (event) => {
   font-size: 18px;
   min-height: 52px;
 }
-
-/* 状态样式 */
-.btn--loading {
-  pointer-events: none;
-}
-
-.btn--disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.btn--full-width {
-  width: 100%;
-}
 ```
 
 ### 输入框 (Input)
 
 #### 组件实现
-```vue
-<template>
-  <div class="input-group">
-    <label v-if="label" :for="inputId" class="input-label">
-      {{ label }}
-      <span v-if="required" class="input-required">*</span>
-    </label>
-    
-    <div class="input-wrapper">
-      <Icon v-if="prefixIcon" :name="prefixIcon" class="input-prefix-icon" />
-      
-      <input
-        :id="inputId"
-        v-model="inputValue"
-        :type="type"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :readonly="readonly"
-        :class="inputClasses"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @input="handleInput"
-      />
-      
-      <Icon v-if="suffixIcon" :name="suffixIcon" class="input-suffix-icon" />
-      
-      <button 
-        v-if="clearable && inputValue"
-        type="button"
-        class="input-clear"
-        @click="clearInput"
-      >
-        <Icon name="close" />
-      </button>
-    </div>
-    
-    <div v-if="error || hint" class="input-message">
-      <span v-if="error" class="input-error">{{ error }}</span>
-      <span v-else-if="hint" class="input-hint">{{ hint }}</span>
-    </div>
-  </div>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
-<script setup>
-const props = defineProps({
-  modelValue: [String, Number],
-  label: String,
-  type: {
-    type: String,
-    default: 'text'
-  },
-  placeholder: String,
-  disabled: Boolean,
-  readonly: Boolean,
-  required: Boolean,
-  clearable: Boolean,
-  prefixIcon: String,
-  suffixIcon: String,
-  error: String,
-  hint: String,
-  size: {
-    type: String,
-    default: 'medium',
-    validator: (value) => ['small', 'medium', 'large'].includes(value)
-  }
-});
+public class CustomInputField : MonoBehaviour, ISelectHandler, IDeselectHandler
+{
+    [Header("基础设置")]
+    [SerializeField] private string label;
+    [SerializeField] private string placeholder = "请输入...";
+    [SerializeField] private bool isRequired;
+    [SerializeField] private bool isClearable;
+    [SerializeField] private bool isDisabled;
+    [SerializeField] private bool isReadonly;
 
-const emit = defineEmits(['update:modelValue', 'focus', 'blur', 'input']);
+    [Header("图标")]
+    [SerializeField] private Image prefixIcon;
+    [SerializeField] private Image suffixIcon;
 
-const inputId = `input-${Math.random().toString(36).substr(2, 9)}`;
-const isFocused = ref(false);
+    [Header("验证")]
+    [SerializeField] private string errorMessage;
+    [SerializeField] private string hintMessage;
 
-const inputValue = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-});
+    [Header("事件")]
+    public UnityEvent<string> onValueChanged = new UnityEvent<string>();
+    public UnityEvent onInputFocused = new UnityEvent();
+    public UnityEvent onInputBlurred = new UnityEvent();
 
-const inputClasses = computed(() => [
-  'input',
-  `input--${props.size}`,
-  {
-    'input--focused': isFocused.value,
-    'input--error': props.error,
-    'input--disabled': props.disabled,
-    'input--readonly': props.readonly,
-    'input--with-prefix': props.prefixIcon,
-    'input--with-suffix': props.suffixIcon || props.clearable
-  }
-]);
+    private InputField inputField;
+    private Text labelText;
+    private Text placeholderText;
+    private Image borderImage;
+    private Text errorText;
+    private Button clearButton;
+    private bool isFocused;
 
-const handleFocus = (event) => {
-  isFocused.value = true;
-  emit('focus', event);
-};
+    private void Awake()
+    {
+        inputField = GetComponentInChildren<InputField>();
+        labelText = transform.Find("Label")?.GetComponent<Text>();
+        placeholderText = transform.Find("Placeholder")?.GetComponent<Text>();
+        borderImage = GetComponent<Image>();
+        errorText = transform.Find("ErrorText")?.GetComponent<Text>();
+        clearButton = transform.Find("ClearButton")?.GetComponent<Button>();
+    }
 
-const handleBlur = (event) => {
-  isFocused.value = false;
-  emit('blur', event);
-};
+    private void Start()
+    {
+        // 设置标签
+        if (labelText != null)
+        {
+            labelText.text = label + (isRequired ? " *" : "");
+        }
 
-const handleInput = (event) => {
-  emit('input', event);
-};
+        // 设置占位文本
+        if (placeholderText != null)
+        {
+            placeholderText.text = placeholder;
+        }
 
-const clearInput = () => {
-  inputValue.value = '';
-};
-</script>
+        // 注册事件
+        inputField.onValueChanged.AddListener(HandleValueChanged);
+        if (clearButton != null)
+        {
+            clearButton.onClick.AddListener(ClearInput);
+        }
+
+        // 禁用状态
+        if (isDisabled)
+        {
+            inputField.interactable = false;
+        }
+
+        // 只读状态
+        if (isReadonly)
+        {
+            inputField.readOnly = true;
+        }
+
+        ApplyState();
+    }
+
+    private void HandleValueChanged(string value)
+    {
+        onValueChanged?.Invoke(value);
+
+        // 清除按钮显示/隐藏
+        if (clearButton != null)
+        {
+            clearButton.gameObject.SetActive(isClearable && !string.IsNullOrEmpty(value));
+        }
+
+        // 清除错误状态
+        if (!string.IsNullOrEmpty(errorMessage))
+        {
+            errorMessage = null;
+            ApplyState();
+        }
+    }
+
+    public void OnSelect(BaseEventData eventData)
+    {
+        isFocused = true;
+        // 焦点高亮边框
+        borderImage.color = ThemeManager.Instance.PrimaryColor;
+        onInputFocused?.Invoke();
+    }
+
+    public void OnDeselect(BaseEventData eventData)
+    {
+        isFocused = false;
+        // 恢复默认边框
+        borderImage.color = string.IsNullOrEmpty(errorMessage)
+            ? ThemeManager.Instance.BorderMedium
+            : ThemeManager.Instance.ErrorColor;
+        onInputBlurred?.Invoke();
+
+        // 失焦时验证
+        ValidateInput();
+    }
+
+    private void ValidateInput()
+    {
+        if (isRequired && string.IsNullOrEmpty(inputField.text))
+        {
+            SetError("此项为必填项");
+        }
+    }
+
+    public void SetError(string message)
+    {
+        errorMessage = message;
+        ApplyState();
+    }
+
+    public void ClearInput()
+    {
+        inputField.text = "";
+    }
+
+    private void ApplyState()
+    {
+        // 错误提示
+        if (errorText != null)
+        {
+            errorText.text = errorMessage ?? hintMessage ?? "";
+            errorText.color = string.IsNullOrEmpty(errorMessage)
+                ? ThemeManager.Instance.TextSecondary
+                : ThemeManager.Instance.ErrorColor;
+        }
+
+        // 边框颜色
+        if (!isFocused)
+        {
+            borderImage.color = string.IsNullOrEmpty(errorMessage)
+                ? (isDisabled ? ThemeManager.Instance.BorderLight : ThemeManager.Instance.BorderMedium)
+                : ThemeManager.Instance.ErrorColor;
+        }
+    }
+
+    public string Value
+    {
+        get => inputField.text;
+        set => inputField.text = value;
+    }
+}
 ```
 
 ### 图标 (Icon)
 
-#### SVG图标组件
-```vue
-<template>
-  <svg 
-    :class="iconClasses"
-    :width="size"
-    :height="size"
-    :viewBox="viewBox"
-    fill="currentColor"
-  >
-    <use :href="`#icon-${name}`" />
-  </svg>
-</template>
+#### Sprite图标组件
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
 
-<script setup>
-const props = defineProps({
-  name: {
-    type: String,
-    required: true
-  },
-  size: {
-    type: [String, Number],
-    default: 20
-  },
-  color: String,
-  spin: Boolean
-});
+public class SpriteIcon : MonoBehaviour
+{
+    [Header("图标设置")]
+    [SerializeField] private string iconName;
+    [SerializeField] private Sprite sprite;
+    [SerializeField] private int size = 20;
+    [SerializeField] private Color color = Color.white;
+    [SerializeField] private bool isSpinning;
 
-const iconClasses = computed(() => [
-  'icon',
-  {
-    'icon--spin': props.spin
-  }
-]);
+    private Image image;
+    private RectTransform rectTransform;
 
-const viewBox = '0 0 24 24';
-</script>
+    private void Awake()
+    {
+        image = GetComponent<Image>();
+        rectTransform = GetComponent<RectTransform>();
+    }
 
-<style scoped>
-.icon {
-  display: inline-block;
-  vertical-align: middle;
-  fill: currentColor;
+    private void Start()
+    {
+        ApplySettings();
+    }
+
+    private void ApplySettings()
+    {
+        // 设置Sprite
+        if (sprite == null && !string.IsNullOrEmpty(iconName))
+        {
+            sprite = SpriteAtlasManager.Instance?.GetSprite(iconName);
+        }
+
+        image.sprite = sprite;
+        image.color = color;
+
+        // 设置尺寸
+        rectTransform.sizeDelta = new Vector2(size, size);
+
+        // 旋转动画
+        if (isSpinning)
+        {
+            // 通过DOTween实现无限旋转
+            rectTransform.DORotate(new Vector3(0, 0, -360f), 1f, RotateMode.FastBeyond360)
+                .SetEase(DG.Tweening.Ease.Linear)
+                .SetLoops(-1, DG.Tweening.LoopType.Restart);
+        }
+    }
+
+    public void SetIcon(string name)
+    {
+        iconName = name;
+        sprite = SpriteAtlasManager.Instance?.GetSprite(name);
+        ApplySettings();
+    }
+
+    public void SetSize(int newSize)
+    {
+        size = newSize;
+        rectTransform.sizeDelta = new Vector2(size, size);
+    }
+
+    public void SetColor(Color newColor)
+    {
+        color = newColor;
+        image.color = color;
+    }
 }
-
-.icon--spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-</style>
 ```
 
 ## 布局组件
 
 ### 容器 (Container)
 
-```vue
-<template>
-  <div :class="containerClasses">
-    <slot />
-  </div>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
 
-<script setup>
-const props = defineProps({
-  fluid: Boolean,
-  size: {
-    type: String,
-    default: 'default',
-    validator: (value) => ['small', 'default', 'large', 'full'].includes(value)
-  }
-});
+public enum ContainerSize { Small, Default, Large, Full, Fluid }
 
-const containerClasses = computed(() => [
-  'container',
-  {
-    'container--fluid': props.fluid,
-    [`container--${props.size}`]: props.size !== 'default'
-  }
-]);
-</script>
+public class UIContainer : MonoBehaviour
+{
+    [SerializeField] private ContainerSize size = ContainerSize.Default;
+    [SerializeField] private bool isFluid;
 
-<style scoped>
-.container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 16px;
+    [Header("尺寸配置")]
+    private readonly float maxWidthSmall = 768f;
+    private readonly float maxWidthDefault = 1200f;
+    private readonly float maxWidthLarge = 1400f;
+
+    private RectTransform rectTransform;
+
+    private void Start()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        ApplyContainerSize();
+    }
+
+    private void ApplyContainerSize()
+    {
+        float maxWidth;
+
+        switch (size)
+        {
+            case ContainerSize.Small:
+                maxWidth = maxWidthSmall;
+                break;
+            case ContainerSize.Large:
+                maxWidth = maxWidthLarge;
+                break;
+            case ContainerSize.Full:
+            case ContainerSize.Fluid:
+                maxWidth = Screen.width;
+                break;
+            default:
+                maxWidth = maxWidthDefault;
+                break;
+        }
+
+        if (isFluid)
+        {
+            maxWidth = Screen.width;
+        }
+
+        // 设置容器宽度并居中
+        rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+        rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.sizeDelta = new Vector2(maxWidth, rectTransform.sizeDelta.y);
+    }
 }
-
-.container--small {
-  max-width: 768px;
-}
-
-.container--default {
-  max-width: 1200px;
-}
-
-.container--large {
-  max-width: 1400px;
-}
-
-.container--full {
-  max-width: none;
-}
-
-.container--fluid {
-  max-width: none;
-  padding: 0;
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding: 0 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 32px;
-  }
-}
-</style>
 ```
 
 ### 网格 (Grid)
 
-```vue
-<template>
-  <div :class="gridClasses" :style="gridStyles">
-    <slot />
-  </div>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
 
-<script setup>
-const props = defineProps({
-  cols: {
-    type: [Number, Object],
-    default: 1
-  },
-  gap: {
-    type: [String, Number],
-    default: '16px'
-  },
-  align: {
-    type: String,
-    default: 'stretch',
-    validator: (value) => ['start', 'center', 'end', 'stretch'].includes(value)
-  },
-  justify: {
-    type: String,
-    default: 'start',
-    validator: (value) => ['start', 'center', 'end', 'space-between', 'space-around', 'space-evenly'].includes(value)
-  }
-});
+public enum GridAlignment { Start, Center, End, Stretch }
+public enum GridJustify { Start, Center, End, SpaceBetween, SpaceAround, SpaceEvenly }
 
-const gridClasses = computed(() => [
-  'grid',
-  `grid--align-${props.align}`,
-  `grid--justify-${props.justify}`
-]);
+[RequireComponent(typeof(GridLayoutGroup))]
+public class UIGrid : MonoBehaviour
+{
+    [Header("列数配置")]
+    [SerializeField] private int columnsXS = 1;
+    [SerializeField] private int columnsSM = 1;
+    [SerializeField] private int columnsMD = 2;
+    [SerializeField] private int columnsLG = 3;
+    [SerializeField] private int columnsXL = 4;
 
-const gridStyles = computed(() => {
-  const styles = {
-    gap: typeof props.gap === 'number' ? `${props.gap}px` : props.gap
-  };
-  
-  if (typeof props.cols === 'number') {
-    styles.gridTemplateColumns = `repeat(${props.cols}, 1fr)`;
-  } else if (typeof props.cols === 'object') {
-    // 响应式列数
-    const breakpoints = {
-      xs: props.cols.xs || 1,
-      sm: props.cols.sm || props.cols.xs || 1,
-      md: props.cols.md || props.cols.sm || props.cols.xs || 1,
-      lg: props.cols.lg || props.cols.md || props.cols.sm || props.cols.xs || 1,
-      xl: props.cols.xl || props.cols.lg || props.cols.md || props.cols.sm || props.cols.xs || 1
-    };
-    
-    styles.gridTemplateColumns = `repeat(${breakpoints.xs}, 1fr)`;
-  }
-  
-  return styles;
-});
-</script>
+    [Header("间距")]
+    [SerializeField] private Vector2 spacing = new Vector2(16, 16);
 
-<style scoped>
-.grid {
-  display: grid;
+    [Header("对齐")]
+    [SerializeField] private GridAlignment childAlignment = GridAlignment.Stretch;
+
+    private GridLayoutGroup gridLayout;
+
+    private void Awake()
+    {
+        gridLayout = GetComponent<GridLayoutGroup>();
+    }
+
+    private void Start()
+    {
+        AdaptGrid();
+    }
+
+    private void AdaptGrid()
+    {
+        // 设置间距
+        gridLayout.spacing = spacing;
+
+        // 设置对齐
+        gridLayout.childAlignment = ConvertAlignment(childAlignment);
+
+        // 根据屏幕尺寸设置列数
+        var breakpoint = ScreenDetector.GetCurrentBreakpoint();
+        int columns;
+
+        switch (breakpoint)
+        {
+            case ScreenBreakpoint.XS:
+                columns = columnsXS;
+                break;
+            case ScreenBreakpoint.SM:
+                columns = columnsSM;
+                break;
+            case ScreenBreakpoint.MD:
+                columns = columnsMD;
+                break;
+            case ScreenBreakpoint.LG:
+                columns = columnsLG;
+                break;
+            default:
+                columns = columnsXL;
+                break;
+        }
+
+        gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        gridLayout.constraintCount = columns;
+    }
+
+    private TextAnchor ConvertAlignment(GridAlignment alignment)
+    {
+        switch (alignment)
+        {
+            case GridAlignment.Start: return TextAnchor.UpperLeft;
+            case GridAlignment.Center: return TextAnchor.UpperCenter;
+            case GridAlignment.End: return TextAnchor.UpperRight;
+            case GridAlignment.Stretch: return TextAnchor.UpperLeft;
+            default: return TextAnchor.UpperLeft;
+        }
+    }
+
+    private void OnRectTransformDimensionsChange()
+    {
+        AdaptGrid();
+    }
 }
-
-.grid--align-start {
-  align-items: start;
-}
-
-.grid--align-center {
-  align-items: center;
-}
-
-.grid--align-end {
-  align-items: end;
-}
-
-.grid--align-stretch {
-  align-items: stretch;
-}
-
-.grid--justify-start {
-  justify-content: start;
-}
-
-.grid--justify-center {
-  justify-content: center;
-}
-
-.grid--justify-end {
-  justify-content: end;
-}
-
-.grid--justify-space-between {
-  justify-content: space-between;
-}
-
-.grid--justify-space-around {
-  justify-content: space-around;
-}
-
-.grid--justify-space-evenly {
-  justify-content: space-evenly;
-}
-</style>
 ```
 
 ## 数据展示组件
 
 ### 卡片 (Card)
 
-```vue
-<template>
-  <div :class="cardClasses" @click="handleClick">
-    <div v-if="$slots.header" class="card-header">
-      <slot name="header" />
-    </div>
-    
-    <div v-if="$slots.media" class="card-media">
-      <slot name="media" />
-    </div>
-    
-    <div class="card-body">
-      <h3 v-if="title" class="card-title">{{ title }}</h3>
-      <p v-if="subtitle" class="card-subtitle">{{ subtitle }}</p>
-      <div class="card-content">
-        <slot />
-      </div>
-    </div>
-    
-    <div v-if="$slots.actions" class="card-actions">
-      <slot name="actions" />
-    </div>
-  </div>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using DG.Tweening;
 
-<script setup>
-const props = defineProps({
-  title: String,
-  subtitle: String,
-  hoverable: Boolean,
-  clickable: Boolean,
-  bordered: {
-    type: Boolean,
-    default: true
-  },
-  shadow: {
-    type: String,
-    default: 'medium',
-    validator: (value) => ['none', 'small', 'medium', 'large'].includes(value)
-  }
-});
+public class UICard : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+{
+    [Header("内容")]
+    [SerializeField] private string title;
+    [SerializeField] private string subtitle;
 
-const emit = defineEmits(['click']);
+    [Header("行为")]
+    [SerializeField] private bool isHoverable;
+    [SerializeField] private bool isClickable;
+    [SerializeField] private bool hasBorder = true;
 
-const cardClasses = computed(() => [
-  'card',
-  {
-    'card--hoverable': props.hoverable,
-    'card--clickable': props.clickable,
-    'card--bordered': props.bordered,
-    [`card--shadow-${props.shadow}`]: props.shadow !== 'none'
-  }
-]);
+    [Header("阴影")]
+    [SerializeField] private ShadowType shadowType = ShadowType.Medium;
 
-const handleClick = (event) => {
-  if (props.clickable) {
-    emit('click', event);
-  }
-};
-</script>
+    [Header("事件")]
+    public UnityEvent onClick = new UnityEvent();
+
+    [Header("UI引用")]
+    [SerializeField] private Text titleText;
+    [SerializeField] private Text subtitleText;
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Image borderImage;
+
+    private RectTransform rectTransform;
+    private Vector3 originalPosition;
+
+    public enum ShadowType { None, Small, Medium, Large }
+
+    private void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        originalPosition = rectTransform.position;
+    }
+
+    private void Start()
+    {
+        ApplyContent();
+        ApplyStyle();
+    }
+
+    private void ApplyContent()
+    {
+        if (titleText != null) titleText.text = title;
+        if (subtitleText != null) subtitleText.text = subtitle;
+    }
+
+    private void ApplyStyle()
+    {
+        // 边框
+        if (borderImage != null)
+        {
+            borderImage.enabled = hasBorder;
+        }
+
+        // 阴影效果 - 通过偏移的Shadow组件实现
+        var shadow = GetComponent<Shadow>();
+        if (shadow != null)
+        {
+            switch (shadowType)
+            {
+                case ShadowType.None:
+                    shadow.effectDistance = Vector2.zero;
+                    break;
+                case ShadowType.Small:
+                    shadow.effectDistance = new Vector2(1, -1);
+                    shadow.effectColor = new Color(0, 0, 0, 0.1f);
+                    break;
+                case ShadowType.Medium:
+                    shadow.effectDistance = new Vector2(2, -2);
+                    shadow.effectColor = new Color(0, 0, 0, 0.1f);
+                    break;
+                case ShadowType.Large:
+                    shadow.effectDistance = new Vector2(4, -4);
+                    shadow.effectColor = new Color(0, 0, 0, 0.15f);
+                    break;
+            }
+        }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!isHoverable) return;
+
+        // 悬停上浮效果
+        rectTransform.DOMoveY(originalPosition.y + 2f, 0.2f).SetEase(Ease.OutQuad);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!isHoverable) return;
+
+        // 恢复原位
+        rectTransform.DOMoveY(originalPosition.y, 0.2f).SetEase(Ease.OutQuad);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!isClickable) return;
+
+        // 点击效果
+        rectTransform.DOScale(0.98f, 0.1f).OnComplete(() =>
+        {
+            rectTransform.DOScale(1f, 0.1f);
+        });
+
+        onClick?.Invoke();
+    }
+
+    // 设置标题
+    public void SetTitle(string newTitle)
+    {
+        title = newTitle;
+        if (titleText != null) titleText.text = title;
+    }
+
+    // 设置子标题
+    public void SetSubtitle(string newSubtitle)
+    {
+        subtitle = newSubtitle;
+        if (subtitleText != null) subtitleText.text = subtitle;
+    }
+}
 ```
 
 ### 列表 (List)
 
-```vue
-<template>
-  <div class="list">
-    <div 
-      v-for="(item, index) in items" 
-      :key="getItemKey(item, index)"
-      :class="getItemClasses(item, index)"
-      @click="handleItemClick(item, index)"
-    >
-      <slot name="item" :item="item" :index="index">
-        <div class="list-item-content">
-          <div v-if="item.avatar" class="list-item-avatar">
-            <img :src="item.avatar" :alt="item.title" />
-          </div>
-          
-          <div class="list-item-body">
-            <div class="list-item-title">{{ item.title }}</div>
-            <div v-if="item.subtitle" class="list-item-subtitle">{{ item.subtitle }}</div>
-          </div>
-          
-          <div v-if="item.action" class="list-item-action">
-            <slot name="action" :item="item" :index="index">
-              {{ item.action }}
-            </slot>
-          </div>
-        </div>
-      </slot>
-    </div>
-  </div>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using System.Collections.Generic;
 
-<script setup>
-const props = defineProps({
-  items: {
-    type: Array,
-    default: () => []
-  },
-  itemKey: {
-    type: [String, Function],
-    default: 'id'
-  },
-  selectable: Boolean,
-  selectedItems: {
-    type: Array,
-    default: () => []
-  }
-});
+public class UIList : MonoBehaviour
+{
+    [Header("数据")]
+    [SerializeField] private List<ListItemData> items = new List<ListItemData>();
 
-const emit = defineEmits(['item-click', 'selection-change']);
+    [Header("选择")]
+    [SerializeField] private bool isSelectable;
+    [SerializeField] private List<int> selectedIndices = new List<int>();
 
-const getItemKey = (item, index) => {
-  if (typeof props.itemKey === 'function') {
-    return props.itemKey(item, index);
-  }
-  return item[props.itemKey] || index;
-};
+    [Header("UI引用")]
+    [SerializeField] private Transform contentParent;
+    [SerializeField] private GameObject itemPrefab;
+    [SerializeField] private ScrollRect scrollRect;
 
-const getItemClasses = (item, index) => [
-  'list-item',
-  {
-    'list-item--selected': props.selectable && props.selectedItems.includes(getItemKey(item, index)),
-    'list-item--clickable': true
-  }
-];
+    [Header("事件")]
+    public UnityEvent<int, ListItemData> onItemSelected = new UnityEvent<int, ListItemData>();
+    public UnityEvent<List<int>> onSelectionChanged = new UnityEvent<List<int>>();
 
-const handleItemClick = (item, index) => {
-  emit('item-click', { item, index });
-  
-  if (props.selectable) {
-    const key = getItemKey(item, index);
-    const newSelection = props.selectedItems.includes(key)
-      ? props.selectedItems.filter(k => k !== key)
-      : [...props.selectedItems, key];
-    
-    emit('selection-change', newSelection);
-  }
-};
-</script>
+    // 对象池
+    private Queue<GameObject> itemPool = new Queue<GameObject>();
+
+    private void Start()
+    {
+        RefreshList();
+    }
+
+    public void SetItems(List<ListItemData> newItems)
+    {
+        items = newItems;
+        RefreshList();
+    }
+
+    private void RefreshList()
+    {
+        // 回收所有现有项到对象池
+        foreach (Transform child in contentParent)
+        {
+            child.gameObject.SetActive(false);
+            itemPool.Enqueue(child.gameObject);
+        }
+
+        // 重新创建列表项
+        for (int i = 0; i < items.Count; i++)
+        {
+            GameObject itemObj = GetItemFromPool();
+            itemObj.transform.SetParent(contentParent, false);
+            itemObj.transform.SetSiblingIndex(i);
+            itemObj.SetActive(true);
+
+            var listItem = itemObj.GetComponent<UIListItem>();
+            if (listItem != null)
+            {
+                listItem.Setup(items[i], i, isSelectable, selectedIndices.Contains(i));
+                listItem.onClicked += HandleItemClick;
+            }
+        }
+    }
+
+    private GameObject GetItemFromPool()
+    {
+        if (itemPool.Count > 0)
+        {
+            return itemPool.Dequeue();
+        }
+        return Instantiate(itemPrefab);
+    }
+
+    private void HandleItemClick(int index)
+    {
+        if (!isSelectable)
+        {
+            onItemSelected?.Invoke(index, items[index]);
+            return;
+        }
+
+        // 多选切换
+        if (selectedIndices.Contains(index))
+        {
+            selectedIndices.Remove(index);
+        }
+        else
+        {
+            selectedIndices.Add(index);
+        }
+
+        onSelectionChanged?.Invoke(selectedIndices);
+        onItemSelected?.Invoke(index, items[index]);
+        RefreshList();
+    }
+}
+
+// 列表项数据
+[System.Serializable]
+public class ListItemData
+{
+    public string id;
+    public string title;
+    public string subtitle;
+    public string action;
+    public Sprite avatar;
+}
+
+// 列表项UI组件
+public class UIListItem : MonoBehaviour, IPointerClickHandler
+{
+    [SerializeField] private Text titleText;
+    [SerializeField] private Text subtitleText;
+    [SerializeField] private Image avatarImage;
+    [SerializeField] private Image selectionHighlight;
+
+    private ListItemData data;
+    private int index;
+    private bool isSelected;
+
+    public System.Action<int> onClicked;
+
+    public void Setup(ListItemData itemData, int itemIndex, bool selectable, bool selected)
+    {
+        data = itemData;
+        index = itemIndex;
+        isSelected = selected;
+
+        if (titleText != null) titleText.text = itemData.title;
+        if (subtitleText != null) subtitleText.text = itemData.subtitle;
+        if (avatarImage != null) avatarImage.sprite = itemData.avatar;
+        if (selectionHighlight != null) selectionHighlight.gameObject.SetActive(selected);
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        onClicked?.Invoke(index);
+    }
+}
 ```
 
 ## 反馈组件
 
 ### 消息提示 (Message)
 
-```vue
-<template>
-  <Teleport to="body">
-    <Transition name="message" appear>
-      <div v-if="visible" :class="messageClasses">
-        <Icon :name="iconName" class="message-icon" />
-        <span class="message-content">{{ content }}</span>
-        <button v-if="closable" class="message-close" @click="close">
-          <Icon name="close" />
-        </button>
-      </div>
-    </Transition>
-  </Teleport>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
 
-<script setup>
-const props = defineProps({
-  type: {
-    type: String,
-    default: 'info',
-    validator: (value) => ['success', 'warning', 'error', 'info'].includes(value)
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  duration: {
-    type: Number,
-    default: 3000
-  },
-  closable: {
-    type: Boolean,
-    default: true
-  }
-});
+public enum MessageType { Success, Warning, Error, Info }
 
-const emit = defineEmits(['close']);
+public class MessageToast : MonoBehaviour
+{
+    [Header("配置")]
+    [SerializeField] private MessageType type = MessageType.Info;
+    [SerializeField] private string content;
+    [SerializeField] private float duration = 3f;
+    [SerializeField] private bool closable = true;
 
-const visible = ref(true);
+    [Header("UI引用")]
+    [SerializeField] private Text contentText;
+    [SerializeField] private Image iconImage;
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Image borderImage;
+    [SerializeField] private Button closeButton;
+    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private RectTransform rectTransform;
 
-const messageClasses = computed(() => [
-  'message',
-  `message--${props.type}`
-]);
+    // 各类型颜色配置
+    private static readonly Color SuccessColor = new Color(0.15f, 0.68f, 0.38f);
+    private static readonly Color WarningColor = new Color(0.95f, 0.61f, 0.07f);
+    private static readonly Color ErrorColor = new Color(0.90f, 0.30f, 0.24f);
+    private static readonly Color InfoColor = new Color(0.20f, 0.60f, 0.86f);
 
-const iconName = computed(() => {
-  const iconMap = {
-    success: 'check-circle',
-    warning: 'warning',
-    error: 'x-circle',
-    info: 'info-circle'
-  };
-  return iconMap[props.type];
-});
+    private void Start()
+    {
+        ApplyType();
+        ApplyContent();
 
-const close = () => {
-  visible.value = false;
-  emit('close');
-};
+        if (closable && closeButton != null)
+        {
+            closeButton.onClick.AddListener(Close);
+        }
 
-// 自动关闭
-if (props.duration > 0) {
-  setTimeout(close, props.duration);
+        // 播放入场动画
+        PlayEnterAnimation();
+
+        // 自动关闭
+        if (duration > 0)
+        {
+            Invoke(nameof(Close), duration);
+        }
+    }
+
+    private void ApplyType()
+    {
+        Color color;
+        Sprite icon = null;
+
+        switch (type)
+        {
+            case MessageType.Success:
+                color = SuccessColor;
+                icon = SpriteAtlasManager.Instance?.GetSprite("check-circle");
+                break;
+            case MessageType.Warning:
+                color = WarningColor;
+                icon = SpriteAtlasManager.Instance?.GetSprite("warning");
+                break;
+            case MessageType.Error:
+                color = ErrorColor;
+                icon = SpriteAtlasManager.Instance?.GetSprite("x-circle");
+                break;
+            default:
+                color = InfoColor;
+                icon = SpriteAtlasManager.Instance?.GetSprite("info-circle");
+                break;
+        }
+
+        if (borderImage != null) borderImage.color = color;
+        if (contentText != null) contentText.color = color;
+        if (iconImage != null)
+        {
+            iconImage.sprite = icon;
+            iconImage.color = color;
+        }
+
+        if (closeButton != null)
+        {
+            closeButton.gameObject.SetActive(closable);
+        }
+    }
+
+    private void ApplyContent()
+    {
+        if (contentText != null) contentText.text = content;
+    }
+
+    private void PlayEnterAnimation()
+    {
+        // 淡入 + 上滑入场
+        canvasGroup.alpha = 0f;
+        Vector3 startPos = rectTransform.position;
+        startPos.y -= 20f;
+        rectTransform.position = startPos;
+
+        canvasGroup.DOFade(1f, 0.3f).SetEase(Ease.OutQuad);
+        rectTransform.DOMoveY(startPos.y + 20f, 0.3f).SetEase(Ease.OutQuad);
+    }
+
+    private void Close()
+    {
+        // 淡出 + 下滑出场
+        canvasGroup.DOFade(0f, 0.3f).SetEase(Ease.InQuad);
+        rectTransform.DOMoveY(rectTransform.position.y - 20f, 0.3f).SetEase(Ease.InQuad)
+            .OnComplete(() => Destroy(gameObject));
+    }
+
+    // 静态方法 - 快速显示消息
+    public static MessageToast Show(MessageType type, string content, float duration = 3f)
+    {
+        var toastPrefab = UIManager.Instance.MessageToastPrefab;
+        var toast = Instantiate(toastPrefab, UIManager.Instance.ToastContainer);
+        var message = toast.GetComponent<MessageToast>();
+        message.type = type;
+        message.content = content;
+        message.duration = duration;
+        return message;
+    }
 }
-</script>
-
-<style scoped>
-.message {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-medium);
-  border-radius: 6px;
-  box-shadow: var(--shadow-lg);
-  z-index: 2000;
-  max-width: 400px;
-}
-
-.message--success {
-  border-color: var(--success-color);
-  color: var(--success-color);
-}
-
-.message--warning {
-  border-color: var(--warning-color);
-  color: var(--warning-color);
-}
-
-.message--error {
-  border-color: var(--error-color);
-  color: var(--error-color);
-}
-
-.message--info {
-  border-color: var(--info-color);
-  color: var(--info-color);
-}
-
-.message-enter-active,
-.message-leave-active {
-  transition: all 0.3s ease;
-}
-
-.message-enter-from {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-20px);
-}
-
-.message-leave-to {
-  opacity: 0;
-  transform: translateX(-50%) translateY(-20px);
-}
-</style>
 ```
 
 ## 业务组件
 
 ### 角色卡片 (CharacterCard)
 
-```vue
-<template>
-  <Card class="character-card" hoverable>
-    <template #media>
-      <div class="character-avatar">
-        <img :src="character.avatar" :alt="character.name" />
-        <div class="character-level">{{ character.level }}</div>
-      </div>
-    </template>
-    
-    <template #default>
-      <div class="character-info">
-        <h3 class="character-name">{{ character.name }}</h3>
-        <p class="character-realm">{{ character.realm }}</p>
-        
-        <div class="character-stats">
-          <div class="stat-item">
-            <Icon name="sword" />
-            <span>{{ character.attack }}</span>
-          </div>
-          <div class="stat-item">
-            <Icon name="shield" />
-            <span>{{ character.defense }}</span>
-          </div>
-          <div class="stat-item">
-            <Icon name="zap" />
-            <span>{{ character.speed }}</span>
-          </div>
-        </div>
-        
-        <div class="character-progress">
-          <div class="progress-label">修炼进度</div>
-          <div class="progress-bar">
-            <div 
-              class="progress-fill" 
-              :style="{ width: `${character.progress}%` }"
-            ></div>
-          </div>
-          <div class="progress-text">{{ character.progress }}%</div>
-        </div>
-      </div>
-    </template>
-    
-    <template #actions>
-      <Button variant="primary" size="small" @click="$emit('select', character)">
-        选择角色
-      </Button>
-      <Button variant="secondary" size="small" @click="$emit('view', character)">
-        查看详情
-      </Button>
-    </template>
-  </Card>
-</template>
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Events;
+using DG.Tweening;
 
-<script setup>
-const props = defineProps({
-  character: {
-    type: Object,
-    required: true
-  }
-});
-
-const emit = defineEmits(['select', 'view']);
-</script>
-
-<style scoped>
-.character-card {
-  max-width: 300px;
+[System.Serializable]
+public class CharacterData
+{
+    public string id;
+    public string name;
+    public string realm;
+    public int level;
+    public int attack;
+    public int defense;
+    public int speed;
+    public int progress;
+    public Sprite avatar;
 }
 
-.character-avatar {
-  position: relative;
-  text-align: center;
-  padding: 20px;
-}
+public class CharacterCard : MonoBehaviour
+{
+    [Header("角色数据")]
+    [SerializeField] private CharacterData character;
 
-.character-avatar img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-}
+    [Header("UI引用 - 头像区域")]
+    [SerializeField] private Image avatarImage;
+    [SerializeField] private Text levelText;
 
-.character-level {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--primary-color);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: bold;
-}
+    [Header("UI引用 - 信息区域")]
+    [SerializeField] private Text nameText;
+    [SerializeField] private Text realmText;
 
-.character-name {
-  margin: 0 0 4px 0;
-  font-size: 18px;
-  font-weight: 600;
-}
+    [Header("UI引用 - 属性区域")]
+    [SerializeField] private Text attackText;
+    [SerializeField] private Text defenseText;
+    [SerializeField] private Text speedText;
 
-.character-realm {
-  margin: 0 0 16px 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
+    [Header("UI引用 - 进度区域")]
+    [SerializeField] private Image progressFill;
+    [SerializeField] private Text progressText;
 
-.character-stats {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 16px;
-}
+    [Header("UI引用 - 按钮")]
+    [SerializeField] private Button selectButton;
+    [SerializeField] private Button viewButton;
 
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-}
+    [Header("事件")]
+    public UnityEvent<CharacterData> onCharacterSelected = new UnityEvent<CharacterData>();
+    public UnityEvent<CharacterData> onCharacterViewed = new UnityEvent<CharacterData>();
 
-.character-progress {
-  margin-bottom: 16px;
-}
+    private RectTransform rectTransform;
+    private Vector3 originalPosition;
 
-.progress-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
+    private void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        originalPosition = rectTransform.position;
+    }
 
-.progress-bar {
-  height: 6px;
-  background: var(--bg-tertiary);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
+    private void Start()
+    {
+        SetupCard();
+        SetupButtons();
+    }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  transition: width 0.3s ease;
-}
+    private void SetupCard()
+    {
+        if (character == null) return;
 
-.progress-text {
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-align: right;
+        // 头像和等级
+        if (avatarImage != null) avatarImage.sprite = character.avatar;
+        if (levelText != null) levelText.text = $"Lv.{character.level}";
+
+        // 名称和境界
+        if (nameText != null) nameText.text = character.name;
+        if (realmText != null) realmText.text = character.realm;
+
+        // 属性
+        if (attackText != null) attackText.text = character.attack.ToString();
+        if (defenseText != null) defenseText.text = character.defense.ToString();
+        if (speedText != null) speedText.text = character.speed.ToString();
+
+        // 修炼进度
+        UpdateProgress(character.progress);
+    }
+
+    private void UpdateProgress(int progress)
+    {
+        if (progressFill != null)
+        {
+            // 动画更新进度条
+            progressFill.fillAmount = 0f;
+            progressFill.DOFillAmount(progress / 100f, 0.5f).SetEase(Ease.OutQuad);
+        }
+
+        if (progressText != null)
+        {
+            // 数值滚动动画
+            int currentValue = 0;
+            DOTween.To(() => currentValue, x =>
+            {
+                currentValue = x;
+                progressText.text = $"{x}%";
+            }, progress, 0.5f).SetEase(Ease.OutQuad);
+        }
+    }
+
+    private void SetupButtons()
+    {
+        if (selectButton != null)
+        {
+            selectButton.onClick.AddListener(() =>
+            {
+                onCharacterSelected?.Invoke(character);
+            });
+        }
+
+        if (viewButton != null)
+        {
+            viewButton.onClick.AddListener(() =>
+            {
+                onCharacterViewed?.Invoke(character);
+            });
+        }
+    }
+
+    // 设置角色数据
+    public void SetCharacter(CharacterData data)
+    {
+        character = data;
+        SetupCard();
+    }
 }
-</style>
 ```
 
 ## 组件使用指南
 
-### 导入和注册
+### 预制体加载和实例化
 
-```javascript
-// main.js
-import { createApp } from 'vue';
-import App from './App.vue';
+```csharp
+// 组件管理器 - 通过预制体加载和实例化UI组件
+using UnityEngine;
+using System.Collections.Generic;
 
-// 导入组件
-import Button from './components/Button.vue';
-import Input from './components/Input.vue';
-import Card from './components/Card.vue';
-// ... 其他组件
+public class UIManager : MonoBehaviour
+{
+    public static UIManager Instance { get; private set; }
 
-const app = createApp(App);
+    [Header("预制体引用")]
+    [SerializeField] private GameObject buttonPrefab;
+    [SerializeField] private GameObject inputPrefab;
+    [SerializeField] private GameObject cardPrefab;
+    [SerializeField] private GameObject characterCardPrefab;
 
-// 全局注册组件
-app.component('Button', Button);
-app.component('Input', Input);
-app.component('Card', Card);
-// ... 其他组件
+    [Header("UI容器")]
+    [SerializeField] private Transform uiRoot;
+    [SerializeField] private Transform toastContainer;
+    [SerializeField] private Transform messageToastPrefab;
 
-app.mount('#app');
+    private Dictionary<string, GameObject> loadedPrefabs = new Dictionary<string, GameObject>();
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+    }
+
+    // 创建按钮
+    public GameButton CreateButton(Transform parent, ButtonVariant variant, string label)
+    {
+        var buttonObj = Instantiate(buttonPrefab, parent);
+        var button = buttonObj.GetComponent<GameButton>();
+        button.SetVariant(variant);
+
+        var labelText = buttonObj.GetComponentInChildren<Text>();
+        if (labelText != null) labelText.text = label;
+
+        return button;
+    }
+
+    // 创建输入框
+    public CustomInputField CreateInput(Transform parent, string label, string placeholder)
+    {
+        var inputObj = Instantiate(inputPrefab, parent);
+        var input = inputObj.GetComponent<CustomInputField>();
+        // 配置输入框...
+        return input;
+    }
+
+    // 创建卡片
+    public UICard CreateCard(Transform parent, string title, string subtitle)
+    {
+        var cardObj = Instantiate(cardPrefab, parent);
+        var card = cardObj.GetComponent<UICard>();
+        card.SetTitle(title);
+        card.SetSubtitle(subtitle);
+        return card;
+    }
+
+    // 创建角色卡片
+    public CharacterCard CreateCharacterCard(Transform parent, CharacterData data)
+    {
+        var cardObj = Instantiate(characterCardPrefab, parent);
+        var card = cardObj.GetComponent<CharacterCard>();
+        card.SetCharacter(data);
+        return card;
+    }
+
+    public Transform ToastContainer => toastContainer;
+    public GameObject MessageToastPrefab => messageToastPrefab?.gameObject;
+    public Transform UIRoot => uiRoot;
+}
 ```
 
 ### 使用示例
 
-```vue
-<template>
-  <Container>
-    <Grid :cols="{ xs: 1, md: 2, lg: 3 }" gap="20px">
-      <Card 
-        v-for="character in characters" 
-        :key="character.id"
-        hoverable
-        clickable
-        @click="selectCharacter(character)"
-      >
-        <template #header>
-          <h3>{{ character.name }}</h3>
-        </template>
-        
-        <p>等级: {{ character.level }}</p>
-        <p>境界: {{ character.realm }}</p>
-        
-        <template #actions>
-          <Button variant="primary" @click="viewDetails(character)">
-            查看详情
-          </Button>
-        </template>
-      </Card>
-    </Grid>
-    
-    <div class="form-section">
-      <Input 
-        v-model="searchQuery"
-        label="搜索角色"
-        placeholder="输入角色名称"
-        prefix-icon="search"
-        clearable
-      />
-      
-      <Button 
-        variant="primary"
-        :loading="isLoading"
-        @click="searchCharacters"
-      >
-        搜索
-      </Button>
-    </div>
-  </Container>
-</template>
+```csharp
+// 角色选择界面示例
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
 
-<script setup>
-const characters = ref([]);
-const searchQuery = ref('');
-const isLoading = ref(false);
+public class CharacterSelectView : MonoBehaviour
+{
+    [SerializeField] private Transform gridContent;
+    [SerializeField] private CustomInputField searchInput;
+    [SerializeField] private GameButton searchButton;
 
-const selectCharacter = (character) => {
-  console.log('选择角色:', character);
-};
+    private List<CharacterData> allCharacters = new List<CharacterData>();
+    private List<CharacterData> filteredCharacters = new List<CharacterData>();
+    private bool isLoading = false;
 
-const viewDetails = (character) => {
-  console.log('查看详情:', character);
-};
+    private void Start()
+    {
+        // 设置搜索输入框
+        searchInput.onValueChanged.AddListener(OnSearchChanged);
 
-const searchCharacters = async () => {
-  isLoading.value = true;
-  try {
-    // 搜索逻辑
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  } finally {
-    isLoading.value = false;
-  }
-};
-</script>
+        // 设置搜索按钮
+        searchButton.onClick.AddListener(SearchCharacters);
+
+        // 加载角色列表
+        LoadCharacters();
+    }
+
+    private void LoadCharacters()
+    {
+        // 从服务器加载角色数据
+        allCharacters = CharacterManager.Instance.GetAllCharacters();
+        filteredCharacters = allCharacters;
+        RefreshGrid();
+    }
+
+    private void RefreshGrid()
+    {
+        // 清除现有卡片
+        foreach (Transform child in gridContent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // 创建角色卡片
+        foreach (var character in filteredCharacters)
+        {
+            var card = UIManager.Instance.CreateCharacterCard(gridContent, character);
+            card.onCharacterSelected.AddListener(SelectCharacter);
+            card.onCharacterViewed.AddListener(ViewDetails);
+        }
+    }
+
+    private void OnSearchChanged(string query)
+    {
+        // 实时筛选
+        if (string.IsNullOrEmpty(query))
+        {
+            filteredCharacters = allCharacters;
+        }
+        else
+        {
+            filteredCharacters = allCharacters.FindAll(c =>
+                c.name.Contains(query) || c.realm.Contains(query));
+        }
+        RefreshGrid();
+    }
+
+    private void SearchCharacters()
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+        searchButton.SetLoading(true);
+
+        // 执行搜索
+        OnSearchChanged(searchInput.Value);
+
+        isLoading = false;
+        searchButton.SetLoading(false);
+    }
+
+    private void SelectCharacter(CharacterData character)
+    {
+        Debug.Log($"选择角色: {character.name}");
+        CharacterManager.Instance.SelectCharacter(character);
+    }
+
+    private void ViewDetails(CharacterData character)
+    {
+        Debug.Log($"查看详情: {character.name}");
+        UIManager.Instance.OpenPanel(PanelType.CharacterDetail, character);
+    }
+}
 ```
 
 ### 主题定制
 
+```csharp
+// ScriptableObject主题配置
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "CustomTheme", menuName = "Immortality/Custom Theme")]
+public class CustomThemeConfig : ScriptableObject
+{
+    [Header("自定义颜色")]
+    public Color primaryColor = new Color(0.29f, 0.56f, 0.89f);
+    public Color secondaryColor = new Color(0.56f, 0.27f, 0.68f);
+
+    [Header("自定义字体")]
+    public Font customFont;
+
+    [Header("自定义间距")]
+    public float spacingMD = 16f;
+
+    [Header("自定义按钮样式")]
+    public Color customButtonColor1 = new Color(1f, 0.42f, 0.42f);
+    public Color customButtonColor2 = new Color(0.31f, 0.80f, 0.77f);
+}
+```
+
 ```css
-/* 自定义主题变量 */
+/* 自定义主题USS变量 */
 :root {
   /* 重写默认颜色 */
   --primary-color: #your-primary-color;
   --secondary-color: #your-secondary-color;
-  
+
   /* 重写字体 */
   --font-family-zh: 'Your-Font', sans-serif;
-  
+
   /* 重写间距 */
   --spacing-md: 20px;
 }
 
 /* 自定义组件样式 */
 .btn--custom {
-  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-  color: white;
-  border: none;
-}
-
-.btn--custom:hover {
-  background: linear-gradient(45deg, #ff5252, #26a69a);
+  background-image: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  color: #ffffff;
+  border-width: 0px;
 }
 ```
 
 ## 开发规范
 
 ### 组件命名
-- **PascalCase**: 组件文件和组件名使用大驼峰
-- **kebab-case**: HTML中使用短横线连接
-- **语义化**: 名称要能清楚表达组件功能
+- **PascalCase**: C#类名使用大驼峰命名（如 `CharacterCard`）
+- **清晰语义**: 名称要能清楚表达组件功能
+- **统一前缀**: UI组件统一使用 `UI` 前缀（如 `UICard`, `UIList`）
 
-### Props设计
-- **类型检查**: 所有props都要定义类型
+### 字段设计
+- **SerializeField**: 所有需要配置的字段使用 `[SerializeField] private`
 - **默认值**: 提供合理的默认值
-- **验证器**: 对枚举类型使用验证器
-- **文档注释**: 为复杂props添加注释
+- **枚举约束**: 对枚举类型使用枚举定义
+- **注释文档**: 为复杂字段添加注释说明
 
 ### 事件设计
-- **语义化命名**: 事件名要清楚表达触发时机
+- **语义化命名**: 事件名要清楚表达触发时机（如 `onCharacterSelected`）
 - **参数传递**: 传递必要的上下文信息
-- **防止冒泡**: 必要时阻止事件冒泡
+- **UnityEvent**: 使用UnityEvent支持编辑器中配置
 
 ### 样式规范
-- **BEM命名**: 使用BEM方法论命名CSS类
-- **CSS变量**: 使用CSS变量实现主题化
-- **响应式**: 考虑不同屏幕尺寸的适配
-- **性能优化**: 避免深层嵌套和复杂选择器
+- **USS类名**: 使用BEM方法论命名USS类（如 `btn--primary`, `card--hoverable`）
+- **ScriptableObject主题**: 使用ScriptableObject实现主题化管理
+- **响应式适配**: 考虑不同屏幕尺寸的适配（Canvas Scaler）
+- **性能优化**: 避免深层嵌套的UGUI层级和频繁的布局重建

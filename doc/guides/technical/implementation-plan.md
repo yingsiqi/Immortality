@@ -65,107 +65,212 @@ CREATE INDEX idx_snapshots_player ON player_snapshots(player_id);
 #### 2. 事件处理服务
 
 **核心代码实现**:
-```javascript
+```csharp
 // 事件服务类
-class EventService {
-    constructor(database, redis) {
-        this.db = database;
-        this.cache = redis;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Npgsql;
+using StackExchange.Redis;
+
+public class EventService
+{
+    private readonly NpgsqlConnection _db;
+    private readonly IConnectionMultiplexer _cache;
+
+    public EventService(NpgsqlConnection database, IConnectionMultiplexer redis)
+    {
+        _db = database;
+        _cache = redis;
     }
 
     // 记录事件
-    async recordEvent(playerId, eventType, eventData) {
-        const event = {
-            id: uuidv4(),
-            player_id: playerId,
-            event_type: eventType,
-            event_data: eventData,
-            schema_version: '1.0',
-            event_hash: this.generateHash(eventData),
-            created_at: new Date()
+    public async Task<GameEvent> RecordEventAsync(Guid playerId, string eventType, JsonDocument eventData)
+    {
+        var eventRecord = new GameEvent
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = playerId,
+            EventType = eventType,
+            EventData = eventData,
+            SchemaVersion = "1.0",
+            EventHash = GenerateHash(eventData),
+            CreatedAt = DateTime.UtcNow
         };
 
         // 存储到数据库
-        await this.db.query(
-            'INSERT INTO game_events (id, player_id, event_type, event_data, schema_version, event_hash) VALUES ($1, $2, $3, $4, $5, $6)',
-            [event.id, event.player_id, event.event_type, event.event_data, event.schema_version, event.event_hash]
-        );
+        await using var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO game_events (id, player_id, event_type, event_data, schema_version, event_hash, created_at) 
+            VALUES (@id, @playerId, @eventType, @eventData, @schemaVersion, @eventHash, @createdAt)";
+        cmd.Parameters.AddWithValue("@id", eventRecord.Id);
+        cmd.Parameters.AddWithValue("@playerId", eventRecord.PlayerId);
+        cmd.Parameters.AddWithValue("@eventType", eventRecord.EventType);
+        cmd.Parameters.AddWithValue("@eventData", eventRecord.EventData.RootElement.GetRawText());
+        cmd.Parameters.AddWithValue("@schemaVersion", eventRecord.SchemaVersion);
+        cmd.Parameters.AddWithValue("@eventHash", eventRecord.EventHash);
+        cmd.Parameters.AddWithValue("@createdAt", eventRecord.CreatedAt);
+        await cmd.ExecuteNonQueryAsync();
 
         // 更新缓存
-        await this.updatePlayerCache(playerId, event);
+        await UpdatePlayerCacheAsync(playerId, eventRecord);
         
-        return event;
+        return eventRecord;
     }
 
     // 重建玩家状态
-    async rebuildPlayerState(playerId, toTimestamp = null) {
-        const query = toTimestamp 
-            ? 'SELECT * FROM game_events WHERE player_id = $1 AND created_at <= $2 ORDER BY sequence_number'
-            : 'SELECT * FROM game_events WHERE player_id = $1 ORDER BY sequence_number';
-        
-        const events = await this.db.query(query, toTimestamp ? [playerId, toTimestamp] : [playerId]);
-        
-        let playerState = this.getInitialState();
-        
-        for (const event of events.rows) {
-            playerState = this.applyEvent(playerState, event);
+    public async Task<PlayerState> RebuildPlayerStateAsync(Guid playerId, DateTime? toTimestamp = null)
+    {
+        await using var cmd = _db.CreateCommand();
+        if (toTimestamp.HasValue)
+        {
+            cmd.CommandText = @"
+                SELECT * FROM game_events 
+                WHERE player_id = @playerId AND created_at <= @toTimestamp 
+                ORDER BY sequence_number";
+            cmd.Parameters.AddWithValue("@playerId", playerId);
+            cmd.Parameters.AddWithValue("@toTimestamp", toTimestamp.Value);
+        }
+        else
+        {
+            cmd.CommandText = @"
+                SELECT * FROM game_events 
+                WHERE player_id = @playerId 
+                ORDER BY sequence_number";
+            cmd.Parameters.AddWithValue("@playerId", playerId);
+        }
+
+        var events = new List<GameEvent>();
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            events.Add(MapToGameEvent(reader));
+        }
+
+        var playerState = GetInitialState();
+        foreach (var evt in events)
+        {
+            playerState = ApplyEvent(playerState, evt);
         }
         
         return playerState;
     }
 
     // 应用事件到状态
-    applyEvent(state, event) {
-        switch (event.event_type) {
-            case 'PLAYER_CREATED':
-                return { ...state, ...event.event_data };
-            case 'CULTIVATION_PROGRESS':
-                return {
-                    ...state,
-                    experience: state.experience + event.event_data.experience,
-                    level: event.event_data.level || state.level
-                };
-            case 'ITEM_ACQUIRED':
-                return {
-                    ...state,
-                    inventory: [...state.inventory, event.event_data.item]
-                };
-            default:
-                return state;
-        }
+    private PlayerState ApplyEvent(PlayerState state, GameEvent evt)
+    {
+        return evt.EventType switch
+        {
+            "PLAYER_CREATED" => state with
+            {
+                // 合并事件数据到状态
+                PlayerId = evt.PlayerId,
+            },
+            "CULTIVATION_PROGRESS" => state with
+            {
+                Experience = state.Experience + evt.EventData.RootElement.GetProperty("experience").GetInt32(),
+                Level = evt.EventData.RootElement.TryGetProperty("level", out var level) 
+                    ? level.GetInt32() 
+                    : state.Level
+            },
+            "ITEM_ACQUIRED" => state with
+            {
+                Inventory = state.Inventory.Append(evt.EventData.RootElement.GetProperty("item").GetString()).ToList()
+            },
+            _ => state
+        };
+    }
+
+    private string GenerateHash(JsonDocument data)
+    {
+        var json = data.RootElement.GetRawText();
+        var hashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(json));
+        return Convert.ToHexString(hashBytes).ToLowerInvariant();
+    }
+
+    private PlayerState GetInitialState() => new()
+    {
+        PlayerId = Guid.Empty,
+        Level = 1,
+        Experience = 0,
+        Realm = "凡人",
+        Inventory = new List<string>()
+    };
+
+    private async Task UpdatePlayerCacheAsync(Guid playerId, GameEvent evt)
+    {
+        var db = _cache.GetDatabase();
+        var cacheKey = $"player:{playerId}:events";
+        await db.ListRightPushAsync(cacheKey, JsonSerializer.Serialize(evt));
+    }
+
+    private GameEvent MapToGameEvent(NpgsqlDataReader reader)
+    {
+        return new GameEvent
+        {
+            Id = reader.GetGuid(reader.GetOrdinal("id")),
+            PlayerId = reader.GetGuid(reader.GetOrdinal("player_id")),
+            EventType = reader.GetString(reader.GetOrdinal("event_type")),
+            EventData = JsonDocument.Parse(reader.GetString(reader.GetOrdinal("event_data"))),
+            SchemaVersion = reader.GetString(reader.GetOrdinal("schema_version")),
+            EventHash = reader.GetString(reader.GetOrdinal("event_hash")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("created_at"))
+        };
     }
 }
 ```
 
 #### 3. API接口开发
 
-**RESTful API设计**:
-```javascript
-// 玩家状态API
-app.get('/api/players/:id/state', async (req, res) => {
-    try {
-        const playerId = req.params.id;
-        const timestamp = req.query.timestamp;
-        
-        const state = await eventService.rebuildPlayerState(playerId, timestamp);
-        res.json({ success: true, data: state });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
+**ASP.NET Core 控制器设计**:
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
-// 事件记录API
-app.post('/api/players/:id/events', async (req, res) => {
-    try {
-        const playerId = req.params.id;
-        const { eventType, eventData } = req.body;
-        
-        const event = await eventService.recordEvent(playerId, eventType, eventData);
-        res.json({ success: true, data: event });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+[ApiController]
+[Route("api/players/{playerId:guid}")]
+public class PlayerEventController : ControllerBase
+{
+    private readonly EventService _eventService;
+
+    public PlayerEventController(EventService eventService)
+    {
+        _eventService = eventService;
     }
-});
+
+    // 玩家状态API
+    [HttpGet("state")]
+    public async Task<IActionResult> GetPlayerState(Guid playerId, [FromQuery] DateTime? timestamp)
+    {
+        try
+        {
+            var state = await _eventService.RebuildPlayerStateAsync(playerId, timestamp);
+            return Ok(new { success = true, data = state });
+        }
+        catch (Exception error)
+        {
+            return StatusCode(500, new { success = false, error = error.Message });
+        }
+    }
+
+    // 事件记录API
+    [HttpPost("events")]
+    public async Task<IActionResult> RecordEvent(Guid playerId, [FromBody] RecordEventRequest request)
+    {
+        try
+        {
+            var eventData = JsonDocument.Parse(request.EventData.GetRawText());
+            var evt = await _eventService.RecordEventAsync(playerId, request.EventType, eventData);
+            return Ok(new { success = true, data = evt });
+        }
+        catch (Exception error)
+        {
+            return StatusCode(500, new { success = false, error = error.Message });
+        }
+    }
+}
+
+public record RecordEventRequest(string EventType, JsonDocument EventData);
 ```
 
 ### 交付物
@@ -191,64 +296,148 @@ app.post('/api/players/:id/events', async (req, res) => {
 #### 1. 存储层架构
 
 **存储策略配置**:
-```javascript
-const storageConfig = {
-    hotTier: {
-        retention: '30d',
-        storage: 'redis',
-        compression: false,
-        indexing: 'full'
-    },
-    warmTier: {
-        retention: '5y',
-        storage: 'postgresql',
-        compression: 'gzip',
-        indexing: 'selective'
-    },
-    coldTier: {
-        retention: 'permanent',
-        storage: 'file_system',
-        compression: 'lz4',
-        indexing: 'minimal'
-    }
-};
+```csharp
+// 存储策略配置
+public class StorageConfig
+{
+    public StorageTier HotTier { get; set; } = new()
+    {
+        Retention = TimeSpan.FromDays(30),
+        Storage = "redis",
+        Compression = false,
+        Indexing = "full"
+    };
+
+    public StorageTier WarmTier { get; set; } = new()
+    {
+        Retention = TimeSpan.FromDays(365 * 5),
+        Storage = "postgresql",
+        Compression = "gzip",
+        Indexing = "selective"
+    };
+
+    public StorageTier ColdTier { get; set; } = new()
+    {
+        Retention = TimeSpan.MaxValue, // permanent
+        Storage = "file_system",
+        Compression = "lz4",
+        Indexing = "minimal"
+    };
+}
+
+public class StorageTier
+{
+    public TimeSpan Retention { get; set; }
+    public string Storage { get; set; } = string.Empty;
+    public bool Compression { get; set; }
+    public string Indexing { get; set; } = string.Empty;
+}
 ```
 
 #### 2. 数据迁移服务
 
-```javascript
-class DataMigrationService {
-    constructor(config) {
-        this.config = config;
-        this.scheduler = new CronJob('0 2 * * *', this.runMigration.bind(this));
+```csharp
+using Cronos;
+using StackExchange.Redis;
+
+public class DataMigrationService
+{
+    private readonly StorageConfig _config;
+    private readonly IConnectionMultiplexer _redis;
+    private readonly NpgsqlConnection _db;
+    private Timer? _scheduler;
+
+    public DataMigrationService(StorageConfig config, IConnectionMultiplexer redis, NpgsqlConnection db)
+    {
+        _config = config;
+        _redis = redis;
+        _db = db;
     }
 
-    async runMigration() {
+    public void Start()
+    {
+        // 每天凌晨2点执行迁移
+        var cron = CronExpression.Parse("0 2 * * *");
+        var next = cron.GetNextOccurrence(DateTimeOffset.UtcNow, TimeZoneInfo.Utc);
+        if (next.HasValue)
+        {
+            var delay = next.Value - DateTimeOffset.UtcNow;
+            _scheduler = new Timer(async _ => await RunMigrationAsync(), null, delay, TimeSpan.FromDays(1));
+        }
+    }
+
+    public async Task RunMigrationAsync()
+    {
         // 热数据到温数据迁移
-        await this.migrateHotToWarm();
+        await MigrateHotToWarmAsync();
         
         // 温数据到冷数据迁移
-        await this.migrateWarmToCold();
+        await MigrateWarmToColdAsync();
         
         // 清理过期数据
-        await this.cleanupExpiredData();
+        await CleanupExpiredDataAsync();
     }
 
-    async migrateHotToWarm() {
-        const cutoffDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    public async Task MigrateHotToWarmAsync()
+    {
+        var cutoffDate = DateTime.UtcNow - _config.HotTier.Retention;
+        var db = _redis.GetDatabase();
         
-        const hotData = await this.redis.scan({
-            match: 'player:*',
-            type: 'hash'
-        });
+        var server = _redis.GetServer(_redis.GetEndPoints()[0]);
+        var keys = server.KeysAsync(pattern: "player:*");
         
-        for (const key of hotData) {
-            const data = await this.redis.hgetall(key);
-            if (new Date(data.lastAccess) < cutoffDate) {
-                await this.moveToWarmStorage(key, data);
-                await this.redis.del(key);
+        await foreach (var key in keys)
+        {
+            var hashEntries = await db.HashGetAllAsync(key);
+            var data = hashEntries.ToStringDictionary();
+            
+            if (data.TryGetValue("lastAccess", out var lastAccessStr) 
+                && DateTime.TryParse(lastAccessStr, out var lastAccess) 
+                && lastAccess < cutoffDate)
+            {
+                await MoveToWarmStorageAsync(key, data);
+                await db.KeyDeleteAsync(key);
             }
         }
+    }
+
+    private async Task MoveToWarmStorageAsync(RedisKey key, Dictionary<string, string> data)
+    {
+        await using var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            INSERT INTO archived_player_data (key, data, archived_at) 
+            VALUES (@key, @data, @archivedAt)";
+        cmd.Parameters.AddWithValue("@key", key.ToString());
+        cmd.Parameters.AddWithValue("@data", JsonSerializer.Serialize(data));
+        cmd.Parameters.AddWithValue("@archivedAt", DateTime.UtcNow);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    private async Task MigrateWarmToColdAsync()
+    {
+        // 温数据到冷数据迁移逻辑
+        var cutoffDate = DateTime.UtcNow - _config.WarmTier.Retention;
+        await using var cmd = _db.CreateCommand();
+        cmd.CommandText = @"
+            SELECT * FROM archived_player_data WHERE archived_at <= @cutoffDate";
+        cmd.Parameters.AddWithValue("@cutoffDate", cutoffDate);
+        
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            // 写入文件系统冷存储
+            var archivePath = Path.Combine("/data/archive/events", $"{reader.GetGuid(0)}.json.gz");
+            await File.WriteAllTextAsync(archivePath, reader.GetString(1));
+        }
+    }
+
+    private async Task CleanupExpiredDataAsync()
+    {
+        // 清理过期数据
+        await using var cmd = _db.CreateCommand();
+        cmd.CommandText = "DELETE FROM archived_player_data WHERE archived_at <= @cutoffDate";
+        cmd.Parameters.AddWithValue("@cutoffDate", DateTime.UtcNow - _config.WarmTier.Retention);
+        await cmd.ExecuteNonQueryAsync();
     }
 }
 ```
@@ -256,34 +445,49 @@ class DataMigrationService {
 #### 3. 缓存优化
 
 **多级缓存策略**:
-```javascript
-class CacheManager {
-    constructor(redis, memoryCache) {
-        this.redis = redis;
-        this.memory = memoryCache;
+```csharp
+using Microsoft.Extensions.Caching.Memory;
+using StackExchange.Redis;
+
+public class CacheManager
+{
+    private readonly IConnectionMultiplexer _redis;
+    private readonly IMemoryCache _memory;
+
+    public CacheManager(IConnectionMultiplexer redis, IMemoryCache memory)
+    {
+        _redis = redis;
+        _memory = memory;
     }
 
-    async get(key) {
+    public async Task<string?> GetAsync(string key)
+    {
         // L1: 内存缓存
-        let value = this.memory.get(key);
-        if (value) return value;
+        if (_memory.TryGetValue(key, out string? value))
+            return value;
         
         // L2: Redis缓存
-        value = await this.redis.get(key);
-        if (value) {
-            this.memory.set(key, value, { ttl: 300 }); // 5分钟
-            return value;
+        var redisValue = await _redis.GetDatabase().StringGetAsync(key);
+        if (redisValue.HasValue)
+        {
+            _memory.Set(key, redisValue.ToString(), TimeSpan.FromMinutes(5)); // 5分钟
+            return redisValue.ToString();
         }
         
         return null;
     }
 
-    async set(key, value, options = {}) {
+    public async Task SetAsync(string key, string value, CacheOptions? options = null)
+    {
+        options ??= new CacheOptions();
+        
         // 同时更新两级缓存
-        this.memory.set(key, value, { ttl: options.memoryTtl || 300 });
-        await this.redis.setex(key, options.redisTtl || 3600, value);
+        _memory.Set(key, value, TimeSpan.FromSeconds(options.MemoryTtl ?? 300));
+        await _redis.GetDatabase().StringSetAsync(key, value, TimeSpan.FromSeconds(options.RedisTtl ?? 3600));
     }
 }
+
+public record CacheOptions(int? MemoryTtl = null, int? RedisTtl = null);
 ```
 
 ### 交付物
@@ -309,38 +513,49 @@ class CacheManager {
 #### 1. 规则引擎开发
 
 **规则执行引擎**:
-```javascript
-class RuleEngine {
-    constructor() {
-        this.rules = new Map();
-        this.conditions = new Map();
-        this.effects = new Map();
-    }
+```csharp
+using System.Collections.Concurrent;
+
+public class RuleEngine
+{
+    private readonly ConcurrentDictionary<string, GameRule> _rules = new();
+    private readonly ConcurrentDictionary<string, Func<GameContext, bool>> _triggers = new();
 
     // 注册规则
-    registerRule(ruleConfig) {
-        const rule = {
-            id: ruleConfig.id,
-            name: ruleConfig.name,
-            trigger: this.compileTrigger(ruleConfig.trigger),
-            conditions: ruleConfig.conditions.map(c => this.compileCondition(c)),
-            effects: ruleConfig.effects.map(e => this.compileEffect(e))
+    public void RegisterRule(RuleConfig ruleConfig)
+    {
+        var rule = new GameRule
+        {
+            Id = ruleConfig.Id,
+            Name = ruleConfig.Name,
+            Trigger = CompileTrigger(ruleConfig.Trigger),
+            Conditions = ruleConfig.Conditions.Select(CompileCondition).ToList(),
+            Effects = ruleConfig.Effects.Select(CompileEffect).ToList()
         };
         
-        this.rules.set(rule.id, rule);
+        _rules[rule.Id] = rule;
     }
 
     // 执行规则检查
-    async executeRules(context) {
-        const results = [];
+    public async Task<List<RuleExecutionResult>> ExecuteRulesAsync(GameContext context)
+    {
+        var results = new List<RuleExecutionResult>();
         
-        for (const rule of this.rules.values()) {
-            if (await this.checkTrigger(rule.trigger, context)) {
-                const conditionsMet = await this.checkConditions(rule.conditions, context);
+        foreach (var rule in _rules.Values)
+        {
+            if (rule.Trigger(context))
+            {
+                var conditionsMet = rule.Conditions.All(c => c(context));
                 
-                if (conditionsMet) {
-                    const effects = await this.applyEffects(rule.effects, context);
-                    results.push({ ruleId: rule.id, effects });
+                if (conditionsMet)
+                {
+                    var effects = new List<Effect>();
+                    foreach (var effect in rule.Effects)
+                    {
+                        var effectResult = await effect(context);
+                        effects.Add(effectResult);
+                    }
+                    results.Add(new RuleExecutionResult(rule.Id, effects));
                 }
             }
         }
@@ -349,15 +564,26 @@ class RuleEngine {
     }
 
     // 编译触发器
-    compileTrigger(triggerConfig) {
-        switch (triggerConfig.type) {
-            case 'experience_threshold':
-                return (context) => context.experience >= triggerConfig.value;
-            case 'kill_count':
-                return (context) => context.killCount >= triggerConfig.value;
-            default:
-                throw new Error(`Unknown trigger type: ${triggerConfig.type}`);
-        }
+    private Func<GameContext, bool> CompileTrigger(TriggerConfig triggerConfig)
+    {
+        return triggerConfig.Type switch
+        {
+            "experience_threshold" => context => context.Experience >= triggerConfig.Value,
+            "kill_count" => context => context.KillCount >= triggerConfig.Value,
+            _ => throw new ArgumentException($"Unknown trigger type: {triggerConfig.Type}")
+        };
+    }
+
+    private Func<GameContext, bool> CompileCondition(ConditionConfig config)
+    {
+        // 编译条件
+        return context => true; // 简化实现
+    }
+
+    private Func<GameContext, Task<Effect>> CompileEffect(EffectConfig config)
+    {
+        // 编译效果
+        return context => Task.FromResult(new Effect(config.Type, config.Value));
     }
 }
 ```
@@ -365,60 +591,103 @@ class RuleEngine {
 #### 2. 监控系统集成
 
 **性能监控**:
-```javascript
-const prometheus = require('prom-client');
+```csharp
+using Prometheus;
+using Microsoft.AspNetCore.Mvc;
 
 // 定义指标
-const httpRequestDuration = new prometheus.Histogram({
-    name: 'http_request_duration_seconds',
-    help: 'Duration of HTTP requests in seconds',
-    labelNames: ['method', 'route', 'status']
-});
+public static class MetricsRegistry
+{
+    public static readonly Histogram HttpRequestDuration = Metrics.CreateHistogram(
+        "http_request_duration_seconds",
+        "Duration of HTTP requests in seconds",
+        new HistogramConfiguration
+        {
+            LabelNames = new[] { "method", "route", "status" }
+        });
 
-const eventProcessingRate = new prometheus.Counter({
-    name: 'events_processed_total',
-    help: 'Total number of events processed',
-    labelNames: ['event_type']
-});
+    public static readonly Counter EventProcessingRate = Metrics.CreateCounter(
+        "events_processed_total",
+        "Total number of events processed",
+        new CounterConfiguration
+        {
+            LabelNames = new[] { "event_type" }
+        });
+}
 
-// 中间件
-app.use((req, res, next) => {
-    const start = Date.now();
-    
-    res.on('finish', () => {
-        const duration = (Date.now() - start) / 1000;
-        httpRequestDuration
-            .labels(req.method, req.route?.path || req.path, res.statusCode)
-            .observe(duration);
-    });
-    
-    next();
-});
+// ASP.NET Core 中间件
+public class PrometheusMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public PrometheusMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var start = DateTime.UtcNow;
+        
+        context.Response.OnCompleted(() =>
+        {
+            var duration = (DateTime.UtcNow - start).TotalSeconds;
+            var route = context.Request.Path.Value ?? context.Request.Path.ToString();
+            MetricsRegistry.HttpRequestDuration
+                .WithLabels(context.Request.Method, route, context.Response.StatusCode.ToString())
+                .Observe(duration);
+            
+            return Task.CompletedTask;
+        });
+        
+        await _next(context);
+    }
+}
+
+// 注册中间件
+// app.UseMiddleware<PrometheusMiddleware>();
 ```
 
 **业务监控**:
-```javascript
-class BusinessMetrics {
-    constructor() {
-        this.playerOnline = new prometheus.Gauge({
-            name: 'players_online',
-            help: 'Number of players currently online'
+```csharp
+using Prometheus;
+
+public class BusinessMetrics
+{
+    private readonly Gauge _playersOnline = Metrics.CreateGauge(
+        "players_online",
+        "Number of players currently online");
+
+    private readonly Counter _cultivationEvents = Metrics.CreateCounter(
+        "cultivation_events_total",
+        "Total cultivation events",
+        new CounterConfiguration
+        {
+            LabelNames = new[] { "level_range" }
         });
-        
-        this.cultivationEvents = new prometheus.Counter({
-            name: 'cultivation_events_total',
-            help: 'Total cultivation events',
-            labelNames: ['level_range']
-        });
+
+    public void UpdatePlayerCount(int count)
+    {
+        _playersOnline.Set(count);
     }
 
-    updatePlayerCount(count) {
-        this.playerOnline.set(count);
+    public void RecordCultivationEvent(int level)
+    {
+        var range = GetLevelRange(level);
+        _cultivationEvents.WithLabels(range).Inc();
     }
 
-    recordCultivationEvent(level) {
-        const range = this.getLevelRange(level);
-        this.cultivationEvents.labels(range).inc();
+    private string GetLevelRange(int level)
+    {
+        return level switch
+        {
+            <= 10 => "0-10",
+            <= 30 => "11-30",
+            <= 50 => "31-50",
+            <= 70 => "51-70",
+            <= 90 => "71-90",
+            _ => "91+"
+        };
     }
 }
 ```
@@ -571,17 +840,18 @@ services:
   app:
     build: .
     ports:
-      - "3000:3000"
+      - "5000:5000"
     environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://dev_user:dev_pass@postgres:5432/immortality_dev
-      REDIS_URL: redis://redis:6379
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Database=immortality_dev;Username=dev_user;Password=dev_pass
+      ConnectionStrings__Redis: redis:6379
     depends_on:
       - postgres
       - redis
     volumes:
       - .:/app
-      - /app/node_modules
+      - /app/bin
+      - /app/obj
 
 volumes:
   postgres_data:
@@ -609,9 +879,9 @@ services:
     deploy:
       replicas: 3
     environment:
-      NODE_ENV: production
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${DATABASE_URL}
+      ConnectionStrings__Redis: ${REDIS_URL}
     depends_on:
       - postgres
       - redis
@@ -669,12 +939,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-dotnet@v3
         with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm test
-      - run: npm run lint
+          dotnet-version: '8.0'
+      - run: dotnet restore
+      - run: dotnet test --no-restore
+      - run: dotnet format --verify-no-changes
 
   build:
     needs: test

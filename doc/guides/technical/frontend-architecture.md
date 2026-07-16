@@ -1,43 +1,45 @@
-# 前端架构设计
+# 客户端架构设计
 
 ## 概述
 
-Immortality修仙游戏前端采用现代React生态系统，基于TypeScript构建类型安全的组件化架构，使用Tailwind CSS实现响应式设计，通过模块化和分层设计确保代码的可维护性和扩展性。
+Immortality修仙游戏客户端采用Tuanjie引擎（团结引擎）生态系统，基于C#构建类型安全的组件化架构，使用Unity UI styling (USS / UGUI)实现响应式设计，通过模块化和分层设计确保代码的可维护性和扩展性。
 
 ## 🏗️ **架构总览**
 
 ### 技术栈
 
-```typescript
-const FrontendStack = {
-  // 核心框架
-  framework: 'React 18',
-  language: 'TypeScript 5.0+',
-  bundler: 'Vite 4.0+',
-  
-  // 样式方案
-  styling: 'Tailwind CSS 3.0+',
-  components: 'Headless UI + Ant Design',
-  
-  // 状态管理
-  state: 'Zustand + React Query',
-  
-  // 路由
-  routing: 'React Router 6',
-  
-  // 图形渲染
-  graphics: 'SVG.js + react-konva + Framer Motion',
-  
-  // 实时通信
-  websocket: 'Socket.IO Client',
-  
-  // 开发工具
-  testing: 'Jest + Testing Library',
-  linting: 'ESLint + Prettier',
-  
-  // 构建优化
-  optimization: 'Code Splitting + Tree Shaking'
-};
+```csharp
+// 客户端技术栈配置
+public static class ClientStack
+{
+    // 核心框架
+    public const string Framework = "Tuanjie Engine (UGUI / UI Toolkit)";
+    public const string Language = "C# / .NET";
+    public const string Editor = "Tuanjie Engine Editor";
+
+    // 样式方案
+    public const string Styling = "Unity UI styling (USS / UGUI)";
+    public const string Components = "Unity UI Toolkit + UGUI components";
+
+    // 状态管理
+    public const string State = "ScriptableObject / Singleton Manager pattern";
+
+    // 场景路由
+    public const string Routing = "Unity Scene Management / Addressable Scenes";
+
+    // 图形渲染
+    public const string Graphics = "Unity UI / SpriteRenderer / Vector Graphics + Particle System + DOTween";
+
+    // 实时通信
+    public const string Network = "Unity Transport / Mirror Networking / Netcode for GameObjects";
+
+    // 开发工具
+    public const string Testing = "Unity Test Framework / NUnit";
+    public const string Linting = "C# Analyzers / .editorconfig";
+
+    // 构建优化
+    public const string Optimization = "Addressable Assets / Asset Bundles";
+}
 ```
 
 ### 架构分层
@@ -45,26 +47,26 @@ const FrontendStack = {
 ```mermaid
 flowchart TB
     subgraph "表现层 (Presentation Layer)"
-        A[页面组件 Pages]
-        B[布局组件 Layouts]
+        A[场景 Scenes]
+        B[UI预制体 Prefabs]
         C[UI组件 Components]
     end
     
     subgraph "业务层 (Business Layer)"
-        D[业务组件 Features]
-        E[自定义Hooks]
+        D[功能模块 Features]
+        E[管理器 Managers]
         F[业务逻辑 Services]
     end
     
     subgraph "数据层 (Data Layer)"
-        G[状态管理 Store]
+        G[ScriptableObject 状态]
         H[API客户端]
         I[缓存管理]
     end
     
     subgraph "基础设施层 (Infrastructure Layer)"
         J[工具函数 Utils]
-        K[类型定义 Types]
+        K[数据模型 Models]
         L[常量配置 Constants]
     end
     
@@ -83,1021 +85,1380 @@ flowchart TB
 ## 📁 **项目结构**
 
 ```
-src/
-├── components/           # 通用UI组件
-│   ├── ui/              # 基础UI组件
-│   │   ├── Button/
-│   │   ├── Input/
-│   │   ├── Modal/
-│   │   └── index.ts
-│   ├── graphics/        # 图形组件
-│   │   ├── SVGComponents/
-│   │   ├── CanvasComponents/
-│   │   ├── AnimationComponents/
-│   │   └── index.ts
-│   └── layout/          # 布局组件
-│       ├── Header/
-│       ├── Sidebar/
-│       ├── Footer/
-│       └── index.ts
-├── features/            # 业务功能模块
-│   ├── auth/           # 认证模块
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   ├── types/
-│   │   └── index.ts
-│   ├── cultivation/    # 修炼系统
-│   ├── combat/         # 战斗系统
-│   ├── character/      # 角色系统
-│   ├── inventory/      # 背包系统
-│   └── world/          # 世界地图
-├── hooks/              # 通用自定义Hooks
-│   ├── useAuth.ts
-│   ├── useWebSocket.ts
-│   ├── useLocalStorage.ts
-│   └── index.ts
-├── services/           # API服务
-│   ├── api/
-│   │   ├── auth.ts
-│   │   ├── game.ts
-│   │   └── index.ts
-│   ├── websocket/
-│   └── storage/
-├── store/              # 状态管理
-│   ├── slices/
-│   │   ├── authSlice.ts
-│   │   ├── gameSlice.ts
-│   │   └── uiSlice.ts
-│   ├── index.ts
-│   └── types.ts
-├── pages/              # 页面组件
-│   ├── Home/
-│   ├── Game/
-│   ├── Profile/
-│   └── index.ts
-├── utils/              # 工具函数
-│   ├── helpers.ts
-│   ├── constants.ts
-│   ├── validators.ts
-│   └── formatters.ts
-├── types/              # 类型定义
-│   ├── api.ts
-│   ├── game.ts
-│   ├── user.ts
-│   └── index.ts
-├── styles/             # 样式文件
-│   ├── globals.css
-│   ├── components.css
-│   └── animations.css
-├── App.tsx
-├── main.tsx
-└── vite-env.d.ts
+Assets/
+├── Scripts/                   # C# 脚本
+│   ├── Core/                 # 核心框架
+│   │   ├── Managers/         # 单例管理器
+│   │   │   ├── GameManager.cs
+│   │   │   ├── AuthManager.cs
+│   │   │   ├── UIManager.cs
+│   │   │   └── NetworkManager.cs
+│   │   ├── Systems/          # 系统模块
+│   │   └── Utilities/        # 工具类
+│   ├── Features/             # 业务功能模块
+│   │   ├── Auth/             # 认证模块
+│   │   │   ├── AuthController.cs
+│   │   │   ├── AuthService.cs
+│   │   │   └── AuthModels.cs
+│   │   ├── Cultivation/      # 修炼系统
+│   │   │   ├── CultivationController.cs
+│   │   │   ├── CultivationManager.cs
+│   │   │   └── CultivationModels.cs
+│   │   ├── Combat/           # 战斗系统
+│   │   ├── Character/        # 角色系统
+│   │   ├── Inventory/        # 背包系统
+│   │   └── World/            # 世界地图
+│   ├── Network/              # 网络通信
+│   │   ├── Api/              # HTTP API客户端
+│   │   │   ├── ApiClient.cs
+│   │   │   ├── AuthApi.cs
+│   │   │   └── GameApi.cs
+│   │   └── Transport/        # 实时通信
+│   ├── Data/                 # 数据层
+│   │   ├── ScriptableObjects/# 数据资产
+│   │   ├── Models/           # 数据模型
+│   │   └── Constants/        # 常量配置
+│   └── UI/                   # UI脚本
+│       ├── Components/       # UI组件脚本
+│       └── Views/            # 视图脚本
+├── Prefabs/                  # 预制体
+│   ├── UI/                   # UI预制体
+│   ├── Effects/              # 特效预制体
+│   └── Characters/           # 角色预制体
+├── Art/                      # 美术资源
+│   ├── Sprites/              # 精灵图
+│   ├── Icons/                # 图标
+│   ├── Animations/           # 动画资源
+│   └── Lottie/               # Lottie动画
+├── UI/                       # UI资源
+│   ├── UXML/                 # UI Toolkit 布局
+│   ├── USS/                  # UI Toolkit 样式
+│   └── UGUI/                 # UGUI 预制体
+├── Scenes/                   # 场景文件
+│   ├── Home.unity
+│   ├── Cultivation.unity
+│   ├── Combat.unity
+│   └── World.unity
+└── AddressableAssetsData/    # Addressable 资源配置
 ```
 
 ## 🧩 **组件设计原则**
 
 ### 1. 组件分类
 
-#### **基础UI组件 (ui/)**
-```typescript
+#### **基础UI组件 (UI/Components/)**
+```csharp
 // 按钮组件示例
-interface ButtonProps {
-  variant: 'primary' | 'secondary' | 'danger' | 'ghost';
-  size: 'sm' | 'md' | 'lg';
-  children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-  icon?: React.ReactNode;
-  className?: string;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class GameButton : MonoBehaviour
+{
+    public enum ButtonVariant { Primary, Secondary, Danger, Ghost }
+    public enum ButtonSize { Small, Medium, Large }
+
+    [SerializeField] private ButtonVariant _variant = ButtonVariant.Primary;
+    [SerializeField] private ButtonSize _size = ButtonSize.Medium;
+    [SerializeField] private Button _button;
+    [SerializeField] private TMP_Text _label;
+    [SerializeField] private GameObject _loadingIcon;
+    [SerializeField] private GameObject _icon;
+
+    private bool _isLoading;
+
+    public ButtonVariant Variant
+    {
+        get => _variant;
+        set { _variant = value; ApplyStyle(); }
+    }
+
+    public ButtonSize Size
+    {
+        get => _size;
+        set { _size = value; ApplyStyle(); }
+    }
+
+    public bool Loading
+    {
+        get => _isLoading;
+        set
+        {
+            _isLoading = value;
+            _loadingIcon.SetActive(value);
+            _button.interactable = !value;
+            ApplyStyle();
+        }
+    }
+
+    private void Start()
+    {
+        ApplyStyle();
+    }
+
+    private void ApplyStyle()
+    {
+        var colors = _button.colors;
+
+        colors.normalColor = _variant switch
+        {
+            ButtonVariant.Primary => new Color(0.24f, 0.47f, 0.85f),  // blue-600
+            ButtonVariant.Secondary => new Color(0.44f, 0.44f, 0.44f), // gray-600
+            ButtonVariant.Danger => new Color(0.91f, 0.26f, 0.26f),   // red-600
+            ButtonVariant.Ghost => new Color(1f, 1f, 1f, 0f),
+            _ => Color.white
+        };
+
+        _button.colors = colors;
+
+        _label.fontSize = _size switch
+        {
+            ButtonSize.Small => 14,
+            ButtonSize.Medium => 16,
+            ButtonSize.Large => 20,
+            _ => 16
+        };
+
+        if (_isLoading)
+        {
+            _button.interactable = false;
+        }
+    }
+
+    public void SetText(string text) => _label.text = text;
+
+    public void AddListener(UnityEngine.Events.UnityAction action)
+    {
+        _button.onClick.AddListener(action);
+    }
+
+    public void RemoveListener(UnityEngine.Events.UnityAction action)
+    {
+        _button.onClick.RemoveListener(action);
+    }
 }
-
-const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
-  children,
-  onClick,
-  disabled = false,
-  loading = false,
-  icon,
-  className = ''
-}) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
-  
-  const variantClasses = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500'
-  };
-  
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm rounded-md',
-    md: 'px-4 py-2 text-base rounded-lg',
-    lg: 'px-6 py-3 text-lg rounded-xl'
-  };
-  
-  const disabledClasses = disabled || loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer';
-  
-  return (
-    <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${disabledClasses} ${className}`}
-      onClick={onClick}
-      disabled={disabled || loading}
-    >
-      {loading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-      )}
-      {icon && !loading && <span className="mr-2">{icon}</span>}
-      {children}
-    </button>
-  );
-};
-
-export default Button;
 ```
 
-#### **图形组件 (graphics/)**
-```typescript
+#### **图形组件 (UI/Components/)**
+```csharp
 // 修炼进度组件
-interface CultivationProgressProps {
-  level: number;
-  experience: number;
-  maxExperience: number;
-  realm: string;
-  isActive: boolean;
-  className?: string;
+using UnityEngine;
+using UnityEngine.UI;
+using DG.Tweening;
+using TMPro;
+
+public class CultivationProgressDisplay : MonoBehaviour
+{
+    [SerializeField] private int _level;
+    [SerializeField] private int _experience;
+    [SerializeField] private int _maxExperience;
+    [SerializeField] private string _realm;
+    [SerializeField] private bool _isActive;
+
+    [Header("UI引用")]
+    [SerializeField] private Image _progressRing;
+    [SerializeField] private TMP_Text _realmText;
+    [SerializeField] private TMP_Text _levelText;
+    [SerializeField] private TMP_Text _experienceText;
+    [SerializeField] private GameObject _activeIndicator;
+
+    private float _lastProgress = -1f;
+    private string _lastRealm = "";
+
+    public void UpdateDisplay(int level, int experience, int maxExperience,
+                               string realm, bool isActive)
+    {
+        _level = level;
+        _experience = experience;
+        _maxExperience = maxExperience;
+        _realm = realm;
+        _isActive = isActive;
+
+        RefreshUI();
+    }
+
+    private void RefreshUI()
+    {
+        var progress = (float)_experience / _maxExperience;
+
+        // 仅在进度变化时更新进度环动画
+        if (Mathf.Abs(progress - _lastProgress) > 0.001f)
+        {
+            _progressRing.DOFillAmount(progress, 0.5f).SetEase(Ease.OutCubic);
+            _lastProgress = progress;
+        }
+
+        _realmText.text = _realm;
+        _levelText.text = $"{_level}级";
+        _experienceText.text = $"{_experience}/{_maxExperience}";
+
+        if (_lastRealm != _realm)
+        {
+            _lastRealm = _realm;
+            // 境界变化时的动画效果
+            _realmText.transform.DOScale(1.2f, 0.3f).SetLoops(2, LoopType.Yoyo);
+        }
+
+        _activeIndicator.SetActive(_isActive);
+        if (_isActive)
+        {
+            // 修炼状态指示 - 脉冲动画
+            _activeIndicator.transform
+                .DOScale(1.05f, 1f)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetEase(Ease.InOutSine);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        _progressRing.DOKill();
+        _activeIndicator.transform.DOKill();
+    }
 }
-
-const CultivationProgress: React.FC<CultivationProgressProps> = ({
-  level,
-  experience,
-  maxExperience,
-  realm,
-  isActive,
-  className = ''
-}) => {
-  const progress = (experience / maxExperience) * 100;
-  const circumference = 2 * Math.PI * 45; // 半径45的圆周长
-  const strokeDasharray = `${(progress / 100) * circumference} ${circumference}`;
-  
-  return (
-    <div className={`relative w-32 h-32 ${className}`}>
-      {/* SVG进度环 */}
-      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-        {/* 背景圆环 */}
-        <circle
-          cx="50"
-          cy="50"
-          r="45"
-          fill="none"
-          stroke="#e5e7eb"
-          strokeWidth="4"
-        />
-        
-        {/* 进度圆环 */}
-        <circle
-          cx="50"
-          cy="50"
-          r="45"
-          fill="none"
-          stroke="#3b82f6"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeDasharray={strokeDasharray}
-          className="transition-all duration-500 ease-out"
-        />
-      </svg>
-      
-      {/* 中心内容 */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-lg font-bold text-gray-800">{realm}</span>
-        <span className="text-sm text-gray-600">{level}级</span>
-        <span className="text-xs text-gray-500">{experience}/{maxExperience}</span>
-      </div>
-      
-      {/* 修炼状态指示 */}
-      {isActive && (
-        <div className="absolute inset-0 rounded-full bg-blue-400 opacity-20 animate-pulse" />
-      )}
-    </div>
-  );
-};
-
-export default CultivationProgress;
 ```
 
-#### **业务组件 (features/)**
-```typescript
+#### **业务组件 (Features/)**
+```csharp
 // 修炼系统主组件
-interface CultivationSystemProps {
-  playerId: string;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using System.Threading.Tasks;
+using System;
+
+public class CultivationSystemController : MonoBehaviour
+{
+    [SerializeField] private string _playerId;
+
+    [Header("UI引用")]
+    [SerializeField] private CultivationProgressDisplay _progressDisplay;
+    [SerializeField] private GameButton _toggleButton;
+    [SerializeField] private GameButton _viewTechniquesButton;
+    [SerializeField] private TMP_Text _realmText;
+    [SerializeField] private TMP_Text _speedText;
+    [SerializeField] private TMP_Text _energyText;
+    [SerializeField] private TMP_Text _breakthroughText;
+    [SerializeField] private GameObject _loadingIndicator;
+    [SerializeField] private GameObject _errorDisplay;
+
+    private PlayerData _playerData;
+    private bool _isActive;
+
+    private async void Start()
+    {
+        _toggleButton.AddListener(OnToggleCultivation);
+        _viewTechniquesButton.AddListener(OnViewTechniques);
+
+        await LoadPlayerDataAsync();
+    }
+
+    private async Task LoadPlayerDataAsync()
+    {
+        _loadingIndicator.SetActive(true);
+
+        try
+        {
+            _playerData = await PlayerDataManager.Instance.GetPlayerDataAsync(_playerId);
+            UpdateDisplay();
+        }
+        catch (Exception)
+        {
+            _errorDisplay.SetActive(true);
+        }
+        finally
+        {
+            _loadingIndicator.SetActive(false);
+        }
+    }
+
+    private void UpdateDisplay()
+    {
+        _progressDisplay.UpdateDisplay(
+            _playerData.Level,
+            _playerData.Experience,
+            _playerData.MaxExperience,
+            _playerData.Realm,
+            _isActive);
+
+        _realmText.text = _playerData.Realm;
+        _speedText.text = $"{_playerData.CultivationSpeed}/小时";
+        _energyText.text = $"{_playerData.Energy}/{_playerData.MaxEnergy}";
+        _breakthroughText.text = $"{_playerData.BreakthroughChance}%";
+
+        _toggleButton.Loading = false;
+        _toggleButton._button.interactable = _playerData.Energy >= 10;
+    }
+
+    private async void OnToggleCultivation()
+    {
+        if (_isActive)
+        {
+            await CultivationManager.Instance.StopCultivationAsync(_playerId);
+            _isActive = false;
+            _toggleButton.SetText("开始修炼");
+        }
+        else
+        {
+            _toggleButton.Loading = true;
+            await CultivationManager.Instance.StartCultivationAsync(_playerId);
+            _isActive = true;
+            _toggleButton.SetText("停止修炼");
+        }
+
+        await LoadPlayerDataAsync();
+    }
+
+    private void OnViewTechniques()
+    {
+        // 查看功法
+    }
+
+    private void OnDestroy()
+    {
+        _toggleButton?.RemoveListener(OnToggleCultivation);
+        _viewTechniquesButton?.RemoveListener(OnViewTechniques);
+    }
+}
+```
+
+### 2. 管理器与服务设计
+
+#### **数据获取管理器**
+```csharp
+// 玩家数据管理器 - 缓存与数据同步
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class PlayerDataManager : MonoBehaviour
+{
+    public static PlayerDataManager Instance { get; private set; }
+
+    private readonly Dictionary<string, PlayerData> _cache = new();
+    private readonly Dictionary<string, float> _cacheTimestamps = new();
+    private const float CacheStaleTime = 30f; // 30秒内不重新获取
+
+    public async Task<PlayerData> GetPlayerDataAsync(string playerId)
+    {
+        // 检查缓存
+        if (_cache.TryGetValue(playerId, out var cached) &&
+            _cacheTimestamps.TryGetValue(playerId, out var timestamp) &&
+            Time.time - timestamp < CacheStaleTime)
+        {
+            return cached;
+        }
+
+        // 从服务端获取
+        var data = await ApiClient.Instance.GetPlayerAsync(playerId);
+        _cache[playerId] = data;
+        _cacheTimestamps[playerId] = Time.time;
+
+        return data;
+    }
+
+    public void UpdateExperience(string playerId, int experience, int level)
+    {
+        if (_cache.TryGetValue(playerId, out var data))
+        {
+            data.Experience = experience;
+            data.Level = level;
+        }
+    }
+
+    public void UpdateRealm(string playerId, string newRealm, int newLevel)
+    {
+        if (_cache.TryGetValue(playerId, out var data))
+        {
+            data.Realm = newRealm;
+            data.Level = newLevel;
+        }
+    }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+#### **修炼操作管理器**
+```csharp
+// 修炼操作管理器
+using System;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class CultivationManager : MonoBehaviour
+{
+    public static CultivationManager Instance { get; private set; }
+
+    public bool IsStarting { get; private set; }
+    public bool IsStopping { get; private set; }
+
+    public async Task StartCultivationAsync(string playerId)
+    {
+        IsStarting = true;
+        try
+        {
+            var data = await ApiClient.Instance.StartCultivationAsync(playerId);
+            PlayerDataManager.Instance.UpdateExperience(playerId, data.Experience, data.Level);
+
+            // 发送网络事件
+            NetworkManager.Instance.SendEvent("cultivation:start", new { playerId });
+
+            Debug.Log("开始修炼");
+        }
+        catch (Exception error)
+        {
+            Debug.LogError($"修炼失败: {error.Message}");
+        }
+        finally
+        {
+            IsStarting = false;
+        }
+    }
+
+    public async Task StopCultivationAsync(string playerId)
+    {
+        IsStopping = true;
+        try
+        {
+            var data = await ApiClient.Instance.StopCultivationAsync(playerId);
+            PlayerDataManager.Instance.UpdateExperience(playerId, data.Experience, data.Level);
+            NetworkManager.Instance.SendEvent("cultivation:stop", new { playerId });
+            Debug.Log("停止修炼");
+        }
+        catch (Exception error)
+        {
+            Debug.LogError(error.Message);
+        }
+        finally
+        {
+            IsStopping = false;
+        }
+    }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+#### **网络通信管理器**
+```csharp
+// 网络连接管理器 - 基于 Unity Transport / Mirror / Netcode
+using System;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class NetworkManager : MonoBehaviour
+{
+    public static NetworkManager Instance { get; private set; }
+
+    public bool IsConnected { get; private set; }
+
+    public event Action OnConnected;
+    public event Action OnDisconnected;
+    public event Action<string> OnError;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    public async Task ConnectAsync(string authToken)
+    {
+        try
+        {
+            // 使用 Unity Transport / Mirror Networking 建立连接
+            // 配置认证信息并连接到服务端
+            await Task.Delay(100); // 模拟连接过程
+
+            OnConnected?.Invoke();
+            IsConnected = true;
+            Debug.Log("网络连接成功");
+        }
+        catch (Exception error)
+        {
+            OnError?.Invoke(error.Message);
+            Debug.LogError($"网络错误: {error}");
+        }
+    }
+
+    public void Disconnect()
+    {
+        IsConnected = false;
+        OnDisconnected?.Invoke();
+        Debug.Log("网络连接断开");
+    }
+
+    public void SendEvent(string eventName, object data)
+    {
+        if (!IsConnected)
+        {
+            Debug.LogWarning("网络未连接，无法发送事件");
+            return;
+        }
+        // 通过 Unity Transport / Mirror / Netcode 发送事件
+    }
+
+    public void Subscribe(string eventName, Action<string> handler)
+    {
+        // 订阅服务端推送的事件
+    }
+
+    public void Unsubscribe(string eventName, Action<string> handler)
+    {
+        // 取消订阅
+    }
+}
+```
+
+#### **游戏事件监听器**
+```csharp
+// 游戏事件监听器 - 监听服务端推送的事件
+using UnityEngine;
+
+public class GameEventListener : MonoBehaviour
+{
+    private void OnEnable()
+    {
+        NetworkManager.Instance.Subscribe("cultivation:progress", OnCultivationProgress);
+        NetworkManager.Instance.Subscribe("cultivation:breakthrough", OnRealmBreakthrough);
+        NetworkManager.Instance.Subscribe("combat:result", OnCombatResult);
+    }
+
+    private void OnDisable()
+    {
+        NetworkManager.Instance.Unsubscribe("cultivation:progress", OnCultivationProgress);
+        NetworkManager.Instance.Unsubscribe("cultivation:breakthrough", OnRealmBreakthrough);
+        NetworkManager.Instance.Unsubscribe("combat:result", OnCombatResult);
+    }
+
+    private void OnCultivationProgress(string jsonData)
+    {
+        var data = JsonUtility.FromJson<CultivationProgressData>(jsonData);
+        // 更新玩家经验缓存
+        PlayerDataManager.Instance.UpdateExperience(data.playerId, data.experience, data.level);
+    }
+
+    private void OnRealmBreakthrough(string jsonData)
+    {
+        var data = JsonUtility.FromJson<BreakthroughData>(jsonData);
+        // 更新境界
+        PlayerDataManager.Instance.UpdateRealm(data.playerId, data.newRealm, data.newLevel);
+        Debug.Log($"恭喜突破到{data.newRealm}！");
+    }
+
+    private void OnCombatResult(string jsonData)
+    {
+        var data = JsonUtility.FromJson<CombatResultData>(jsonData);
+        if (data.victory)
+            Debug.Log("战斗胜利！");
+        else
+            Debug.Log("战斗失败！");
+    }
 }
 
-const CultivationSystem: React.FC<CultivationSystemProps> = ({ playerId }) => {
-  const { data: playerData, isLoading } = usePlayerData(playerId);
-  const { startCultivation, stopCultivation } = useCultivation();
-  const [isActive, setIsActive] = useState(false);
-  
-  const handleToggleCultivation = () => {
-    if (isActive) {
-      stopCultivation();
-    } else {
-      startCultivation();
-    }
-    setIsActive(!isActive);
-  };
-  
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-  
-  if (!playerData) {
-    return <ErrorMessage message="无法加载角色数据" />;
-  }
-  
-  return (
-    <div className="cultivation-system p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">修炼系统</h2>
-      
-      {/* 修炼进度 */}
-      <div className="mb-6">
-        <CultivationProgress
-          level={playerData.level}
-          experience={playerData.experience}
-          maxExperience={playerData.maxExperience}
-          realm={playerData.realm}
-          isActive={isActive}
-        />
-      </div>
-      
-      {/* 修炼控制 */}
-      <div className="flex gap-4">
-        <Button
-          variant={isActive ? 'danger' : 'primary'}
-          onClick={handleToggleCultivation}
-          disabled={playerData.energy < 10}
-        >
-          {isActive ? '停止修炼' : '开始修炼'}
-        </Button>
-        
-        <Button variant="secondary">
-          查看功法
-        </Button>
-      </div>
-      
-      {/* 修炼信息 */}
-      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-600">当前境界：</span>
-            <span className="font-medium">{playerData.realm}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">修炼速度：</span>
-            <span className="font-medium">{playerData.cultivationSpeed}/小时</span>
-          </div>
-          <div>
-            <span className="text-gray-600">灵力值：</span>
-            <span className="font-medium">{playerData.energy}/{playerData.maxEnergy}</span>
-          </div>
-          <div>
-            <span className="text-gray-600">突破概率：</span>
-            <span className="font-medium">{playerData.breakthroughChance}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+[System.Serializable]
+public class CultivationProgressData
+{
+    public string playerId;
+    public int experience;
+    public int level;
+}
 
-export default CultivationSystem;
-```
+[System.Serializable]
+public class BreakthroughData
+{
+    public string playerId;
+    public string newRealm;
+    public int newLevel;
+}
 
-### 2. 自定义Hooks设计
-
-#### **数据获取Hooks**
-```typescript
-// 玩家数据Hook
-export const usePlayerData = (playerId: string) => {
-  return useQuery({
-    queryKey: ['player', playerId],
-    queryFn: () => gameApi.getPlayer(playerId),
-    staleTime: 30000, // 30秒内不重新获取
-    cacheTime: 300000, // 5分钟缓存
-    refetchOnWindowFocus: false
-  });
-};
-
-// 修炼系统Hook
-export const useCultivation = () => {
-  const queryClient = useQueryClient();
-  const { socket } = useWebSocket();
-  
-  const startCultivation = useMutation({
-    mutationFn: gameApi.startCultivation,
-    onSuccess: (data) => {
-      // 更新本地缓存
-      queryClient.setQueryData(['player', data.playerId], data);
-      
-      // 发送WebSocket事件
-      socket?.emit('cultivation:start', { playerId: data.playerId });
-      
-      // 显示成功提示
-      toast.success('开始修炼');
-    },
-    onError: (error) => {
-      toast.error('修炼失败：' + error.message);
-    }
-  });
-  
-  const stopCultivation = useMutation({
-    mutationFn: gameApi.stopCultivation,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['player', data.playerId], data);
-      socket?.emit('cultivation:stop', { playerId: data.playerId });
-      toast.success('停止修炼');
-    }
-  });
-  
-  return {
-    startCultivation: startCultivation.mutate,
-    stopCultivation: stopCultivation.mutate,
-    isStarting: startCultivation.isLoading,
-    isStopping: stopCultivation.isLoading
-  };
-};
-```
-
-#### **WebSocket通信Hook**
-```typescript
-// WebSocket连接Hook
-export const useWebSocket = () => {
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const { user } = useAuthStore();
-  
-  useEffect(() => {
-    if (user?.token) {
-      const newSocket = io(WS_URL, {
-        auth: {
-          token: user.token
-        },
-        transports: ['websocket']
-      });
-      
-      newSocket.on('connect', () => {
-        setIsConnected(true);
-        console.log('WebSocket连接成功');
-      });
-      
-      newSocket.on('disconnect', () => {
-        setIsConnected(false);
-        console.log('WebSocket连接断开');
-      });
-      
-      newSocket.on('error', (error) => {
-        console.error('WebSocket错误:', error);
-        toast.error('连接错误');
-      });
-      
-      setSocket(newSocket);
-      
-      return () => {
-        newSocket.close();
-      };
-    }
-  }, [user?.token]);
-  
-  return { socket, isConnected };
-};
-
-// 游戏事件监听Hook
-export const useGameEvents = () => {
-  const { socket } = useWebSocket();
-  const queryClient = useQueryClient();
-  
-  useEffect(() => {
-    if (!socket) return;
-    
-    // 修炼进度更新
-    socket.on('cultivation:progress', (data) => {
-      queryClient.setQueryData(['player', data.playerId], (old: any) => ({
-        ...old,
-        experience: data.experience,
-        level: data.level
-      }));
-    });
-    
-    // 境界突破
-    socket.on('cultivation:breakthrough', (data) => {
-      queryClient.setQueryData(['player', data.playerId], (old: any) => ({
-        ...old,
-        realm: data.newRealm,
-        level: data.newLevel
-      }));
-      
-      toast.success(`恭喜突破到${data.newRealm}！`);
-    });
-    
-    // 战斗结果
-    socket.on('combat:result', (data) => {
-      // 处理战斗结果
-      if (data.victory) {
-        toast.success('战斗胜利！');
-      } else {
-        toast.error('战斗失败！');
-      }
-    });
-    
-    return () => {
-      socket.off('cultivation:progress');
-      socket.off('cultivation:breakthrough');
-      socket.off('combat:result');
-    };
-  }, [socket, queryClient]);
-};
+[System.Serializable]
+public class CombatResultData
+{
+    public bool victory;
+}
 ```
 
 ### 3. 状态管理架构
 
-#### **Zustand Store设计**
-```typescript
-// 认证状态
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
-  refreshToken: () => Promise<void>;
-}
+#### **Singleton Manager 设计**
 
-export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: false,
-  
-  login: async (credentials) => {
-    try {
-      const response = await authApi.login(credentials);
-      const { user, token } = response.data;
-      
-      localStorage.setItem('token', token);
-      set({ user, token, isAuthenticated: true });
-      
-      toast.success('登录成功');
-    } catch (error) {
-      toast.error('登录失败');
-      throw error;
+```csharp
+// 认证状态管理器
+using System;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class AuthManager : MonoBehaviour
+{
+    public static AuthManager Instance { get; private set; }
+
+    public User CurrentUser { get; private set; }
+    public string Token { get; private set; }
+    public bool IsAuthenticated => !string.IsNullOrEmpty(Token);
+
+    public async Task LoginAsync(LoginCredentials credentials)
+    {
+        try
+        {
+            var response = await ApiClient.Instance.LoginAsync(credentials);
+            CurrentUser = response.User;
+            Token = response.Token;
+            PlayerPrefs.SetString("token", Token);
+
+            Debug.Log("登录成功");
+        }
+        catch (Exception)
+        {
+            Debug.LogError("登录失败");
+            throw;
+        }
     }
-  },
-  
-  logout: () => {
-    localStorage.removeItem('token');
-    set({ user: null, token: null, isAuthenticated: false });
-    toast.info('已退出登录');
-  },
-  
-  refreshToken: async () => {
-    try {
-      const token = get().token;
-      if (!token) throw new Error('No token');
-      
-      const response = await authApi.refreshToken(token);
-      const newToken = response.data.token;
-      
-      localStorage.setItem('token', newToken);
-      set({ token: newToken });
-    } catch (error) {
-      get().logout();
-      throw error;
+
+    public void Logout()
+    {
+        PlayerPrefs.DeleteKey("token");
+        CurrentUser = null;
+        Token = null;
+        Debug.Log("已退出登录");
     }
-  }
-}));
 
-// 游戏状态
-interface GameState {
-  currentScene: 'home' | 'cultivation' | 'combat' | 'world';
-  isLoading: boolean;
-  error: string | null;
-  setScene: (scene: GameState['currentScene']) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
+    public async Task RefreshTokenAsync()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(Token))
+                throw new InvalidOperationException("No token");
+
+            var response = await ApiClient.Instance.RefreshTokenAsync(Token);
+            Token = response.Token;
+            PlayerPrefs.SetString("token", Token);
+        }
+        catch (Exception)
+        {
+            Logout();
+            throw;
+        }
+    }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            Token = PlayerPrefs.GetString("token", null);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+```csharp
+// 游戏状态管理器
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
+
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    public enum GameSceneType { Home, Cultivation, Combat, World }
+
+    public GameSceneType CurrentScene { get; private set; } = GameSceneType.Home;
+    public bool IsLoading { get; private set; }
+    public string Error { get; private set; }
+
+    public async Task SetSceneAsync(GameSceneType scene)
+    {
+        IsLoading = true;
+        CurrentScene = scene;
+
+        var sceneName = scene switch
+        {
+            GameSceneType.Home => "Home",
+            GameSceneType.Cultivation => "Cultivation",
+            GameSceneType.Combat => "Combat",
+            GameSceneType.World => "World",
+            _ => "Home"
+        };
+
+        // 使用 Addressable Scenes 按需加载场景
+        await SceneManager.LoadSceneAsync(sceneName);
+        IsLoading = false;
+    }
+
+    public void SetLoading(bool loading) => IsLoading = loading;
+    public void SetError(string error) => Error = error;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+```
+
+```csharp
+// UI状态管理器
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class UIManager : MonoBehaviour
+{
+    public static UIManager Instance { get; private set; }
+
+    public enum ThemeType { Light, Dark }
+
+    public bool SidebarOpen { get; private set; }
+    public ThemeType CurrentTheme { get; private set; } = ThemeType.Light;
+
+    private readonly List<GameNotification> _notifications = new();
+    public IReadOnlyList<GameNotification> Notifications => _notifications;
+
+    public void ToggleSidebar()
+    {
+        SidebarOpen = !SidebarOpen;
+    }
+
+    public void SetTheme(ThemeType theme)
+    {
+        CurrentTheme = theme;
+        PlayerPrefs.SetString("theme", theme.ToString());
+    }
+
+    public void AddNotification(string title, string message, NotificationType type)
+    {
+        var notification = new GameNotification
+        {
+            Id = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString(),
+            Title = title,
+            Message = message,
+            Type = type
+        };
+
+        _notifications.Add(notification);
+
+        // 自动移除通知
+        StartCoroutine(RemoveNotificationAfterDelay(notification.Id, 5f));
+    }
+
+    public void RemoveNotification(string id)
+    {
+        _notifications.RemoveAll(n => n.Id == id);
+    }
+
+    private IEnumerator RemoveNotificationAfterDelay(string id, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        RemoveNotification(id);
+    }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            var savedTheme = PlayerPrefs.GetString("theme", "Light");
+            CurrentTheme = savedTheme == "Dark" ? ThemeType.Dark : ThemeType.Light;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 }
 
-export const useGameStore = create<GameState>((set) => ({
-  currentScene: 'home',
-  isLoading: false,
-  error: null,
-  
-  setScene: (scene) => set({ currentScene: scene }),
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error })
-}));
+public enum NotificationType { Info, Success, Warning, Error }
 
-// UI状态
-interface UIState {
-  sidebarOpen: boolean;
-  theme: 'light' | 'dark';
-  notifications: Notification[];
-  toggleSidebar: () => void;
-  setTheme: (theme: 'light' | 'dark') => void;
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
-  removeNotification: (id: string) => void;
+public class GameNotification
+{
+    public string Id { get; set; }
+    public string Title { get; set; }
+    public string Message { get; set; }
+    public NotificationType Type { get; set; }
 }
-
-export const useUIStore = create<UIState>((set, get) => ({
-  sidebarOpen: false,
-  theme: 'light',
-  notifications: [],
-  
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-  
-  setTheme: (theme) => {
-    localStorage.setItem('theme', theme);
-    set({ theme });
-  },
-  
-  addNotification: (notification) => {
-    const id = Date.now().toString();
-    const newNotification = { ...notification, id };
-    
-    set((state) => ({
-      notifications: [...state.notifications, newNotification]
-    }));
-    
-    // 自动移除通知
-    setTimeout(() => {
-      get().removeNotification(id);
-    }, 5000);
-  },
-  
-  removeNotification: (id) => {
-    set((state) => ({
-      notifications: state.notifications.filter(n => n.id !== id)
-    }));
-  }
-}));
 ```
 
 ## 🎨 **样式系统设计**
 
-### Tailwind CSS配置
+### Unity UI 主题配置
 
-```javascript
-// tailwind.config.js
-module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        // 修仙主题色彩
-        cultivation: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e'
-        },
-        realm: {
-          'qi-refining': '#8B4513',
-          'foundation': '#4169E1',
-          'golden-core': '#FFD700',
-          'nascent-soul': '#9370DB',
-          'spirit-transformation': '#FF6347',
-          'void-refinement': '#00CED1',
-          'body-integration': '#FF1493',
-          'mahayana': '#00FF7F',
-          'tribulation': '#FF4500'
-        }
-      },
-      fontFamily: {
-        'cultivation': ['Noto Serif SC', 'serif'],
-        'modern': ['Inter', 'sans-serif']
-      },
-      animation: {
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'float': 'float 6s ease-in-out infinite',
-        'glow': 'glow 2s ease-in-out infinite alternate'
-      },
-      keyframes: {
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' }
-        },
-        glow: {
-          '0%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.5)' },
-          '100%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.8)' }
-        }
-      }
-    },
-  },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio')
-  ],
+```csharp
+// 修仙主题色彩配置 - ScriptableObject
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "CultivationTheme", menuName = "Immortality/Cultivation Theme")]
+public class CultivationTheme : ScriptableObject
+{
+    [Header("修炼主题色")]
+    public Color[] CultivationColors = new Color[]
+    {
+        new Color(0.94f, 0.98f, 1f),    // 50
+        new Color(0.88f, 0.95f, 0.99f), // 100
+        new Color(0.73f, 0.90f, 0.99f), // 200
+        new Color(0.49f, 0.83f, 0.99f), // 300
+        new Color(0.22f, 0.74f, 0.97f), // 400
+        new Color(0.05f, 0.65f, 0.91f), // 500
+        new Color(0.01f, 0.52f, 0.78f), // 600
+        new Color(0.01f, 0.41f, 0.63f), // 700
+        new Color(0.03f, 0.35f, 0.52f), // 800
+        new Color(0.05f, 0.29f, 0.43f)  // 900
+    };
+
+    [Header("境界颜色")]
+    public Color QiRefining = new Color(0.55f, 0.27f, 0.07f);    // 练气 - 棕色
+    public Color Foundation = new Color(0.25f, 0.41f, 0.88f);    // 筑基 - 蓝色
+    public Color GoldenCore = new Color(1f, 0.84f, 0f);           // 金丹 - 金色
+    public Color NascentSoul = new Color(0.58f, 0.44f, 0.86f);    // 元婴 - 紫色
+    public Color SpiritTransformation = new Color(1f, 0.39f, 0.28f); // 化神 - 红色
+    public Color VoidRefinement = new Color(0f, 0.81f, 0.82f);    // 炼虚 - 青色
+    public Color BodyIntegration = new Color(1f, 0.08f, 0.58f);   // 合体 - 粉色
+    public Color Mahayana = new Color(0f, 1f, 0.5f);              // 大乘 - 绿色
+    public Color Tribulation = new Color(1f, 0.27f, 0f);           // 渡劫 - 橙红色
+
+    public Color GetRealmColor(string realm)
+    {
+        return realm switch
+        {
+            "练气" => QiRefining,
+            "筑基" => Foundation,
+            "金丹" => GoldenCore,
+            "元婴" => NascentSoul,
+            "化神" => SpiritTransformation,
+            "炼虚" => VoidRefinement,
+            "合体" => BodyIntegration,
+            "大乘" => Mahayana,
+            "渡劫" => Tribulation,
+            _ => Color.gray
+        };
+    }
 }
 ```
 
-### 组件样式规范
+### USS 样式规范
 
 ```css
-/* globals.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* 修仙主题 USS 样式 */
+:root {
+    /* 修炼主题色 */
+    --cultivation-500: #0ea5e9;
+    --cultivation-600: #0284c7;
+    --cultivation-700: #0369a1;
 
-/* 修仙主题基础样式 */
-@layer base {
-  body {
-    @apply font-modern text-gray-900 bg-gray-50;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-cultivation;
-  }
+    /* 境界颜色 */
+    --realm-qi-refining: #8B4513;
+    --realm-foundation: #4169E1;
+    --realm-golden-core: #FFD700;
+    --realm-nascent-soul: #9370DB;
+    --realm-spirit-transformation: #FF6347;
+    --realm-void-refinement: #00CED1;
+    --realm-body-integration: #FF1493;
+    --realm-mahayana: #00FF7F;
+    --realm-tribulation: #FF4500;
+
+    /* 字体 */
+    --font-cultivation: 'Noto Serif SC';
+    --font-modern: 'Inter';
 }
 
-/* 组件样式 */
-@layer components {
-  .btn-cultivation {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
-    @apply bg-gradient-to-r from-cultivation-500 to-cultivation-600;
-    @apply text-white hover:from-cultivation-600 hover:to-cultivation-700;
-    @apply focus:outline-none focus:ring-2 focus:ring-cultivation-500 focus:ring-offset-2;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-  
-  .card-cultivation {
-    @apply bg-white rounded-xl shadow-lg border border-gray-200;
-    @apply hover:shadow-xl transition-shadow duration-300;
-  }
-  
-  .progress-ring {
-    @apply transition-all duration-500 ease-out;
-    transform-origin: center;
-  }
-  
-  .spiritual-glow {
-    @apply animate-glow;
+/* 基础样式 */
+.cultivation-button {
+    background-color: var(--cultivation-500);
+    color: white;
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.cultivation-button:hover {
+    background-color: var(--cultivation-600);
+}
+
+.cultivation-button:disabled {
+    opacity: 0.5;
+}
+
+.cultivation-card {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: #e5e7eb;
+}
+
+.progress-ring {
+    transition: all 0.5s ease-out;
+}
+
+.spiritual-glow {
     filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
-  }
-}
-
-/* 工具样式 */
-@layer utilities {
-  .text-realm-qi {
-    @apply text-realm-qi-refining;
-  }
-  
-  .bg-realm-foundation {
-    @apply bg-realm-foundation;
-  }
-  
-  .animate-cultivation {
-    animation: cultivation 4s ease-in-out infinite;
-  }
-  
-  @keyframes cultivation {
-    0%, 100% {
-      opacity: 0.7;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 1;
-      transform: scale(1.05);
-    }
-  }
 }
 ```
 
 ## 🔧 **开发工具配置**
 
-### TypeScript配置
+### C# 项目配置
 
-```json
-// tsconfig.json
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/components/*": ["./src/components/*"],
-      "@/features/*": ["./src/features/*"],
-      "@/hooks/*": ["./src/hooks/*"],
-      "@/services/*": ["./src/services/*"],
-      "@/store/*": ["./src/store/*"],
-      "@/utils/*": ["./src/utils/*"],
-      "@/types/*": ["./src/types/*"]
-    }
-  },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
-}
+```xml
+<!-- Immortality.Client.csproj -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoUnusedLocals>true</NoUnusedLocals>
+    <NoUnusedParameters>true</NoUnusedParameters>
+    <NoFallthroughCasesInSwitch>true</NoFallthroughCasesInSwitch>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Unity.Netcode.Runtime" Version="1.0.0" />
+    <PackageReference Include="com.unity.addressables" Version="1.0.0" />
+    <PackageReference Include="LottieForUnity" Version="1.0.0" />
+    <PackageReference Include="DOTween" Version="1.2.0" />
+  </ItemGroup>
+</Project>
 ```
 
-### Vite配置
+### .editorconfig 配置
 
-```typescript
-// vite.config.ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+```ini
+# .editorconfig
+root = true
 
-export default defineConfig({
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@/components': path.resolve(__dirname, './src/components'),
-      '@/features': path.resolve(__dirname, './src/features'),
-      '@/hooks': path.resolve(__dirname, './src/hooks'),
-      '@/services': path.resolve(__dirname, './src/services'),
-      '@/store': path.resolve(__dirname, './src/store'),
-      '@/utils': path.resolve(__dirname, './src/utils'),
-      '@/types': path.resolve(__dirname, './src/types')
-    }
-  },
-  server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true
-      },
-      '/socket.io': {
-        target: 'http://localhost:3001',
-        ws: true
-      }
-    }
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          ui: ['@headlessui/react', 'framer-motion'],
-          graphics: ['@svgdotjs/svg.js', 'konva', 'react-konva']
-        }
-      }
-    }
-  }
-});
+[*.cs]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# C# 命名规范
+dotnet_naming_rule.types_should_be_pascalcase.severity = error
+dotnet_naming_rule.types_should_be_pascalcase.symbols = types
+dotnet_naming_rule.types_should_be_pascalcase.style = pascalcase
+
+dotnet_naming_rule.methods_should_be_pascalcase.severity = error
+dotnet_naming_rule.methods_should_be_pascalcase.symbols = methods
+dotnet_naming_rule.methods_should_be_pascalcase.style = pascalcase
+
+dotnet_naming_rule.private_fields_should_be_camelcase.severity = warning
+dotnet_naming_rule.private_fields_should_be_camelcase.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camelcase.style = camelcase_underscore
+
+# 代码分析规则
+dotnet_diagnostic.CA1822.severity = warning  # Mark members as static
+dotnet_diagnostic.CA2007.severity = none      # Do not directly await a Task
+```
+
+### Addressable Assets 配置
+
+```yaml
+# AddressableAssetsData/AddressableAssetSettings.asset (简化展示)
+# Addressable Assets 配置 - 资源分组与按需加载
+groups:
+  - name: Scenes
+    entries:
+      - Assets/Scenes/Home
+      - Assets/Scenes/Cultivation
+      - Assets/Scenes/Combat
+      - Assets/Scenes/World
+  - name: UI
+    entries:
+      - Assets/Prefabs/UI/AuthPanel
+      - Assets/Prefabs/UI/CultivationPanel
+      - Assets/Prefabs/UI/CharacterPanel
+      - Assets/Prefabs/UI/InventoryPanel
+  - name: Effects
+    entries:
+      - Assets/Art/Lottie/Breakthrough
+      - Assets/Art/Lottie/SkillRelease
+  - name: Graphics
+    entries:
+      - Assets/Art/Sprites/Cultivation
+      - Assets/Art/Sprites/Combat
+      - Assets/Art/Sprites/Icons
 ```
 
 ## 🧪 **测试策略**
 
 ### 组件测试
 
-```typescript
-// Button.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import Button from '../Button';
+```csharp
+// GameButtonTests.cs
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.UI;
 
-describe('Button Component', () => {
-  it('renders with correct text', () => {
-    render(<Button variant="primary">Click me</Button>);
-    expect(screen.getByText('Click me')).toBeInTheDocument();
-  });
-  
-  it('calls onClick when clicked', () => {
-    const handleClick = vi.fn();
-    render(
-      <Button variant="primary" onClick={handleClick}>
-        Click me
-      </Button>
-    );
-    
-    fireEvent.click(screen.getByText('Click me'));
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-  
-  it('is disabled when loading', () => {
-    render(
-      <Button variant="primary" loading>
-        Click me
-      </Button>
-    );
-    
-    const button = screen.getByRole('button');
-    expect(button).toBeDisabled();
-  });
-  
-  it('applies correct variant classes', () => {
-    render(<Button variant="danger">Delete</Button>);
-    const button = screen.getByRole('button');
-    expect(button).toHaveClass('bg-red-600');
-  });
-});
-```
+public class GameButtonTests
+{
+    private GameObject _go;
+    private GameButton _button;
+    private Button _unityButton;
 
-### Hook测试
+    [SetUp]
+    public void SetUp()
+    {
+        _go = new GameObject("TestButton");
+        _button = _go.AddComponent<GameButton>();
+        _unityButton = _go.AddComponent<Button>();
 
-```typescript
-// useCultivation.test.ts
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { describe, it, expect, vi } from 'vitest';
-import { useCultivation } from '../useCultivation';
-
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false }
+        // 使用反射或序列化设置私有字段
+        var buttonField = typeof(GameButton).GetField("_button",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        buttonField?.SetValue(_button, _unityButton);
     }
-  });
-  
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
-};
 
-describe('useCultivation Hook', () => {
-  it('starts cultivation successfully', async () => {
-    const { result } = renderHook(() => useCultivation(), {
-      wrapper: createWrapper()
-    });
-    
-    result.current.startCultivation();
-    
-    await waitFor(() => {
-      expect(result.current.isStarting).toBe(false);
-    });
-  });
-});
+    [Test]
+    public void Button_RendersWithCorrectText()
+    {
+        var labelGo = new GameObject("Label");
+        var label = labelGo.AddComponent<TMPro.TextMeshProUGUI>();
+
+        var labelField = typeof(GameButton).GetField("_label",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        labelField?.SetValue(_button, label);
+
+        _button.SetText("Click me");
+
+        Assert.AreEqual("Click me", label.text);
+    }
+
+    [Test]
+    public void Button_CallsOnClickWhenClicked()
+    {
+        var onClickCalled = false;
+        _button.AddListener(() => onClickCalled = true);
+
+        _unityButton.onClick.Invoke();
+
+        Assert.IsTrue(onClickCalled);
+    }
+
+    [Test]
+    public void Button_IsDisabledWhenLoading()
+    {
+        _button.Loading = true;
+
+        Assert.IsFalse(_unityButton.interactable);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        Object.DestroyImmediate(_go);
+    }
+}
 ```
 
-## 📱 **响应式设计**
+### 管理器测试
 
-### 断点系统
+```csharp
+// CultivationManagerTests.cs
+using NUnit.Framework;
+using UnityEngine;
+using System.Threading.Tasks;
 
-```typescript
-// 响应式Hook
-export const useBreakpoint = () => {
-  const [breakpoint, setBreakpoint] = useState<'sm' | 'md' | 'lg' | 'xl'>('lg');
-  
-  useEffect(() => {
-    const updateBreakpoint = () => {
-      const width = window.innerWidth;
-      if (width < 640) setBreakpoint('sm');
-      else if (width < 768) setBreakpoint('md');
-      else if (width < 1024) setBreakpoint('lg');
-      else setBreakpoint('xl');
-    };
-    
-    updateBreakpoint();
-    window.addEventListener('resize', updateBreakpoint);
-    
-    return () => window.removeEventListener('resize', updateBreakpoint);
-  }, []);
-  
-  return {
-    breakpoint,
-    isMobile: breakpoint === 'sm',
-    isTablet: breakpoint === 'md',
-    isDesktop: breakpoint === 'lg' || breakpoint === 'xl'
-  };
-};
+public class CultivationManagerTests
+{
+    [Test]
+    public async Task StartCultivation_StartsSuccessfully()
+    {
+        var go = new GameObject("CultivationManager");
+        var manager = go.AddComponent<CultivationManager>();
 
-// 响应式布局组件
-const ResponsiveLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isMobile, isTablet } = useBreakpoint();
-  
-  return (
-    <div className={`
-      ${isMobile ? 'px-4' : 'px-8'}
-      ${isTablet ? 'max-w-4xl' : 'max-w-7xl'}
-      mx-auto
-    `}>
-      {children}
-    </div>
-  );
-};
+        // 通过反射设置单例
+        var instanceProperty = typeof(CultivationManager).GetProperty("Instance");
+        instanceProperty?.SetValue(null, manager);
+
+        await manager.StartCultivationAsync("player1");
+
+        Assert.IsFalse(manager.IsStarting);
+
+        Object.DestroyImmediate(go);
+    }
+}
+```
+
+## 📱 **屏幕适配设计**
+
+### 分辨率适配系统
+
+```csharp
+// 屏幕适配管理器
+using UnityEngine;
+
+public class ScreenAdapter : MonoBehaviour
+{
+    public enum ScreenSizeType { Mobile, Tablet, Desktop }
+
+    public ScreenSizeType CurrentSize { get; private set; } = ScreenSizeType.Desktop;
+
+    public bool IsMobile => CurrentSize == ScreenSizeType.Mobile;
+    public bool IsTablet => CurrentSize == ScreenSizeType.Tablet;
+    public bool IsDesktop => CurrentSize == ScreenSizeType.Desktop;
+
+    private void Update()
+    {
+        var width = Screen.width;
+
+        if (width < 640)
+            CurrentSize = ScreenSizeType.Mobile;
+        else if (width < 1024)
+            CurrentSize = ScreenSizeType.Tablet;
+        else
+            CurrentSize = ScreenSizeType.Desktop;
+    }
+
+    public float GetScaleFactor()
+    {
+        return CurrentSize switch
+        {
+            ScreenSizeType.Mobile => 0.8f,
+            ScreenSizeType.Tablet => 0.9f,
+            _ => 1f
+        };
+    }
+
+    public int GetPadding()
+    {
+        return CurrentSize switch
+        {
+            ScreenSizeType.Mobile => 16,
+            ScreenSizeType.Tablet => 24,
+            _ => 32
+        };
+    }
+}
+
+// Canvas 适配器组件
+public class CanvasScalerAdapter : MonoBehaviour
+{
+    [SerializeField] private CanvasScaler _canvasScaler;
+    [SerializeField] private ScreenAdapter _screenAdapter;
+
+    private void Update()
+    {
+        if (_screenAdapter.IsMobile)
+        {
+            _canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            _canvasScaler.referenceResolution = new Vector2(750, 1334);
+        }
+        else
+        {
+            _canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            _canvasScaler.referenceResolution = new Vector2(1920, 1080);
+        }
+    }
+}
 ```
 
 ## 🚀 **性能优化**
 
-### 代码分割
+### Addressable Assets 按需加载
 
-```typescript
-// 路由懒加载
-import { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+```csharp
+// 场景按需加载 - 替代路由懒加载
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
 
-const Home = lazy(() => import('@/pages/Home'));
-const Game = lazy(() => import('@/pages/Game'));
-const Profile = lazy(() => import('@/pages/Profile'));
+public class SceneLoader : MonoBehaviour
+{
+    [SerializeField] private GameObject _loadingIndicator;
 
-const AppRoutes = () => {
-  return (
-    <Suspense fallback={<LoadingSpinner />}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/game" element={<Game />} />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
-    </Suspense>
-  );
-};
+    public async Task LoadSceneAsync(string sceneKey)
+    {
+        _loadingIndicator.SetActive(true);
+
+        var handle = Addressables.LoadSceneAsync(sceneKey, LoadSceneMode.Single);
+        await handle.Task;
+
+        if (handle.Status == AsyncOperationStatus.Failed)
+        {
+            Debug.LogError($"场景加载失败: {sceneKey}");
+        }
+
+        _loadingIndicator.SetActive(false);
+    }
+
+    public async Task<T> LoadAssetAsync<T>(string assetKey)
+    {
+        var handle = Addressables.LoadAssetAsync<T>(assetKey);
+        await handle.Task;
+
+        if (handle.Status == AsyncOperationStatus.Succeeded)
+        {
+            return handle.Result;
+        }
+
+        Debug.LogError($"资源加载失败: {assetKey}");
+        return default;
+    }
+}
 ```
 
 ### 组件优化
 
-```typescript
-// 使用React.memo优化组件
-const CultivationProgress = React.memo<CultivationProgressProps>(({ 
-  level, experience, maxExperience, realm, isActive 
-}) => {
-  // 组件实现
-}, (prevProps, nextProps) => {
-  // 自定义比较函数
-  return (
-    prevProps.level === nextProps.level &&
-    prevProps.experience === nextProps.experience &&
-    prevProps.maxExperience === nextProps.maxExperience &&
-    prevProps.realm === nextProps.realm &&
-    prevProps.isActive === nextProps.isActive
-  );
-});
+```csharp
+// 组件优化 - 避免不必要的UI更新
+using UnityEngine;
 
-// 使用useMemo缓存计算结果
-const ExpensiveComponent: React.FC<{ data: any[] }> = ({ data }) => {
-  const processedData = useMemo(() => {
-    return data.map(item => ({
-      ...item,
-      calculated: heavyCalculation(item)
-    }));
-  }, [data]);
-  
-  return (
-    <div>
-      {processedData.map(item => (
-        <div key={item.id}>{item.calculated}</div>
-      ))}
-    </div>
-  );
-};
+public class OptimizedCultivationDisplay : MonoBehaviour
+{
+    private int _lastLevel = -1;
+    private int _lastExperience = -1;
+    private int _lastMaxExperience = -1;
+    private string _lastRealm = "";
+    private bool _lastIsActive = false;
+
+    public void UpdateDisplay(int level, int experience, int maxExperience,
+                               string realm, bool isActive)
+    {
+        // 仅在数据变化时更新UI，避免不必要的重绘
+        if (level == _lastLevel &&
+            experience == _lastExperience &&
+            maxExperience == _lastMaxExperience &&
+            realm == _lastRealm &&
+            isActive == _lastIsActive)
+        {
+            return;
+        }
+
+        _lastLevel = level;
+        _lastExperience = experience;
+        _lastMaxExperience = maxExperience;
+        _lastRealm = realm;
+        _lastIsActive = isActive;
+
+        RefreshUI();
+    }
+
+    private void RefreshUI()
+    {
+        // 刷新UI显示
+    }
+}
+
+// 对象池优化 - 频繁创建销毁的对象复用
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ObjectPool<T> where T : Component
+{
+    private readonly T _prefab;
+    private readonly Queue<T> _pool = new();
+    private readonly Transform _parent;
+
+    public ObjectPool(T prefab, int initialSize, Transform parent)
+    {
+        _prefab = prefab;
+        _parent = parent;
+
+        for (int i = 0; i < initialSize; i++)
+        {
+            var obj = Object.Instantiate(_prefab, _parent);
+            obj.gameObject.SetActive(false);
+            _pool.Enqueue(obj);
+        }
+    }
+
+    public T Get()
+    {
+        if (_pool.Count > 0)
+        {
+            var obj = _pool.Dequeue();
+            obj.gameObject.SetActive(true);
+            return obj;
+        }
+
+        return Object.Instantiate(_prefab, _parent);
+    }
+
+    public void Return(T obj)
+    {
+        obj.gameObject.SetActive(false);
+        _pool.Enqueue(obj);
+    }
+}
 ```
 
 ## 📋 **开发规范**
 
 ### 1. 命名规范
-- **组件**: PascalCase (CultivationSystem)
-- **文件**: kebab-case (cultivation-system.tsx)
-- **变量/函数**: camelCase (startCultivation)
-- **常量**: UPPER_SNAKE_CASE (MAX_LEVEL)
-- **类型**: PascalCase (CultivationData)
+- **类名/方法名**: PascalCase (`CultivationSystem`, `StartCultivation`)
+- **文件名**: PascalCase (`CultivationSystem.cs`)
+- **私有字段**: _camelCase (`_playerData`, `_isActive`)
+- **常量**: PascalCase (`MaxLevel`)
+- **接口**: IPascalCase (`ICultivationService`)
+- **枚举**: PascalCase (`GameSceneType`)
 
 ### 2. 文件组织
-- 每个组件一个文件夹
-- index.ts作为导出入口
-- 相关类型定义在同一文件夹
-- 测试文件与源文件同级
+- 每个 MonoBehaviour / ScriptableObject 一个文件
+- 相关类型定义可放在同一文件夹
+- 测试文件与源文件同命名加 Tests 后缀
+- 使用 Assembly Definition 文件划分模块边界
 
 ### 3. 代码质量
-- 使用TypeScript严格模式
-- 100%类型覆盖
-- 单元测试覆盖率>80%
-- ESLint + Prettier代码格式化
+- 使用 C# 严格模式（`TreatWarningsAsErrors`）
+- 100% 类型安全，启用 `Nullable`
+- 单元测试覆盖率 > 80%
+- C# Analyzers + .editorconfig 代码格式化
 
 ### 4. 性能要求
-- 首屏加载时间<3秒
-- 组件渲染时间<16ms
-- 内存使用<100MB
-- 包体积<2MB
+- 首场景加载时间 < 3秒
+- 帧渲染时间 < 16ms (60fps)
+- 内存使用 < 100MB
+- Asset Bundle 体积 < 200MB
 
-通过这套前端架构设计，我们能够构建一个高性能、可维护、可扩展的修仙游戏前端应用，为用户提供流畅的游戏体验。
+通过这套客户端架构设计，我们能够构建一个高性能、可维护、可扩展的修仙游戏客户端应用，为用户提供流畅的游戏体验。

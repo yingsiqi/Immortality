@@ -2,351 +2,626 @@
 
 ## 概述
 
-针对《凡人修仙传》MMORPG的Web端轻量化需求，本文档提供了一套完整的图形解决方案，旨在实现高性能、低内存占用的视觉效果，同时保持修仙主题的美术风格。
+针对《凡人修仙传》MMORPG的客户端渲染需求，本文档提供了一套基于 Tuanjie Engine（团结引擎）的完整图形解决方案，旨在实现高性能、低内存占用的视觉效果，同时保持修仙主题的美术风格。
 
 ## 设计原则
 
 ### 核心理念
-- **轻量优先**：单个图标<1KB，万级物品库内存占用<10MB
-- **动态生成**：基于特征码实时生成SVG图标，避免大量静态资源
+- **性能优先**：使用 TuanjieGI 全局动态实时光照，无需预烘焙即可呈现端游级光影
+- **动态生成**：基于特征码实时生成 Sprite 和 Material，避免大量静态资源
 - **风格统一**：去卡通化设计，融入水墨、古典元素
-- **性能保障**：60fps流畅体验，支持万人同服
+- **性能保障**：60fps 流畅体验，支持万人同服
+- **跨端部署**：一次开发，多端发布（PC、移动端、WebGL）
 
 ## 技术方案
 
-### 1. 本地SVG动态生成系统
+### 1. 动态图标生成系统
 
 #### 特征码映射机制
-```javascript
+```csharp
 // 物品特征码格式：[五行属性]_[品阶]_[状态]
 // 示例："fire_003_damaged" = 火系三阶破损法宝
 
-function generateSVGIcon(featureCode) {
-  const [element, tier, status] = featureCode.split('_');
-  
-  // 基础形状库
-  const baseShapes = {
-    weapon: generateWeaponPath(tier),
-    pill: generatePillPath(tier),
-    artifact: generateArtifactPath(tier)
-  };
-  
-  // 五行属性效果
-  const elementEffects = {
-    fire: `<filter id="fire-glow"><feGaussianBlur stdDeviation="2"/><feColorMatrix values="1 0.3 0 0 0.2"/></filter>`,
-    water: `<filter id="water-flow"><feTurbulence baseFrequency="0.1"/></filter>`,
-    wood: `<filter id="wood-texture"><feConvolveMatrix kernelMatrix="1 0 -1 2 0 -2 1 0 -1"/></filter>`,
-    metal: `<filter id="metal-shine"><feSpecularLighting specularConstant="2"/></filter>`,
-    earth: `<filter id="earth-solid"><feOffset dx="1" dy="1"/></filter>`
-  };
-  
-  // 状态修饰
-  const statusModifiers = {
-    damaged: `<path d="M20,20 L80,80 M80,20 L20,80" stroke="#666" stroke-width="2" opacity="0.7"/>`,
-    enhanced: `<circle cx="50" cy="50" r="45" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.8"/>`,
-    blessed: `<animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>`
-  };
-  
-  return `
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs>${elementEffects[element]}</defs>
-      <g filter="url(#${element}-glow)">
-        ${baseShapes.weapon}
-        ${statusModifiers[status] || ''}
-      </g>
-    </svg>
-  `;
+using UnityEngine;
+using UnityEditor;
+
+public class IconGenerator : MonoBehaviour
+{
+    // 基础形状 Prefab 库
+    [SerializeField] private GameObject[] weaponPrefabs;
+    [SerializeField] private GameObject[] pillPrefabs;
+    [SerializeField] private GameObject[] artifactPrefabs;
+
+    /// <summary>
+    /// 根据特征码动态生成图标 Sprite
+    /// </summary>
+    public Sprite GenerateIcon(string featureCode)
+    {
+        var parts = featureCode.Split('_');
+        string element = parts[0];   // 五行属性
+        int tier = int.Parse(parts[1]); // 品阶
+        string status = parts[2];    // 状态
+
+        // 获取基础形状
+        GameObject baseShape = GetBaseShape(tier);
+
+        // 应用五行属性材质
+        Material elementMaterial = GetElementMaterial(element);
+        baseShape.GetComponent<MeshRenderer>().material = elementMaterial;
+
+        // 应用状态修饰（破损裂纹、强化光效等）
+        ApplyStatusModifier(baseShape, status);
+
+        // 截取 RenderTexture 生成 Sprite
+        return CaptureToSprite(baseShape);
+    }
+
+    private Material GetElementMaterial(string element)
+    {
+        // 五行属性对应的 Shader 材质
+        return element switch
+        {
+            "fire" => new Material(Shader.Find("Custom/ElementFire")),
+            "water" => new Material(Shader.Find("Custom/ElementWater")),
+            "wood" => new Material(Shader.Find("Custom/ElementWood")),
+            "metal" => new Material(Shader.Find("Custom/ElementMetal")),
+            "earth" => new Material(Shader.Find("Custom/ElementEarth")),
+            _ => new Material(Shader.Find("Standard"))
+        };
+    }
+
+    private void ApplyStatusModifier(GameObject obj, string status)
+    {
+        switch (status)
+        {
+            case "damaged":
+                // 添加破损裂纹纹理叠加
+                obj.AddComponent<CrackOverlay>();
+                break;
+            case "enhanced":
+                // 添加强化金光环 Particle System
+                var glow = obj.AddComponent<ParticleSystem>();
+                ConfigureEnhancementGlow(glow);
+                break;
+            case "blessed":
+                // 添加祝福动画效果
+                obj.AddComponent<BlessedEffect>();
+                break;
+        }
+    }
+
+    private Sprite CaptureToSprite(GameObject obj)
+    {
+        // 使用 RenderTexture 截取 3D 模型生成 2D Sprite
+        var rt = RenderTexture.GetTemporary(128, 128, 24);
+        var cam = SetupCaptureCamera(obj, rt);
+        cam.Render();
+
+        // 读取 RenderTexture 到 Texture2D
+        var tex = new Texture2D(128, 128, TextureFormat.RGBA32, false);
+        RenderTexture.active = rt;
+        tex.ReadPixels(new Rect(0, 0, 128, 128), 0, 0);
+        tex.Apply();
+
+        RenderTexture.ReleaseTemporary(rt);
+        return Sprite.Create(tex, new Rect(0, 0, 128, 128), Vector2.one * 0.5f);
+    }
 }
 ```
 
 #### 分层复合图标系统
-```javascript
-// 图标层级结构
-const iconLayers = {
-  base: '基础形状层（武器轮廓、丹药形状）',
-  element: '五行属性层（火焰纹理、水波效果）',
-  tier: '品阶标识层（光环数量、材质质感）',
-  status: '状态修饰层（破损裂纹、强化光效）',
-  animation: '动画效果层（灵力波动、境界威压）'
-};
+```csharp
+// 图标层级结构（使用 Unity 的 Layered Sprite 系统）
+[CreateAssetMenu(fileName = "IconConfig", menuName = "Immortality/Icon Configuration")]
+public class IconConfig : ScriptableObject
+{
+    public Sprite baseLayer;       // 基础形状层（武器轮廓、丹药形状）
+    public Sprite elementLayer;     // 五行属性层（火焰纹理、水波效果）
+    public Sprite tierLayer;        // 品阶标识层（光环数量、材质质感）
+    public Sprite statusLayer;      // 状态修饰层（破损裂纹、强化光效）
+    public Sprite animationLayer;   // 动画效果层（灵力波动、境界威压）
 
-// 动态组合示例
-function compositeIcon(layers) {
-  return `
-    <svg viewBox="0 0 100 100">
-      <g class="base-layer">${layers.base}</g>
-      <g class="element-layer" opacity="0.8">${layers.element}</g>
-      <g class="tier-layer">${layers.tier}</g>
-      <g class="status-layer">${layers.status}</g>
-      <g class="animation-layer">${layers.animation}</g>
-    </svg>
-  `;
+    public Color elementTint = Color.white;
+    public float elementOpacity = 0.8f;
+}
+
+// 动态组合图标组件
+public class CompositeIcon : MonoBehaviour
+{
+    [SerializeField] private IconConfig config;
+    [SerializeField] private SpriteRenderer[] layers = new SpriteRenderer[5];
+
+    public void Render(IconConfig newConfig)
+    {
+        config = newConfig;
+
+        // 基础形状层
+        layers[0].sprite = config.baseLayer;
+
+        // 五行属性层
+        layers[1].sprite = config.elementLayer;
+        layers[1].color = new Color(config.elementTint.r, config.elementTint.g,
+            config.elementTint.b, config.elementOpacity);
+
+        // 品阶标识层
+        layers[2].sprite = config.tierLayer;
+
+        // 状态修饰层
+        layers[3].sprite = config.statusLayer;
+
+        // 动画效果层
+        layers[4].sprite = config.animationLayer;
+    }
 }
 ```
 
-### 2. 渲染引擎选型
+### 2. 渲染管线配置
 
-#### Canvas配置化渲染（轻量场景）
-```xml
-<!-- 声明式图标定义 -->
-<artifact id="xuantianding" class="treasure ice-element tier-5">
-  <base-shape type="cauldron" size="large"/>
-  <element-effect type="ice-flame" intensity="0.8"/>
-  <tier-indicator count="5" style="golden-rings"/>
-  <status-modifier type="ancient" opacity="0.9"/>
-</artifact>
+#### UGUI 配置化渲染（UI 界面）
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+
+// 声明式图标定义组件
+[RequireComponent(typeof(Image))]
+public class ArtifactIcon : MonoBehaviour
+{
+    [Header("基础配置")]
+    public string artifactId;
+    public ElementType elementType;
+    public int tier;
+    public ArtifactStatus status;
+
+    [Header("引用")]
+    [SerializeField] private Image baseImage;
+    [SerializeField] private Image elementOverlay;
+    [SerializeField] private Image tierIndicator;
+    [SerializeField] private ParticleSystem statusEffect;
+
+    private void Awake()
+    {
+        RenderIcon();
+    }
+
+    public void RenderIcon()
+    {
+        // 基础形状
+        baseImage.sprite = IconDatabase.GetBaseSprite(artifactId);
+
+        // 五行属性效果
+        elementOverlay.sprite = IconDatabase.GetElementSprite(elementType);
+        elementOverlay.color = GetElementColor(elementType);
+
+        // 品阶光环
+        tierIndicator.sprite = IconDatabase.GetTierSprite(tier);
+
+        // 状态修饰
+        if (status == ArtifactStatus.Enhanced)
+        {
+            statusEffect.Play();
+        }
+    }
+
+    private Color GetElementColor(ElementType element)
+    {
+        return element switch
+        {
+            ElementType.Fire => new Color(1f, 0.34f, 0.13f),    // 朱砂红
+            ElementType.Water => new Color(0.13f, 0.59f, 0.95f), // 青蓝色
+            ElementType.Wood => new Color(0.30f, 0.69f, 0.31f),  // 翠绿色
+            ElementType.Metal => new Color(1f, 0.84f, 0f),        // 赤金色
+            ElementType.Earth => new Color(0.47f, 0.33f, 0.28f),  // 赭石色
+            _ => Color.white
+        };
+    }
+}
+
+public enum ElementType { Fire, Water, Wood, Metal, Earth }
+public enum ArtifactStatus { Normal, Damaged, Enhanced, Blessed }
 ```
 
-```css
-/* 样式绑定 */
-.treasure {
-  width: 64px;
-  height: 64px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-}
+#### TuanjieGI 高性能渲染（3D 场景）
+```csharp
+using UnityEngine;
+using UnityEngine.Rendering;
 
-.ice-element {
-  --primary-color: #87CEEB;
-  --secondary-color: #4682B4;
-}
+// 场景渲染管理器
+public class SceneRenderManager : MonoBehaviour
+{
+    [Header("TuanjieGI 配置")]
+    [SerializeField] private bool enableTuanjieGI = true;
+    [SerializeField] private float giIntensity = 1.0f;
 
-.tier-5 {
-  --glow-intensity: 1.0;
-  --ring-count: 5;
-}
-```
+    [Header("虚拟几何体")]
+    [SerializeField] private bool enableVirtualGeometry = true;
+    [SerializeField] private int maxTriangleBudget = 50_000_000;
 
-#### WebGL高性能渲染（复杂场景）
-```javascript
-// 基于Miniquad的SVG转纹理管线
-class SVGTextureRenderer {
-  constructor() {
-    this.gl = initWebGL();
-    this.textureCache = new Map();
-  }
-  
-  // SVG转WebGL纹理
-  svgToTexture(svgString, size = 64) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.height = size;
-    
-    const img = new Image();
-    const blob = new Blob([svgString], {type: 'image/svg+xml'});
-    const url = URL.createObjectURL(blob);
-    
-    return new Promise(resolve => {
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0, size, size);
-        const texture = this.gl.createTexture();
-        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, canvas);
-        URL.revokeObjectURL(url);
-        resolve(texture);
-      };
-      img.src = url;
-    });
-  }
-  
-  // 批量渲染优化
-  renderBatch(icons) {
-    // 使用实例化渲染减少DrawCall
-    const instanceData = icons.map(icon => ({
-      position: icon.position,
-      texture: this.textureCache.get(icon.featureCode),
-      scale: icon.scale,
-      rotation: icon.rotation
-    }));
-    
-    this.gl.drawArraysInstanced(this.gl.TRIANGLES, 0, 6, instanceData.length);
-  }
+    [Header("TJSR 超分辨率")]
+    [SerializeField] private bool enableTJSR = true;
+
+    private void Start()
+    {
+        ConfigureRendering();
+    }
+
+    private void ConfigureRendering()
+    {
+        var rp = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline;
+
+        // 开启 TuanjieGI 全局动态实时光照
+        if (enableTuanjieGI)
+        {
+            // TuanjieGI 一键开启，无需预烘焙
+            Shader.SetGlobalFloat("_GI_Intensity", giIntensity);
+        }
+
+        // 配置虚拟几何体（移动端也能渲染上亿三角面）
+        if (enableVirtualGeometry)
+        {
+            QualitySettings.maximumLODLevel = 0;
+        }
+
+        // TJSR 超分辨率（自动调用平台原生超分能力）
+        if (enableTJSR)
+        {
+            // TJSR 自适应不同硬件平台
+        }
+    }
+
+    /// <summary>
+    /// LOD（细节层次）管理
+    /// </summary>
+    public void ConfigureLOD(GameObject obj, float distance)
+    {
+        var lodGroup = obj.GetComponent<LODGroup>();
+        if (lodGroup == null) return;
+
+        if (distance > 100f)
+        {
+            // 远距离：简化为 Billboard
+            lodGroup.ForceLOD(3);
+        }
+        else if (distance > 50f)
+        {
+            // 中距离：低精度模型
+            lodGroup.ForceLOD(1);
+        }
+        else
+        {
+            // 近距离：完整模型 + 特效
+            lodGroup.ForceLOD(0);
+        }
+    }
 }
 ```
 
 ### 3. 美术风格控制
 
-#### 五行配色体系
-```css
-:root {
-  /* 五行主色调 */
-  --element-fire: #FF5722;    /* 火：朱砂红 */
-  --element-water: #2196F3;   /* 水：青蓝色 */
-  --element-wood: #4CAF50;    /* 木：翠绿色 */
-  --element-metal: #FFD700;   /* 金：赤金色 */
-  --element-earth: #795548;   /* 土：赭石色 */
-  
-  /* 境界阶级色彩 */
-  --tier-mortal: #9E9E9E;     /* 凡人：灰色 */
-  --tier-qi: #CDDC39;         /* 炼气：青色 */
-  --tier-foundation: #FF9800; /* 筑基：橙色 */
-  --tier-core: #9C27B0;       /* 结丹：紫色 */
-  --tier-nascent: #FFD700;    /* 元婴：金色 */
-  --tier-spirit: #00BCD4;     /* 化神：青蓝 */
-  --tier-void: #E91E63;       /* 炼虚：玫红 */
-  --tier-unity: #3F51B5;      /* 合体：靛蓝 */
-  --tier-mahayana: linear-gradient(45deg, #FF5722, #4CAF50, #2196F3, #FFD700, #9C27B0); /* 大乘：七彩流光 */
+#### 五行配色体系（USS 变量 / ScriptableObject 主题）
+```csharp
+[CreateAssetMenu(fileName = "ThemeConfig", menuName = "Immortality/Theme Config")]
+public class ThemeConfig : ScriptableObject
+{
+    [Header("五行主色调")]
+    public Color elementFire = new Color(1f, 0.34f, 0.13f);    // 火：朱砂红
+    public Color elementWater = new Color(0.13f, 0.59f, 0.95f); // 水：青蓝色
+    public Color elementWood = new Color(0.30f, 0.69f, 0.31f);  // 木：翠绿色
+    public Color elementMetal = new Color(1f, 0.84f, 0f);        // 金：赤金色
+    public Color elementEarth = new Color(0.47f, 0.33f, 0.28f);  // 土：赭石色
+
+    [Header("境界阶级色彩")]
+    public Color tierMortal = new Color(0.62f, 0.62f, 0.62f);     // 凡人：灰色
+    public Color tierQi = new Color(0.80f, 0.86f, 0.24f);         // 炼气：青色
+    public Color tierFoundation = new Color(1f, 0.59f, 0f);      // 筑基：橙色
+    public Color tierCore = new Color(0.61f, 0.15f, 0.69f);      // 结丹：紫色
+    public Color tierNascent = new Color(1f, 0.84f, 0f);          // 元婴：金色
+    public Color tierSpirit = new Color(0f, 0.74f, 0.83f);       // 化神：青蓝
+    public Color tierVoid = new Color(0.91f, 0.12f, 0.39f);      // 炼虚：玫红
+    public Color tierUnity = new Color(0.25f, 0.31f, 0.71f);     // 合体：靛蓝
+
+    [Header("UI 主题色")]
+    public Color primaryColor = new Color(0.29f, 0.56f, 0.89f);   // 仙境蓝
+    public Color secondaryColor = new Color(0.56f, 0.27f, 0.68f); // 灵气紫
+    public Color backgroundColor = new Color(0.10f, 0.10f, 0.12f); // 深色背景
+    public Color textColor = Color.white;
 }
 ```
 
-#### 水墨风格滤镜
-```svg
-<defs>
-  <!-- 水墨晕染效果 -->
-  <filter id="ink-wash">
-    <feTurbulence baseFrequency="0.3" numOctaves="4" result="noise"/>
-    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/>
-    <feGaussianBlur stdDeviation="1" result="blur"/>
-    <feComposite in="SourceGraphic" in2="blur" operator="multiply"/>
-  </filter>
-  
-  <!-- 古典纸张质感 -->
-  <filter id="paper-texture">
-    <feTurbulence baseFrequency="0.04" numOctaves="5" result="paper"/>
-    <feColorMatrix in="paper" type="saturate" values="0"/>
-    <feComposite in="SourceGraphic" in2="paper" operator="multiply"/>
-  </filter>
-  
-  <!-- 灵力光晕 -->
-  <filter id="spiritual-glow">
-    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-    <feMerge>
-      <feMergeNode in="coloredBlur"/>
-      <feMergeNode in="SourceGraphic"/>
-    </feMerge>
-  </filter>
-</defs>
+#### 水墨风格 Shader
+```csharp
+using UnityEngine;
+
+// 水墨晕染自定义 Shader（需创建对应 Shader 文件）
+// Shader 文件路径：Assets/Shaders/InkWash.shader
+/*
+Shader "Custom/InkWash"
+{
+    Properties
+    {
+        _MainTex ("Main Texture", 2D) = "white" {}
+        _InkIntensity ("Ink Intensity", Range(0, 1)) = 0.8
+        _NoiseScale ("Noise Scale", Float) = 0.3
+        _BlurRadius ("Blur Radius", Float) = 1.0
+        _PaperTint ("Paper Tint", Color) = (0.95, 0.90, 0.80, 1)
+    }
+
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" }
+        LOD 200
+
+        Pass
+        {
+            // 噪声扰动模拟墨迹扩散
+            // 高斯模糊模拟晕染
+            // 饱和度降低模拟水墨单色
+            // 纸张纹理叠加
+        }
+    }
+}
+*/
+
+// 水墨风格材质管理器
+public class InkWashMaterialManager : MonoBehaviour
+{
+    [SerializeField] private Material inkWashMaterial;
+    [SerializeField] private Material paperTextureMaterial;
+    [SerializeField] private Material spiritualGlowMaterial;
+
+    public Material GetInkWashMaterial(Texture mainTex, float intensity = 0.8f)
+    {
+        var mat = new Material(inkWashMaterial);
+        mat.SetTexture("_MainTex", mainTex);
+        mat.SetFloat("_InkIntensity", intensity);
+        return mat;
+    }
+
+    public Material GetSpiritualGlowMaterial(Color glowColor, float intensity = 1.0f)
+    {
+        var mat = new Material(spiritualGlowMaterial);
+        mat.SetColor("_GlowColor", glowColor);
+        mat.SetFloat("_GlowIntensity", intensity);
+        return mat;
+    }
+}
 ```
 
 ### 4. 性能优化策略
 
 #### 缓存与预加载
-```javascript
-class IconCacheManager {
-  constructor() {
-    this.cache = new Map();
-    this.preloadQueue = [];
-    this.worker = new Worker('icon-generator-worker.js');
-  }
-  
-  // 预生成常用图标
-  preloadCommonIcons() {
-    const commonCodes = [
-      'fire_001_normal', 'water_001_normal', 'wood_001_normal',
-      'metal_001_normal', 'earth_001_normal'
-    ];
-    
-    commonCodes.forEach(code => {
-      this.worker.postMessage({type: 'generate', code});
-    });
-  }
-  
-  // LOD（细节层次）管理
-  getIconByDistance(featureCode, distance) {
-    if (distance > 100) {
-      // 远距离：简化为纯色圆点
-      return this.generateSimpleIcon(featureCode);
-    } else if (distance > 50) {
-      // 中距离：基础SVG
-      return this.getBasicIcon(featureCode);
-    } else {
-      // 近距离：完整特效
-      return this.getFullIcon(featureCode);
+```csharp
+using UnityEngine;
+using UnityEngine.AddressableAssets;
+
+public class IconCacheManager : MonoBehaviour
+{
+    private static IconCacheManager _instance;
+    public static IconCacheManager Instance => _instance;
+
+    // LRU 缓存
+    private readonly LRUCache<string, Sprite> _cache = new(500);
+
+    [Header("预加载配置")]
+    [SerializeField] private AssetLabelReference[] preloadLabels;
+
+    private void Awake()
+    {
+        _instance = this;
     }
-  }
+
+    private async void Start()
+    {
+        await PreloadCommonIcons();
+    }
+
+    /// <summary>
+    /// 预生成常用图标
+    /// </summary>
+    private async Task PreloadCommonIcons()
+    {
+        foreach (var label in preloadLabels)
+        {
+            var handle = Addressables.LoadAssetsAsync<Sprite>(label, null);
+            await handle.Task;
+
+            foreach (var sprite in handle.Result)
+            {
+                _cache.Put(sprite.name, sprite);
+            }
+        }
+    }
+
+    /// <summary>
+    /// LOD（细节层次）管理
+    /// </summary>
+    public Sprite GetIconByDistance(string featureCode, float distance)
+    {
+        if (distance > 100f)
+        {
+            // 远距离：简化为纯色圆点
+            return GetSimpleIcon(featureCode);
+        }
+        else if (distance > 50f)
+        {
+            // 中距离：基础 Sprite
+            return GetBasicIcon(featureCode);
+        }
+        else
+        {
+            // 近距离：完整特效
+            return GetFullIcon(featureCode);
+        }
+    }
+
+    public Sprite GetCached(string key)
+    {
+        if (_cache.TryGetValue(key, out var sprite))
+            return sprite;
+        return null;
+    }
+
+    public void Cache(string key, Sprite sprite)
+    {
+        _cache.Put(key, sprite);
+    }
+}
+
+/// <summary>
+/// 简易 LRU 缓存
+/// </summary>
+public class LRUCache<TKey, TValue> where TValue : class
+{
+    private readonly int _capacity;
+    private readonly LinkedList<KeyValuePair<TKey, TValue>> _list = new();
+    private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> _dict = new();
+
+    public LRUCache(int capacity)
+    {
+        _capacity = capacity;
+    }
+
+    public void Put(TKey key, TValue value)
+    {
+        if (_dict.TryGetValue(key, out var node))
+        {
+            _list.Remove(node);
+            node.Value = new KeyValuePair<TKey, TValue>(key, value);
+            _list.AddFirst(node);
+        }
+        else
+        {
+            if (_dict.Count >= _capacity)
+            {
+                var last = _list.Last;
+                _list.RemoveLast();
+                _dict.Remove(last.Value.Key);
+            }
+            var newNode = new LinkedListNode<KeyValuePair<TKey, TValue>>(
+                new KeyValuePair<TKey, TValue>(key, value));
+            _list.AddFirst(newNode);
+            _dict[key] = newNode;
+        }
+    }
+
+    public bool TryGetValue(TKey key, out TValue value)
+    {
+        if (_dict.TryGetValue(key, out var node))
+        {
+            _list.Remove(node);
+            _list.AddFirst(node);
+            value = node.Value.Value;
+            return true;
+        }
+        value = default;
+        return false;
+    }
 }
 ```
 
-#### Web Worker并行生成
-```javascript
-// icon-generator-worker.js
-self.onmessage = function(e) {
-  const {type, code} = e.data;
-  
-  if (type === 'generate') {
-    const svg = generateSVGIcon(code);
-    self.postMessage({code, svg});
-  }
-};
+#### 异步并行生成（UniTask）
+```csharp
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
-// 批量生成优化
-function batchGenerate(codes) {
-  return Promise.all(
-    codes.map(code => 
-      new Promise(resolve => {
-        worker.postMessage({type: 'generate', code});
-        worker.onmessage = e => {
-          if (e.data.code === code) {
-            resolve(e.data.svg);
-          }
-        };
-      })
-    )
-  );
+public class AsyncIconGenerator : MonoBehaviour
+{
+    /// <summary>
+    /// 批量异步生成图标
+    /// </summary>
+    public async UniTask<Dictionary<string, Sprite>> BatchGenerate(string[] featureCodes)
+    {
+        var results = new Dictionary<string, Sprite>();
+
+        // 分帧生成，避免卡顿
+        await UniTask.WhenAll(
+            featureCodes.Select(code => GenerateOnNextFrame(code, results))
+        );
+
+        return results;
+    }
+
+    private async UniTask GenerateOnNextFrame(string code, Dictionary<string, Sprite> results)
+    {
+        await UniTask.Yield(); // 等待下一帧
+        var sprite = IconGenerator.Instance.GenerateIcon(code);
+        results[code] = sprite;
+    }
 }
 ```
 
-## 资源库推荐
+## 资源管理推荐
 
-### SVG图标库
-| 库名称 | 图标数量 | 修仙适配度 | 使用方式 |
-|--------|----------|------------|----------|
-| Iconify | 150,000+ | ⭐⭐⭐ | 搜索"sword", "cauldron"等关键词 |
-| FxEmojis | 2,000+ | ⭐⭐⭐⭐ | 可编辑SVG，适合制作灵符、法阵 |
-| Feather Icons | 280+ | ⭐⭐⭐⭐⭐ | 简洁线条风格，符合轻量化需求 |
-| Heroicons | 450+ | ⭐⭐⭐⭐ | 现代简约，适合UI界面图标 |
+### Sprite 图标库
+| 资源类型 | 说明 | 使用方式 |
+|----------|------|----------|
+| Addressable Assets | 按需加载图标 Sprite | `Addressables.LoadAssetAsync<Sprite>(key)` |
+| Sprite Atlas | 打包图集减少 DrawCall | 通过 Sprite Atlas 配置自动合批 |
+| AI Graph | 使用 AI 生成 2D/3D 美术资产 | `Window → AI Graph` 输入描述生成 |
 
 ### 工具链
 ```bash
-# SVG优化工具
-npm install svgo
-svgo --config svgo.config.js icons/*.svg
+# NuGet 包管理（服务端）
+dotnet add package Npgsql
+dotnet add package StackExchange.Redis
 
-# 纹理图集生成
-npm install texturepacker-cli
-texturepacker --format json --data icons.json --sheet icons.png icons/*.svg
+# Unity Package Manager（客户端）
+# 通过 Window → Package Manager 安装：
+# - Addressables
+# - AI Graph
+# - Unity UI (UGUI)
+# - Cinemachine (镜头系统)
+# - DOTween (动画插件)
 
-# 自动化构建
-npm run build:icons  # 生成优化后的SVG + 纹理图集
+# Tuanjie 引擎构建
+# File → Build Settings → 选择目标平台 → Build
 ```
 
 ## 实施建议
 
 ### 开发阶段
-1. **原型验证**：先实现基础的五行图标生成器
-2. **性能测试**：在1000+图标场景下测试帧率
-3. **美术迭代**：与美术团队协作调整风格参数
-4. **缓存优化**：实现智能预加载和LRU缓存
+1. **原型验证**：先实现基础的五行图标生成器（ScriptableObject + SpriteRenderer）
+2. **性能测试**：在 1000+ 图标场景下使用 Profiler 测试帧率
+3. **美术迭代**：使用 AI Graph 快速生成美术资产原型，与美术团队协作调整
+4. **缓存优化**：实现 Addressable Assets 智能预加载和 LRU 缓存
 
 ### 部署策略
-1. **渐进式加载**：优先加载核心UI图标
-2. **CDN分发**：将基础SVG模板部署到CDN
-3. **版本控制**：图标特征码支持版本号，便于更新
-4. **降级方案**：低端设备自动切换到简化模式
+1. **渐进式加载**：Addressable Assets 按需加载核心 UI 图标
+2. **跨端部署**：Tuanjie 引擎一次开发，发布到 PC、移动端、WebGL
+3. **版本控制**：Addressable Assets 支持远程更新，无需重新发版
+4. **降级方案**：低端设备自动降低 LOD、关闭 TuanjieGI、启用 TJSR 超分辨率
 
 ## 性能指标
 
 ### 目标性能
-- **内存占用**：<150MB（20,000+图标场景）
-- **生成速度**：<5ms/图标（Web Worker并行）
-- **渲染帧率**：55-60fps（万级物品列表）
-- **网络传输**：基础库<50KB gzipped
+- **内存占用**：<150MB（20,000+ 图标场景，含 Addressable 缓存）
+- **生成速度**：<5ms/图标（异步分帧生成）
+- **渲染帧率**：55-60fps（万级物品列表，使用 Sprite Atlas 合批）
+- **首包大小**：<50MB（核心资源，其余通过 Addressable 远程加载）
 
 ### 监控指标
-```javascript
-// 性能监控
-class PerformanceMonitor {
-  static trackIconGeneration(code, startTime) {
-    const duration = performance.now() - startTime;
-    console.log(`Icon ${code} generated in ${duration.toFixed(2)}ms`);
-    
-    // 上报到监控系统
-    analytics.track('icon_generation', {
-      code,
-      duration,
-      memory: performance.memory?.usedJSHeapSize
-    });
-  }
+```csharp
+using UnityEngine;
+using UnityEngine.Profiling;
+
+public class GraphicsPerformanceMonitor : MonoBehaviour
+{
+    private float _updateInterval = 1f;
+    private float _timer = 0f;
+
+    private void Update()
+    {
+        _timer += Time.deltaTime;
+        if (_timer >= _updateInterval)
+        {
+            float fps = 1f / Time.smoothDeltaTime;
+            long usedMemory = Profiler.GetTotalAllocatedMemoryLong() / (1024 * 1024);
+
+            Debug.Log($"[Performance] FPS: {fps:F1} | Memory: {usedMemory}MB | DrawCalls: {Profiler.drawCallCount}");
+
+            _timer = 0f;
+        }
+    }
 }
 ```
 
-通过这套轻量化图形方案，可以在保持修仙主题美术风格的同时，实现高性能的Web端渲染，满足万人同服的技术需求。
+通过这套基于 Tuanjie Engine 的图形方案，可以在保持修仙主题美术风格的同时，实现高性能的客户端渲染，满足万人同服的技术需求，并支持跨端部署。

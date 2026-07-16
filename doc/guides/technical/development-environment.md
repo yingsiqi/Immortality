@@ -16,9 +16,10 @@
 - **操作系统**: Windows 10/11, macOS 12+, Ubuntu 20.04+
 - **Docker**: 20.10+
 - **Docker Compose**: 2.0+
-- **Node.js**: 18.17+ (推荐使用nvm管理版本)
+- **.NET SDK**: 8.0+ (推荐使用.NET SDK版本管理)
 - **Git**: 2.30+
-- **IDE**: VS Code (推荐) 或 WebStorm
+- **IDE**: VS Code (推荐) 或 Rider / Visual Studio 2022
+- **Tuanjie Engine**: 团结引擎最新稳定版
 
 ## 🐳 **Docker 容器化环境**
 
@@ -47,14 +48,13 @@ Immortality/
 │       └── minio/
 │           ├── Dockerfile
 │           └── minio.conf
-├── frontend/
+├── client/
 │   ├── Dockerfile
-│   ├── Dockerfile.dev
 │   └── nginx.conf
-├── backend/
+├── server/
 │   ├── Dockerfile
 │   ├── Dockerfile.dev
-│   └── nest-cli.json
+│   └── Immortality.Server.sln
 └── scripts/
     ├── setup-dev.sh
     ├── start-dev.sh
@@ -173,30 +173,27 @@ services:
       timeout: 20s
       retries: 3
 
-  # 后端服务 (开发模式)
-  backend:
+  # 服务端 (开发模式 - ASP.NET Core)
+  server:
     build:
-      context: ../../backend
+      context: ../../server
       dockerfile: Dockerfile.dev
-    container_name: immortality-backend
+    container_name: immortality-server
     environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://immortality:dev_password_123@postgres:5432/immortality_dev
-      EVENTSTORE_CONNECTION_STRING: esdb://eventstore:2113?tls=false
-      REDIS_URL: redis://:dev_redis_password@redis:6379
-      MINIO_ENDPOINT: minio
-      MINIO_PORT: 9000
-      MINIO_ACCESS_KEY: immortality
-      MINIO_SECRET_KEY: dev_minio_password_123
-      JWT_SECRET: dev_jwt_secret_key_for_development_only
-      PORT: 3001
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=postgres;Database=immortality_dev;Username=immortality;Password=dev_password_123
+      EventStore__ConnectionString: esdb://eventstore:2113?tls=false
+      Redis__ConnectionString: redis:6379,password=dev_redis_password
+      MinIO__Endpoint: minio:9000
+      MinIO__AccessKey: immortality
+      MinIO__SecretKey: dev_minio_password_123
+      Jwt__Secret: dev_jwt_secret_key_for_development_only
+      ASPNETCORE_URLS: http://+:5000
     ports:
-      - "3001:3001"
-      - "9229:9229" # Node.js 调试端口
+      - "5000:5000"
     volumes:
-      - ../../backend:/app
-      - /app/node_modules
-      - backend_logs:/app/logs
+      - ../../server:/app
+      - server_logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy
@@ -210,45 +207,32 @@ services:
       - immortality-network
     command: |
       sh -c "
-        npm install &&
-        npm run migration:run &&
-        npm run seed:dev &&
-        npm run start:debug
+        dotnet restore &&
+        dotnet ef database update &&
+        dotnet run --project Immortality.Server
       "
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
 
-  # 前端服务 (开发模式)
-  frontend:
+  # 客户端静态资源服务 (开发模式 - Tuanjie构建输出)
+  client:
     build:
-      context: ../../frontend
-      dockerfile: Dockerfile.dev
-    container_name: immortality-frontend
-    environment:
-      NODE_ENV: development
-      VITE_API_BASE_URL: http://localhost:3001
-      VITE_WS_URL: ws://localhost:3001
-      VITE_MINIO_ENDPOINT: http://localhost:9000
-      CHOKIDAR_USEPOLLING: true
+      context: ../../client
+      dockerfile: Dockerfile
+    container_name: immortality-client
     ports:
-      - "3000:3000"
+      - "3000:80"
     volumes:
-      - ../../frontend:/app
-      - /app/node_modules
+      - ../../client/dist:/usr/share/nginx/html
     depends_on:
-      - backend
+      - server
     networks:
       - immortality-network
-    command: |
-      sh -c "
-        npm install &&
-        npm run dev -- --host 0.0.0.0
-      "
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -264,8 +248,8 @@ services:
       - ../../nginx/nginx.dev.conf:/etc/nginx/nginx.conf
       - ../../nginx/ssl:/etc/nginx/ssl
     depends_on:
-      - frontend
-      - backend
+      - client
+      - server
     networks:
       - immortality-network
     profiles:
@@ -282,7 +266,7 @@ volumes:
     driver: local
   minio_data:
     driver: local
-  backend_logs:
+  server_logs:
     driver: local
 
 networks:
@@ -324,8 +308,8 @@ MINIO_SECRET_KEY=dev_minio_password_123
 MINIO_USE_SSL=false
 
 # 应用配置
-NODE_ENV=development
-PORT=3001
+ASPNETCORE_ENVIRONMENT=Development
+ASPNETCORE_URLS=http://+:5000
 JWT_SECRET=dev_jwt_secret_key_for_development_only
 JWT_EXPIRES_IN=7d
 
@@ -338,12 +322,12 @@ ENABLE_SWAGGER=true
 ENABLE_PLAYGROUND=true
 ENABLE_DEBUG=true
 
-# 前端配置
-VITE_API_BASE_URL=http://localhost:3001
-VITE_WS_URL=ws://localhost:3001
-VITE_MINIO_ENDPOINT=http://localhost:9000
-VITE_APP_NAME=Immortality Dev
-VITE_APP_VERSION=0.1.0-alpha
+# 客户端配置
+GAME_API_BASE_URL=http://localhost:5000
+GAME_WS_URL=ws://localhost:5000
+GAME_MINIO_ENDPOINT=http://localhost:9000
+GAME_APP_NAME=Immortality Dev
+GAME_APP_VERSION=0.1.0-alpha
 ```
 
 ### Docker 服务配置
@@ -425,41 +409,43 @@ slowlog-max-len 128
 
 ## 🔧 **开发工具链配置**
 
-### Node.js 版本管理
+### .NET SDK 版本管理
 
 ```bash
-# 安装 nvm (Node Version Manager)
-# Windows (使用 nvm-windows)
-choco install nvm
+# 安装 .NET SDK (Windows)
+winget install Microsoft.DotNet.SDK.8
 
 # macOS/Linux
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-
-# 安装并使用 Node.js 18
-nvm install 18.17.0
-nvm use 18.17.0
-nvm alias default 18.17.0
+# 使用官方安装脚本
+curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 8.0
 
 # 验证安装
-node --version  # v18.17.0
-npm --version   # 9.6.7
+dotnet --version   # 8.0.x
+dotnet --list-sdks
+
+# 查看已安装的运行时
+dotnet --list-runtimes
 ```
 
 ### 包管理器配置
 
 ```bash
-# 安装 pnpm (推荐)
-npm install -g pnpm@latest
+# NuGet 配置 (项目根目录 nuget.config)
+dotnet nuget config set registry https://api.nuget.org/v3/index.json
 
-# 配置 pnpm
-pnpm config set registry https://registry.npmmirror.com/
-pnpm config set store-dir ~/.pnpm-store
-pnpm config set cache-dir ~/.pnpm-cache
-
-# 项目根目录创建 .npmrc
-echo "registry=https://registry.npmmirror.com/" > .npmrc
-echo "shamefully-hoist=true" >> .npmrc
-echo "strict-peer-dependencies=false" >> .npmrc
+# 项目根目录创建 nuget.config
+cat > nuget.config << EOF
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" protocolVersion="3" />
+  </packageSources>
+  <packageRestore>
+    <add key="enabled" value="True" />
+    <add key="automatic" value="True" />
+  </packageRestore>
+</configuration>
+EOF
 ```
 
 ### VS Code 配置
@@ -470,18 +456,19 @@ echo "strict-peer-dependencies=false" >> .npmrc
 // .vscode/extensions.json
 {
   "recommendations": [
-    // TypeScript 支持
-    "ms-vscode.vscode-typescript-next",
+    // C# 开发
+    "ms-dotnettools.csdevkit",
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.vscodeintellicode-csharp",
     
-    // React 开发
-    "bradlc.vscode-tailwindcss",
-    "formulahendry.auto-rename-tag",
-    "christian-kohler.path-intellisense",
+    // Tuanjie/Unity 开发
+    "Unity.unity-debug",
+    "kleber-swf.unity-code-snippets",
+    "tobiah.unity-tools",
     
     // 代码质量
-    "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
-    "ms-vscode.vscode-json",
+    "editorconfig.editorconfig",
+    "ms-dotnettools.vscode-dotnet-runtime",
     
     // Git 工具
     "eamodio.gitlens",
@@ -497,7 +484,6 @@ echo "strict-peer-dependencies=false" >> .npmrc
     // 开发工具
     "humao.rest-client",
     "rangav.vscode-thunder-client",
-    "ms-vscode.vscode-json",
     
     // 主题和图标
     "pkief.material-icon-theme",
@@ -511,17 +497,18 @@ echo "strict-peer-dependencies=false" >> .npmrc
 ```json
 // .vscode/settings.json
 {
-  // TypeScript 配置
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
+  // C# 配置
+  "csharp.preferences.importModuleSpecifier": "relative",
+  "csharp.suggest.autoImports": true,
+  "omnisharp.enableImportCompletion": true,
+  "omnisharp.organizeImportsOnFormat": true,
   
   // 格式化配置
   "editor.formatOnSave": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "ms-dotnettools.csharp",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true,
-    "source.organizeImports": true
+    "source.fixAll": true,
+    "source.organizeUsings": true
   },
   
   // 文件配置
@@ -531,23 +518,13 @@ echo "strict-peer-dependencies=false" >> .npmrc
   
   // 搜索配置
   "search.exclude": {
-    "**/node_modules": true,
+    "**/bin": true,
+    "**/obj": true,
     "**/dist": true,
     "**/build": true,
     "**/.git": true,
     "**/coverage": true
   },
-  
-  // Tailwind CSS
-  "tailwindCSS.includeLanguages": {
-    "typescript": "javascript",
-    "typescriptreact": "javascript"
-  },
-  "tailwindCSS.experimental.classRegex": [
-    "tw`([^`]*)",
-    "tw\\.[^`]+`([^`]*)`",
-    "tw\\(.*?\\).*?`([^`]*)"
-  ],
   
   // 终端配置
   "terminal.integrated.defaultProfile.windows": "PowerShell",
@@ -574,49 +551,52 @@ echo "strict-peer-dependencies=false" >> .npmrc
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Backend (Docker)",
-      "type": "node",
+      "name": "Debug Server (Docker - ASP.NET Core)",
+      "type": "coreclr",
       "request": "attach",
-      "port": 9229,
-      "address": "localhost",
-      "localRoot": "${workspaceFolder}/backend",
-      "remoteRoot": "/app",
-      "protocol": "inspector",
-      "restart": true,
-      "sourceMaps": true,
-      "outFiles": ["${workspaceFolder}/backend/dist/**/*.js"]
+      "processId": "${command:pickRemoteProcess}",
+      "pipeTransport": {
+        "pipeCwd": "${workspaceRoot}",
+        "pipeProgram": "docker",
+        "pipeArgs": ["exec", "-i", "immortality-server"],
+        "debuggerPath": "/vsdbg/vsdbg",
+        "quoteArgs": false
+      },
+      "sourceFileMap": {
+        "/app": "${workspaceFolder}/server"
+      }
     },
     {
-      "name": "Debug Backend (Local)",
-      "type": "node",
+      "name": "Debug Server (Local - ASP.NET Core)",
+      "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/backend/src/main.ts",
+      "program": "${workspaceFolder}/server/Immortality.Server/bin/Debug/net8.0/Immortality.Server.dll",
       "args": [],
-      "runtimeArgs": ["-r", "ts-node/register"],
-      "sourceMaps": true,
-      "envFile": "${workspaceFolder}/backend/.env.development",
+      "cwd": "${workspaceFolder}/server",
+      "stopAtEntry": false,
+      "sourceFileMap": {
+        "/Views": "${workspaceFolder}/server/Views"
+      },
+      "envFile": "${workspaceFolder}/server/.env.development",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },
     {
-      "name": "Debug Frontend",
-      "type": "node",
+      "name": "Debug Tests",
+      "type": "coreclr",
       "request": "launch",
-      "program": "${workspaceFolder}/frontend/node_modules/.bin/vite",
-      "args": ["--mode", "development"],
+      "program": "dotnet",
+      "args": ["test", "--filter", "FullyQualifiedName~Immortality.Tests"],
+      "cwd": "${workspaceFolder}/server",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "envFile": "${workspaceFolder}/frontend/.env.development"
+      "envFile": "${workspaceFolder}/server/.env.test"
     },
     {
-      "name": "Debug Tests",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/backend/node_modules/.bin/jest",
-      "args": ["--runInBand", "--detectOpenHandles"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "envFile": "${workspaceFolder}/backend/.env.test"
+      "name": "Attach to Tuanjie Editor",
+      "type": "unity",
+      "request": "attach",
+      "port": 56000
     }
   ]
 }
@@ -624,133 +604,118 @@ echo "strict-peer-dependencies=false" >> .npmrc
 
 ### 代码质量工具
 
-#### ESLint 配置
+#### .editorconfig 配置
 
-```json
-// .eslintrc.json
-{
-  "root": true,
-  "env": {
-    "node": true,
-    "es2022": true,
-    "browser": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "@typescript-eslint/recommended",
-    "@typescript-eslint/recommended-requiring-type-checking",
-    "prettier"
-  ],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": "latest",
-    "sourceType": "module",
-    "project": ["./tsconfig.json"]
-  },
-  "plugins": ["@typescript-eslint", "import"],
-  "rules": {
-    // TypeScript 规则
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "@typescript-eslint/explicit-function-return-type": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/prefer-const": "error",
-    
-    // 导入规则
-    "import/order": [
-      "error",
-      {
-        "groups": [
-          "builtin",
-          "external",
-          "internal",
-          "parent",
-          "sibling",
-          "index"
-        ],
-        "newlines-between": "always",
-        "alphabetize": {
-          "order": "asc",
-          "caseInsensitive": true
-        }
-      }
-    ],
-    
-    // 通用规则
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
-    "prefer-const": "error",
-    "no-var": "error"
-  },
-  "overrides": [
-    {
-      "files": ["*.test.ts", "*.spec.ts"],
-      "env": {
-        "jest": true
-      },
-      "rules": {
-        "@typescript-eslint/no-explicit-any": "off"
-      }
-    }
-  ]
-}
+```ini
+# .editorconfig
+root = true
+
+# 通用设置
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# C# 文件
+[*.cs]
+indent_size = 4
+dotnet_sort_system_directives_first = true
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+csharp_style_prefer_extended_property_pattern = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+csharp_prefer_simple_default_expression = true:suggestion
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_constructors = when_on_single_line:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_expression_bodied_indexers = when_on_single_line:suggestion
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
+csharp_style_expression_bodied_lambdas = when_on_single_line:suggestion
+csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
+
+# JSON 文件
+[*.json]
+indent_size = 2
+
+# YAML 文件
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown 文件
+[*.md]
+trim_trailing_whitespace = false
+
+# .NET 构建输出
+[bin/**]
+[obj/**]
+generated_code = true
 ```
 
-#### Prettier 配置
+#### C# Analyzers 配置
 
-```json
-// .prettierrc
-{
-  "semi": true,
-  "trailingComma": "es5",
-  "singleQuote": true,
-  "printWidth": 80,
-  "tabWidth": 2,
-  "useTabs": false,
-  "bracketSpacing": true,
-  "bracketSameLine": false,
-  "arrowParens": "avoid",
-  "endOfLine": "lf",
-  "quoteProps": "as-needed",
-  "jsxSingleQuote": true,
-  "proseWrap": "preserve"
-}
+```xml
+<!-- .editorconfig 中内联分析器规则 -->
+[*.cs]
+# 代码风格
+dotnet_diagnostic.IDE0005.severity = warning    # 移除不必要的using
+dotnet_diagnostic.IDE0007.severity = suggestion  # 使用var
+dotnet_diagnostic.IDE0017.severity = suggestion  # 对象初始化器
+dotnet_diagnostic.IDE0028.severity = suggestion  # 集合初始化器
+dotnet_diagnostic.IDE0044.severity = warning     # 添加readonly
+dotnet_diagnostic.IDE0058.severity = warning     # 移除不必要的表达式
+dotnet_diagnostic.IDE0060.severity = warning     # 移除未使用的参数
+
+# 命名规则
+dotnet_naming_rule.private_members_with_underscore.seriousness = warning
+dotnet_naming_rule.private_members_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
+
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
+
+# 空值检查
+dotnet_diagnostic.CS8600.severity = warning      # 可能为null的引用
+dotnet_diagnostic.CS8602.severity = warning      # 解引用null
+dotnet_diagnostic.CS8618.severity = warning      # 非空属性未初始化
+
+[*.{cs,vb}]
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+dotnet_style_require_accessibility_modifiers = always:suggestion
+dotnet_style_readonly_field = true:suggestion
 ```
 
 ```
-# .prettierignore
-node_modules/
+# .editorconfig 忽略文件夹
+bin/
+obj/
 dist/
 build/
 coverage/
 *.min.js
 *.min.css
-package-lock.json
-pnpm-lock.yaml
-yarn.lock
-.env*
 *.log
+.env*
 ```
 
-#### Husky Git Hooks
+#### Git Hooks
 
 ```json
-// package.json (部分)
+// .husky/pre-commit 配置
 {
-  "scripts": {
-    "prepare": "husky install",
-    "lint": "eslint . --ext .ts,.tsx --fix",
-    "format": "prettier --write .",
-    "type-check": "tsc --noEmit",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
+  "hooks": {
+    "pre-commit": "dotnet format --verify-no-changes && dotnet build --no-restore"
   }
 }
 ```
@@ -760,8 +725,8 @@ yarn.lock
 # .husky/pre-commit
 . "$(dirname "$0")/_/husky.sh"
 
-npx lint-staged
-npm run type-check
+dotnet format --verify-no-changes
+dotnet build --no-restore
 ```
 
 ```bash
@@ -787,16 +752,22 @@ echo "🚀 设置 Immortality 开发环境..."
 # 检查依赖
 command -v docker >/dev/null 2>&1 || { echo "❌ Docker 未安装"; exit 1; }
 command -v docker-compose >/dev/null 2>&1 || { echo "❌ Docker Compose 未安装"; exit 1; }
-command -v node >/dev/null 2>&1 || { echo "❌ Node.js 未安装"; exit 1; }
+command -v dotnet >/dev/null 2>&1 || { echo "❌ .NET SDK 未安装"; exit 1; }
 
-# 检查 Node.js 版本
-NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-if [ "$NODE_VERSION" -lt 18 ]; then
-    echo "❌ Node.js 版本需要 18 或更高，当前版本: $(node -v)"
+# 检查 .NET 版本
+DOTNET_VERSION=$(dotnet --version | cut -d'.' -f1)
+if [ "$DOTNET_VERSION" -lt 8 ]; then
+    echo "❌ .NET SDK 版本需要 8.0 或更高，当前版本: $(dotnet --version)"
     exit 1
 fi
 
 echo "✅ 依赖检查通过"
+
+# 恢复 NuGet 包
+echo "📦 恢复服务端依赖..."
+cd server && dotnet restore && cd ..
+
+echo "✅ 依赖恢复完成"
 
 # 创建必要的目录
 mkdir -p logs
@@ -813,15 +784,6 @@ if [ ! -f "docker/development/.env.development" ]; then
     echo "✅ 环境变量文件已创建，请根据需要修改"
 fi
 
-# 安装依赖
-echo "📦 安装前端依赖..."
-cd frontend && npm install && cd ..
-
-echo "📦 安装后端依赖..."
-cd backend && npm install && cd ..
-
-echo "✅ 依赖安装完成"
-
 # 启动 Docker 服务
 echo "🐳 启动 Docker 服务..."
 cd docker/development
@@ -837,14 +799,14 @@ docker-compose ps
 echo "✅ 开发环境设置完成！"
 echo ""
 echo "🌐 服务访问地址:"
-echo "  - 前端: http://localhost:3000"
-echo "  - 后端 API: http://localhost:3001"
-echo "  - Swagger 文档: http://localhost:3001/api"
+echo "  - 客户端: http://localhost:3000"
+echo "  - 服务端 API: http://localhost:5000"
+echo "  - Swagger 文档: http://localhost:5000/swagger"
 echo "  - EventStore UI: http://localhost:2113"
 echo "  - MinIO Console: http://localhost:9001"
 echo ""
 echo "🚀 启动开发服务器:"
-echo "  npm run dev:start"
+echo "  dotnet run --project server/Immortality.Server"
 ```
 
 ```bash
@@ -866,35 +828,28 @@ fi
 
 cd ../..
 
-# 启动后端服务
-echo "🔧 启动后端服务..."
-cd backend
-npm run start:dev &
-BACKEND_PID=$!
+# 启动服务端
+echo "🔧 启动服务端 (ASP.NET Core)..."
+cd server
+dotnet run --project Immortality.Server &
+SERVER_PID=$!
 cd ..
 
-# 等待后端启动
-echo "⏳ 等待后端服务启动..."
+# 等待服务端启动
+echo "⏳ 等待服务端启动..."
 sleep 10
-
-# 启动前端服务
-echo "🎨 启动前端服务..."
-cd frontend
-npm run dev &
-FRONTEND_PID=$!
-cd ..
 
 echo "✅ 开发服务器启动完成！"
 echo ""
 echo "🌐 访问地址:"
-echo "  - 前端: http://localhost:3000"
-echo "  - 后端: http://localhost:3001"
-echo "  - API 文档: http://localhost:3001/api"
+echo "  - 客户端 (Tuanjie构建输出): http://localhost:3000"
+echo "  - 服务端 API: http://localhost:5000"
+echo "  - API 文档: http://localhost:5000/swagger"
 echo ""
 echo "⏹️  停止服务: Ctrl+C"
 
 # 等待用户中断
-trap "echo '\n🛑 停止服务...'; kill $BACKEND_PID $FRONTEND_PID 2>/dev/null; exit" INT
+trap "echo '\n🛑 停止服务...'; kill $SERVER_PID 2>/dev/null; exit" INT
 wait
 ```
 
@@ -912,15 +867,11 @@ docker-compose down -v
 docker system prune -f
 docker volume prune -f
 
-# 清理 node_modules
-echo "🗑️  清理 node_modules..."
-rm -rf frontend/node_modules
-rm -rf backend/node_modules
-
 # 清理构建文件
 echo "🗑️  清理构建文件..."
-rm -rf frontend/dist
-rm -rf backend/dist
+rm -rf server/bin
+rm -rf server/obj
+rm -rf client/dist
 rm -rf coverage
 
 # 清理日志
@@ -938,23 +889,23 @@ echo "✅ 清理完成！"
 # 1. 获取最新代码
 git pull origin main
 
-# 2. 安装/更新依赖
-npm install
+# 2. 恢复依赖
+dotnet restore
 
 # 3. 启动开发环境
-npm run dev:setup  # 首次运行
-npm run dev:start  # 日常启动
+bash scripts/setup-dev.sh   # 首次运行
+bash scripts/start-dev.sh   # 日常启动
 
 # 4. 开发代码
 # ...
 
 # 5. 运行测试
-npm run test
-npm run test:coverage
+dotnet test
+dotnet test --collect:"XPlat Code Coverage"
 
 # 6. 代码检查
-npm run lint
-npm run type-check
+dotnet format --verify-no-changes
+dotnet build --no-restore
 
 # 7. 提交代码
 git add .
@@ -966,34 +917,35 @@ git push origin feature/new-feature
 
 ```bash
 # 单元测试
-npm run test:unit
+dotnet test --filter "Category=Unit"
 
 # 集成测试
-npm run test:integration
+dotnet test --filter "Category=Integration"
 
 # E2E 测试
-npm run test:e2e
+dotnet test --filter "Category=E2E"
 
 # 测试覆盖率
-npm run test:coverage
+dotnet test --collect:"XPlat Code Coverage"
 
 # 监听模式
-npm run test:watch
+dotnet watch test
 ```
 
 ### 3. 调试指南
 
-- **后端调试**: 使用 VS Code 调试配置，端口 9229
-- **前端调试**: 浏览器开发者工具 + React DevTools
+- **服务端调试**: 使用 VS Code C# 调试配置，或 Rider / Visual Studio 内置调试器
+- **客户端调试**: Tuanjie Engine Profiler + Unity Debugger
 - **数据库调试**: VS Code PostgreSQL 扩展
 - **API 调试**: Thunder Client 或 Postman
 
 ### 4. 性能监控
 
-- **应用性能**: 内置性能监控中间件
+- **应用性能**: 内置性能监控中间件 (ASP.NET Core)
 - **数据库性能**: pg_stat_statements 扩展
 - **缓存性能**: Redis 慢查询日志
 - **容器监控**: Docker stats 命令
+- **客户端性能**: Tuanjie Engine Profiler
 
 ## 🔧 **故障排除**
 
@@ -1002,7 +954,7 @@ npm run test:watch
 1. **端口冲突**
    ```bash
    # 查看端口占用
-   netstat -tulpn | grep :3000
+   netstat -tulpn | grep :5000
    # 杀死进程
    kill -9 <PID>
    ```
@@ -1020,16 +972,17 @@ npm run test:watch
    # 检查数据库状态
    docker-compose exec postgres pg_isready
    # 重置数据库
-   npm run db:reset
+   dotnet ef database drop --force
+   dotnet ef database update
    ```
 
-4. **依赖安装失败**
+4. **依赖恢复失败**
    ```bash
-   # 清理缓存
-   npm cache clean --force
-   # 删除 node_modules 重新安装
-   rm -rf node_modules package-lock.json
-   npm install
+   # 清理 NuGet 缓存
+   dotnet nuget locals all --clear
+   # 删除 bin/obj 重新恢复
+   rm -rf server/bin server/obj
+   dotnet restore
    ```
 
 通过这套完整的开发环境配置，团队成员可以快速搭建一致的开发环境，提高开发效率和代码质量。
