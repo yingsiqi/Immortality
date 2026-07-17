@@ -143,9 +143,10 @@ export default withMermaid(
           collapsed: true,
           items: [
             { text: '战斗系统概述', link: '/core-systems/combat/' },
-            { text: 'AI系统', link: '/core-systems/combat/ai-system' },
-            { text: '连招系统', link: '/core-systems/combat/combo-system' },
-            { text: '技能系统', link: '/core-systems/combat/skill-system' }
+            { text: '├ 战斗数值公式', link: '/core-systems/combat/battle-formula' },
+            { text: '├ 技能系统', link: '/core-systems/combat/skill-system' },
+            { text: '├ 连招系统', link: '/core-systems/combat/combo-system' },
+            { text: '└ AI系统', link: '/core-systems/combat/ai-system' }
           ]
         },
         {
