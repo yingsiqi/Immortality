@@ -30,16 +30,15 @@
 
 - **即时 ARPG**：半锁定目标，8主动+4法宝+2丹药技能栏，闪避/格挡/御剑飞行
 - **五行克制**：±25%（PVE）/ ±30%（PVP）
-- **四流派**：锻体流（土·近战坦克）、法修流（火/水/木·远程）、剑修流（金·破甲DPS）、召唤流（无·灵宠）
+- **四流派**：锻体流（土·近战坦克）、法修流（火/水/木·远程）、剑修流（金·破甲DPS）、召唤流（无·灵宠）。其中法修流内部按五行拆分为火烈流（火）、水月流（水）、木灵流（木）三个子流派，各有独立技能树，共用法修加点策略
 - **战斗节奏**：普通野怪 5-15s → 精英怪 30-60s → Boss 3-8 分钟
 
 ## 关联文档
 
 | 路径 | 关联说明 |
 |------|---------|
-| `specs/layer-01-character-attributes.md` | 灵根、五维、五行克制定义 |
-| `specs/layer-03-combat-system.md` | 战斗模式、PVP规则、技能框架 |
-| `specs/layer-04-growth-system.md` | 术法体系、技能树、升级曲线 |
+| `character/attribute-system.md` | 灵根、五维、属性公式、五行克制定义 |
 | `data/skills/shufa.md` | 术法数据库（6流派 108节点） |
 | `data/creatures/monsters.md` | 怪物数据表 |
 | `data/equipment/equipment.md` | 装备/法宝数据表 |
+| `combat/battle-formula.md` | 战斗数值公式（伤害计算、会心、真元等） |

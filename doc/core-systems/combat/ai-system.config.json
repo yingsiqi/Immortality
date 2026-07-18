@@ -1,6 +1,14 @@
 {
   "title": "战斗AI系统",
   "path": "core-systems/combat/ai-system",
-  "description": "战斗AI系统设计，包括敌人AI行为、难度调节、学习机制等智能战斗系统",
-  "tags": ["AI系统", "战斗AI", "难度调节", "智能行为"]
+  "description": "战斗AI系统设计，包括行为树、状态机、BOSS AI、群体协作与难度调节机制",
+  "tags": ["AI系统", "战斗AI", "行为树", "难度调节"],
+  "priority": "medium",
+  "status": "stable",
+  "lastUpdated": "2026-07-18",
+  "relatedSystems": [
+    "combat-system",
+    "skill-system",
+    "creatures-monsters"
+  ]
 }

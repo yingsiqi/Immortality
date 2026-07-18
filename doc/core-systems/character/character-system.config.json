@@ -1,31 +1,29 @@
 {
   "title": "角色系统",
-  "description": "深度整合修炼系统的角色属性体系，包含核心属性、状态系统、种族特性等",
-  "tags": ["角色", "属性", "种族", "状态", "修炼整合"],
+  "description": "基于7层规则书的角色属性体系，覆盖灵根（天/真/伪/异）、五维（根骨/悟性/神识/身法/机缘）、战斗面板映射、境界系数与成长曲线",
+  "tags": ["角色", "属性", "灵根", "境界", "属性公式"],
   "category": "core-systems",
   "subcategory": "character",
-"path": "core-systems/character-system",
+  "path": "core-systems/character-system",
   "priority": "high",
-  "status": "active",
-  "lastUpdated": "2024-12-19",
+  "status": "stable",
+  "lastUpdated": "2026-07-18",
   "relatedSystems": [
-    "cultivation-system",
     "combat-system",
-    "equipment-system",
-    "spiritual-root"
+    "cultivation-system",
+    "equipment-system"
   ],
   "keyFeatures": [
-    "六大核心属性体系",
-    "动态状态系统",
-    "种族特性与化形机制",
-    "天劫抗性矩阵",
-    "境界成长联动",
-    "属性验证工具"
+    "四类灵根系统（天/真/伪/异）",
+    "五维属性体系及战斗面板映射",
+    "境界系数与跨修为曲线",
+    "五行克制（PVE±25%/PVP±30%）",
+    "真元/气血/会心公式全集"
   ],
   "balanceFactors": {
-    "attributeGrowth": "指数级增长与境界匹配",
-    "tribulationResistance": "专用抗性对应天劫类型",
-    "raceBalance": "种族优势与劣势平衡",
-    "stateEffects": "状态影响有时限和代价"
+    "attributeGrowth": "境界系数指数级增长（2^n）",
+    "灵根纯度": "天灵根+22.5%最大加成，杂灵根+5%",
+    "会心上限": "50%率/3.0倍率锁定",
+    "五行克制": "PVE±25%确保策略性，PVP±30%增加博弈深度"
   }
 }

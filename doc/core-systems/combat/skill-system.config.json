@@ -1,6 +1,14 @@
 {
   "title": "技能系统",
   "path": "core-systems/combat/skill-system",
-  "description": "战斗技能系统设计，包括技能分类、释放机制、冷却时间、技能树等核心机制",
-  "tags": ["战斗系统", "技能", "核心机制", "平衡性"]
+  "description": "战斗技能系统设计，包括技能分类（6流派）、释放机制、冷却体系、技能树与升级系统",
+  "tags": ["战斗系统", "技能", "技能树", "术法"],
+  "priority": "high",
+  "status": "stable",
+  "lastUpdated": "2026-07-18",
+  "relatedSystems": [
+    "combat-system",
+    "battle-formula",
+    "character-attribute"
+  ]
 }

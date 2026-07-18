@@ -1,6 +1,14 @@
 {
   "title": "连招系统",
   "path": "core-systems/combat/combo-system",
-  "description": "战斗连招系统设计，包括连击机制、元素组合、连招判定等核心玩法",
-  "tags": ["战斗系统", "连招", "操作技巧", "元素组合"]
+  "description": "战斗连招系统设计，包括连击窗口、五行元素连招、高级连招技巧与评分系统",
+  "tags": ["战斗系统", "连招", "操作技巧", "元素组合"],
+  "priority": "medium",
+  "status": "stable",
+  "lastUpdated": "2026-07-18",
+  "relatedSystems": [
+    "combat-system",
+    "skill-system",
+    "battle-formula"
+  ]
 }
