@@ -133,9 +133,13 @@ export default withMermaid(
         },
         {
           text: '角色系统',
-          collapsed: true,
+          collapsed: false,
           items: [
-            { text: '角色系统概述', link: '/core-systems/character/' }
+            { text: '角色系统概述', link: '/core-systems/character/' },
+            { text: '├ 属性体系', link: '/core-systems/character/attribute-system' },
+            { text: '├ 流派加点', link: '/core-systems/character/build-system' },
+            { text: '├ 状态体系', link: '/core-systems/character/state-system' },
+            { text: '└ 创建流程', link: '/core-systems/character/creation-flow' }
           ]
         },
         {
