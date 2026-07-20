@@ -283,7 +283,7 @@
 #### SVG动画效果
 
 **路径动画**
-```svg
+```xml
 <!-- 剑气轨迹 -->
 <path d="M10,10 L100,100" stroke="#FFD700" stroke-width="2" fill="none">
   <animate attributeName="stroke-dasharray" 
@@ -294,7 +294,7 @@
 ```
 
 **形变动画**
-```svg
+```xml
 <!-- 灵气波动 -->
 <circle cx="50" cy="50" r="20" fill="#4A90E2" opacity="0.6">
   <animateTransform attributeName="transform" 

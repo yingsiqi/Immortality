@@ -285,6 +285,7 @@ export default withMermaid(
             { text: '设计确认队列', link: '/guides/project-management/design-review-queue' },
             { text: 'Agent执行协议', link: '/guides/project-management/agent-execution-protocol' },
             { text: '任务模板', link: '/guides/project-management/task-template' },
+            { text: '阶段审查清单', link: '/guides/project-management/review-checklist' },
             { text: 'Alpha开发计划', link: '/guides/project-management/alpha-development-plan' },
             { text: '项目路线图', link: '/guides/technical/project-roadmap' }
           ]
@@ -309,7 +310,7 @@ export default withMermaid(
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/your-repo/immortality' }
+      { icon: 'github', link: 'https://github.com/yingsiqi/Immortality' }
     ],
 
     search: {

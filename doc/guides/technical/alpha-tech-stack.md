@@ -421,7 +421,7 @@ cd backend && dotnet run
 ```
 
 ### 环境变量
-```env
+```bash
 # 数据库配置
 DATABASE_URL=postgresql://user:pass@localhost:5432/immortality
 REDIS_URL=redis://localhost:6379

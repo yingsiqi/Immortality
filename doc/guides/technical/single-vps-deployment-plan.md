@@ -604,7 +604,7 @@ WHERE last_login_at > NOW() - INTERVAL '7 days';
 ```
 
 ### Redis优化
-```conf
+```txt
 # redis.conf关键配置
 maxmemory 8gb
 maxmemory-policy allkeys-lru

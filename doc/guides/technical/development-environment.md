@@ -368,7 +368,7 @@ INSERT INTO players (id, user_id, name, level, realm, experience) VALUES
 
 #### Redis 配置
 
-```conf
+```txt
 # docker/services/redis/redis.conf
 
 # 基础配置

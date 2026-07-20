@@ -18,6 +18,7 @@
 - [设计确认队列](./design-review-queue.md)
 - [Agent执行协议](./agent-execution-protocol.md)
 - [任务模板](./task-template.md)
+- [阶段审查清单](./review-checklist.md)
 - [Alpha开发计划（历史方案）](./alpha-development-plan.md)
 
 ## 使用方式

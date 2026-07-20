@@ -4,6 +4,7 @@ using Immortality.GameService.Entities;
 using Immortality.Shared.Constants;
 using Immortality.Shared.DTOs;
 using Immortality.Shared.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Immortality.GameService.Services
 {
