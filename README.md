@@ -1,4 +1,4 @@
-# Immortality - 凡人修仙传 RPG
+# Immortality - 凡人修仙传 MMORPG
 
 一个基于《凡人修仙传》IP的开源修仙RPG游戏项目，采用"用规则替代数值，用时间沉淀替代付费捷径"的核心理念。
 
@@ -21,6 +21,8 @@
 
 - Node.js 18.x 或更高版本
 - npm 8.x 或更高版本
+- .NET SDK 8.0.200
+- 团结引擎 1.7.3+（或兼容 Unity 中国版编辑器）
 - Docker 20.x 或更高版本（推荐）
 - PostgreSQL 14+ （生产环境）
 - Redis 6+ （缓存和会话）
@@ -33,7 +35,7 @@
    cd Immortality
    ```
 
-2. 安装依赖
+2. 安装文档与管理面板依赖
    ```
    npm install
    ```
@@ -99,7 +101,7 @@ npm run preview
 ## 技术架构
 
 ### 核心技术栈
-- **游戏客户端**: Tuanjie Engine (团结引擎) + C# + UGUI / UI Toolkit
+- **游戏客户端**: 团结引擎 (Tuanjie Engine) + C# + UGUI / UI Toolkit
 - **状态管理**: ScriptableObject + Singleton Manager 模式
 - **UI组件**: Unity UI Toolkit + UGUI
 - **游戏服务端**: C# / .NET 8 + ASP.NET Core
@@ -146,22 +148,49 @@ npm run preview
 
 ## 项目结构
 
+> 详细的目录结构和说明请参考 [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)
+
 ```
 Immortality/
-├── admin-panel/          # 项目管理面板
-│   ├── public/          # 静态资源
-│   ├── src/             # 源代码
-│   └── server.js        # 服务器入口
-├── doc/                 # VitePress文档系统
-│   ├── .vitepress/      # VitePress配置
-│   ├── core-systems/    # 核心系统设计文档
-│   ├── design/          # 游戏设计文档
-│   ├── guides/          # 开发和运营指南
-│   └── reference/       # API参考文档
-├── package.json         # 项目依赖配置
-├── setup.js            # 项目项目初始化脚本
-├── start.js            # 项目启动脚本
-└── README.md           # 项目说明文档
+├── game/                            # 🎮 游戏客户端 (团结引擎 / C#)
+│   ├── Assets/Scripts/              # C# 源代码 (Core/Features/Network/Data/UI)
+│   ├── Assets/Prefabs/              # 预制体
+│   ├── Assets/Art/                  # 美术资源
+│   ├── Assets/Scenes/               # 场景
+│   └── README.md
+├── server/                          # 🖥️ 游戏服务端 (ASP.NET Core / .NET 8)
+│   ├── src/
+│   │   ├── Immortality.Gateway/     # API 网关
+│   │   ├── Immortality.AuthService/ # 认证服务
+│   │   ├── Immortality.GameService/ # 游戏逻辑服务
+│   │   ├── Immortality.RealtimeService/ # 实时通信服务
+│   │   ├── Immortality.EventSourcing/ # 事件溯源库
+│   │   ├── Immortality.Shared/      # 共享库
+│   │   └── Immortality.Infrastructure/ # 基础设施库
+│   ├── tests/                       # 单元测试 + 集成测试
+│   └── README.md
+├── deploy/                          # 🚀 部署配置
+│   ├── docker/                      # Docker Compose + Dockerfiles
+│   ├── k8s/                         # Kubernetes 部署清单
+│   ├── nginx/                       # Nginx 反向代理
+│   ├── monitoring/                  # Prometheus + Grafana
+│   └── README.md
+├── doc/                             # 📚 VitePress文档系统
+│   ├── core-systems/                # 核心系统设计文档
+│   ├── design/                      # 游戏设计文档
+│   ├── guides/                      # 开发和运营指南
+│   ├── specs/                       # 7层规则规范
+│   ├── data/                        # 数据表
+│   └── reference/                   # API参考文档
+├── admin-panel/                     # 🔧 项目管理面板
+│   ├── src/                         # 源代码
+│   ├── public/                      # 静态资源
+│   └── server.js                    # 服务器入口
+├── package.json                     # 项目依赖配置
+├── setup.js                         # 项目初始化脚本
+├── start.js                         # 项目启动脚本
+├── PROJECT_STRUCTURE.md             # 详细目录结构说明
+└── README.md                        # 项目说明文档
 ```
 
 ## 文档系统
@@ -196,11 +225,19 @@ Immortality/
    docker-compose up -d
    ```
 
-4. **Tuanjie 引擎客户端开发**:
-   - 安装团结引擎 1.7.3+ (从 [Unity 中国官网](https://unity.cn/) 下载)
-   - 在引擎中打开或创建项目，导入项目配置和 ScriptableObject 数据
-   - 使用 Codely (CLI) 辅助编写 C# 脚本
-   - 通过 `Window → Package Manager` 安装 AI Graph 插件用于美术资产生成
+4. **团结引擎客户端开发**:
+   - 安装团结引擎 1.7.3+（从 [Unity 中国官网](https://unity.cn/) 下载）
+   - 以 `game/` 目录作为客户端工程根目录
+   - 先完成编辑器版本、包依赖和项目设置初始化，再导入 `Assets/` 下的脚本与资源
+   - 与服务端对接时统一走 `Gateway(:3001)` 和 `RealtimeService(:5003)`
+
+## 当前仓库定位
+
+- `doc/` 是策划、规则与技术方案的单一事实源
+- `game/` 是团结引擎客户端工程目录
+- `server/` 是 .NET 8 微服务骨架
+- `deploy/` 是容器化与监控配置
+- 当前目标是先打通 `认证 -> 角色 -> 修炼 -> 基础战斗` 的 MVP 纵切
 
 ## 开发状态
 

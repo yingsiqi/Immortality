@@ -1,7 +1,7 @@
 const { exec } = require('child_process');
 const path = require('path');
 
-console.log('Starting Immortality Web Game Project Management Environment...');
+console.log('Starting Immortality project management environment...');
 
 // Start admin panel
 const adminPanel = exec('npm start', { cwd: path.join(__dirname, 'admin-panel') });

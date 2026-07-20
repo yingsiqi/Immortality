@@ -1,0 +1,50 @@
+# Immortality — Prometheus 监控配置
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # API 网关
+  - job_name: "gateway"
+    static_configs:
+      - targets: ["gateway:3001"]
+    metrics_path: /metrics
+
+  # 认证服务
+  - job_name: "auth-service"
+    static_configs:
+      - targets: ["auth-service:5001"]
+    metrics_path: /metrics
+
+  # 游戏服务
+  - job_name: "game-service"
+    static_configs:
+      - targets: ["game-service:5002"]
+    metrics_path: /metrics
+
+  # 实时服务
+  - job_name: "realtime-service"
+    static_configs:
+      - targets: ["realtime-service:5003"]
+    metrics_path: /metrics
+
+  # PostgreSQL (需要 postgres_exporter)
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+
+  # Redis (需要 redis_exporter)
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  # EventStoreDB
+  - job_name: "eventstore"
+    static_configs:
+      - targets: ["eventstore:2113"]
+
+  # Node 主机指标
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]

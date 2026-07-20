@@ -2,7 +2,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('Starting installation of Immortality Web Game Project Management Environment...');
+console.log('Starting installation of Immortality project management environment...');
 
 // 确保目录存在
 const adminPanelDir = path.join(__dirname, 'admin-panel');
@@ -65,7 +65,7 @@ console.log('\nCreating startup script...');
 const startScript = `const { exec } = require('child_process');
 const path = require('path');
 
-console.log('Starting Immortality Web Game Project Management Environment...');
+console.log('Starting Immortality project management environment...');
 
 // Start admin panel
 const adminPanel = exec('npm start', { cwd: path.join(__dirname, 'admin-panel') });

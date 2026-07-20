@@ -22,7 +22,6 @@ yarn-error.log*
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 
 # Environment variables
@@ -31,3 +30,27 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Tuanjie / Unity project caches
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+
+# Tuanjie / Unity generated IDE files
+*.csproj
+*.unityproj
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Local agent artifacts
+.codely-cli/auto-saves/

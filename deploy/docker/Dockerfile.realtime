@@ -1,0 +1,13 @@
+# Immortality RealtimeService — Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY . .
+RUN dotnet restore src/Immortality.RealtimeService/Immortality.RealtimeService.csproj
+RUN dotnet publish src/Immortality.RealtimeService/Immortality.RealtimeService.csproj -c Release -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+EXPOSE 5003
+ENTRYPOINT ["dotnet", "Immortality.RealtimeService.dll"]

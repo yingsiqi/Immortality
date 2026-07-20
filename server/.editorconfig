@@ -1,0 +1,56 @@
+# C# 编码规范 — .editorconfig
+# 参考文档: guides/technical/alpha-tech-stack.md
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,xml,yml,yaml}]
+indent_size = 2
+
+[*.cs]
+# 命名规范
+dotnet_naming_rule.types_should_be_pascal_case.symbols = types
+dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.types_should_be_pascal_case.severity = error
+
+dotnet_naming_rule.methods_should_be_pascal_case.symbols = methods
+dotnet_naming_rule.methods_should_be_pascal_case.style = pascal_case
+dotnet_naming_rule.methods_should_be_pascal_case.severity = error
+
+dotnet_naming_rule.private_fields_should_be_camel_case_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camel_case_with_underscore.style = camel_case_underscore
+dotnet_naming_rule.private_fields_should_be_camel_case_with_underscore.severity = error
+
+dotnet_naming_rule.interfaces_should_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_should_start_with_i.style = prefix_i
+dotnet_naming_rule.interfaces_should_start_with_i.severity = error
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case_underscore.required_prefix = _
+dotnet_naming_style.camel_case_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_i.required_prefix = I
+dotnet_naming_style.prefix_i.capitalization = pascal_case
+
+dotnet_naming_symbols.types.applicable_kinds = class,struct,enum,delegate
+dotnet_naming_symbols.methods.applicable_kinds = method
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+
+# Nullable 启用
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8603.severity = error
+
+# 异步规范
+dotnet_diagnostic.CA2007.severity = warning
+
+# using 排序
+csharp_using_directive_placement = outside_namespace:warning

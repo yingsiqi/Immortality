@@ -1,0 +1,9 @@
+apiVersion: grafana provisioning/v1
+kind: DataSource
+metadata:
+  name: prometheus
+spec:
+  type: prometheus
+  access: proxy
+  url: http://prometheus:9090
+  isDefault: true

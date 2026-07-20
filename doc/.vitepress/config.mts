@@ -36,6 +36,7 @@ export default withMermaid(
         text: '指南文档',
         items: [
           { text: '项目管理', link: '/guides/project-management/' },
+          { text: '任务总板', link: '/guides/project-management/task-board' },
           { text: '技术文档', link: '/guides/technical/' },
           { text: 'Alpha技术栈', link: '/guides/technical/alpha-tech-stack' },
           { text: '架构设计', link: '/guides/technical/architecture-design' },
@@ -278,6 +279,12 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: '项目管理概述', link: '/guides/project-management/' },
+            { text: 'AI驱动开发总计划', link: '/guides/project-management/ai-driven-development-plan' },
+            { text: '任务总板', link: '/guides/project-management/task-board' },
+            { text: '当前可领取任务包', link: '/guides/project-management/current-task-packs' },
+            { text: '设计确认队列', link: '/guides/project-management/design-review-queue' },
+            { text: 'Agent执行协议', link: '/guides/project-management/agent-execution-protocol' },
+            { text: '任务模板', link: '/guides/project-management/task-template' },
             { text: 'Alpha开发计划', link: '/guides/project-management/alpha-development-plan' },
             { text: '项目路线图', link: '/guides/technical/project-roadmap' }
           ]

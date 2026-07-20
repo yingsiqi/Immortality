@@ -48,7 +48,7 @@ Immortality/
 │       └── minio/
 │           ├── Dockerfile
 │           └── minio.conf
-├── client/
+├── game/
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── server/
@@ -226,7 +226,7 @@ services:
     ports:
       - "3000:80"
     volumes:
-      - ../../client/dist:/usr/share/nginx/html
+      - ../../game/Builds/WebGL:/usr/share/nginx/html
     depends_on:
       - server
     networks:
@@ -871,7 +871,7 @@ docker volume prune -f
 echo "🗑️  清理构建文件..."
 rm -rf server/bin
 rm -rf server/obj
-rm -rf client/dist
+rm -rf game/Builds/WebGL
 rm -rf coverage
 
 # 清理日志

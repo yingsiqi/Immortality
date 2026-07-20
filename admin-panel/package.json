@@ -1,7 +1,7 @@
 {
   "name": "immortality-admin-panel",
   "version": "0.1.0",
-  "description": "Immortality Web Game Project Management Panel",
+  "description": "Immortality project management panel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

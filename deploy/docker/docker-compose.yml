@@ -1,0 +1,163 @@
+version: "3.9"
+
+# Immortality — 开发环境 Docker Compose
+# 一键启动所有基础设施 + 微服务
+
+services:
+  # ── 基础设施 ──
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: immortality-postgres
+    environment:
+      POSTGRES_DB: immortality
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: immortality-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  eventstore:
+    image: eventstore/eventstore:23.3.0-bookworm-slim
+    container_name: immortality-eventstore
+    environment:
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_RUN_PROJECTIONS: All
+      EVENTSTORE_START_STANDARD_PROJECTIONS: "true"
+      EVENTSTORE_INSECURE: "true"
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+    ports:
+      - "2113:2113"
+      - "1113:1113"
+    volumes:
+      - eventstore-data:/var/lib/eventstore
+
+  minio:
+    image: minio/minio:latest
+    container_name: immortality-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  # ── 微服务 ──
+
+  auth-service:
+    build:
+      context: ../server
+      dockerfile: ../deploy/docker/Dockerfile.auth
+    container_name: immortality-auth
+    environment:
+      ConnectionStrings__PostgreSQL: "Host=postgres;Port=5432;Database=immortality;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}"
+      ConnectionStrings__Redis: "redis:6379"
+      Jwt__Secret: ${JWT_SECRET:-CHANGE_ME_IN_PRODUCTION_AT_LEAST_32_CHARACTERS_LONG}
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  game-service:
+    build:
+      context: ../server
+      dockerfile: ../deploy/docker/Dockerfile.game
+    container_name: immortality-game
+    environment:
+      ConnectionStrings__PostgreSQL: "Host=postgres;Port=5432;Database=immortality;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres}"
+      ConnectionStrings__Redis: "redis:6379"
+      ConnectionStrings__EventStore: "esdb://eventstore:2113?tls=false"
+      Jwt__Secret: ${JWT_SECRET:-CHANGE_ME_IN_PRODUCTION_AT_LEAST_32_CHARACTERS_LONG}
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      eventstore:
+        condition: service_started
+
+  realtime-service:
+    build:
+      context: ../server
+      dockerfile: ../deploy/docker/Dockerfile.realtime
+    container_name: immortality-realtime
+    environment:
+      ConnectionStrings__Redis: "redis:6379"
+      Jwt__Secret: ${JWT_SECRET:-CHANGE_ME_IN_PRODUCTION_AT_LEAST_32_CHARACTERS_LONG}
+    ports:
+      - "5003:5003"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ../server
+      dockerfile: ../deploy/docker/Dockerfile.gateway
+    container_name: immortality-gateway
+    environment:
+      Jwt__Secret: ${JWT_SECRET:-CHANGE_ME_IN_PRODUCTION_AT_LEAST_32_CHARACTERS_LONG}
+      ReverseProxy__Clusters__auth-cluster__Destinations__destination1__Address: "http://auth-service:5001"
+      ReverseProxy__Clusters__game-cluster__Destinations__destination1__Address: "http://game-service:5002"
+      ReverseProxy__Clusters__realtime-cluster__Destinations__destination1__Address: "http://realtime-service:5003"
+    ports:
+      - "3001:3001"
+    depends_on:
+      - auth-service
+      - game-service
+      - realtime-service
+
+  # ── 监控 ──
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: immortality-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../deploy/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: immortality-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../deploy/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+
+volumes:
+  postgres-data:
+  redis-data:
+  eventstore-data:
+  minio-data:
+  grafana-data:

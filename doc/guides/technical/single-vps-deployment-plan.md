@@ -337,7 +337,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/ssl:/etc/nginx/ssl
-      - ./client/dist:/usr/share/nginx/html
+      - ./game/Builds/WebGL:/usr/share/nginx/html
     depends_on:
       - user-service
       - game-service
@@ -929,7 +929,7 @@ docker build -t immortality/rule-service ./services/rule
 docker build -t immortality/data-service ./services/data
 
 # 构建客户端 (Tuanjie Engine构建输出)
-# 客户端通过Tuanjie Engine Editor导出WebGL构建到 client/dist/
+# 客户端通过 Tuanjie Engine Editor 导出 WebGL 构建到 game/Builds/WebGL/
 # 然后由Nginx提供静态文件服务
 ```
 
