@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_807368c381eb11f18a64525400826444
+    ReservedCode1: L8I+N2bmpHgSHv2Af+83XnwttelNQIj48JVku6cnWP0BKoVQZrGpUHn4Qhh5uw3bnGdNq28m+MNIRTbjnIp28gESB2UO8kulAaf488B1rCefVOih5d4K3TqJzBvp2ZbYsY2DVAC3D+ECv60Gm80vTwrKELXYt0Z1Sbc1AhxkaVodMDXYQsZDmLXqRg4=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_807368c381eb11f18a64525400826444
+    ReservedCode2: L8I+N2bmpHgSHv2Af+83XnwttelNQIj48JVku6cnWP0BKoVQZrGpUHn4Qhh5uw3bnGdNq28m+MNIRTbjnIp28gESB2UO8kulAaf488B1rCefVOih5d4K3TqJzBvp2ZbYsY2DVAC3D+ECv60Gm80vTwrKELXYt0Z1Sbc1AhxkaVodMDXYQsZDmLXqRg4=
+---
+
 # 奇遇/事件总索引
 
 > 基于《凡人修仙传》原著世界观与 MMORPG 项目需求，定义游戏中所有奇遇与事件的分类体系、触发机制与具体数据。
@@ -128,4 +139,5 @@
 |------|--------|------|------|------|
 | 1 | 事件数据表 | 38 条事件，5 大类 | regions.md / equipment.md / monsters.md / pets.md / pills.md | ✅ 已完成 |
 
+*（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*

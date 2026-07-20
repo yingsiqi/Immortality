@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7c66358c81eb11f18a64525400826444
+    ReservedCode1: jNN9lRT5CO4X+6Ur22a1gK0gcbVhrTTm7JDAvh6M2alpIrLl/lc4UlxHUvpVl2GeSbaBSDApvt/2Je6EW1P/Q0hzIQ7+ZID7cNyOKQOM9/c3OTAFi0RQNqvBWKs6ZiGSZZJbn5BJ4RT4pTxYNbibxdBw7aFjAQozMEZXnxqMEC6EoEmUq73scMrRmmE=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7c66358c81eb11f18a64525400826444
+    ReservedCode2: jNN9lRT5CO4X+6Ur22a1gK0gcbVhrTTm7JDAvh6M2alpIrLl/lc4UlxHUvpVl2GeSbaBSDApvt/2Je6EW1P/Q0hzIQ7+ZID7cNyOKQOM9/c3OTAFi0RQNqvBWKs6ZiGSZZJbn5BJ4RT4pTxYNbibxdBw7aFjAQozMEZXnxqMEC6EoEmUq73scMrRmmE=
+---
+
 # 灵宠数据表
 
 > 基于《凡人修仙传》原著妖兽体系与 MMORPG 项目需求，涵盖 4 大类、30 种灵宠，按黄阶→仙阶（品阶 1~5）排列。
@@ -112,4 +123,5 @@
 | 三、辅助型 | 8 | 26.7% |
 | 四、特殊型 | 7 | 23.3% |
 
+*（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*

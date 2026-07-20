@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7cdec26481eb11f18a64525400826444
+    ReservedCode1: ZPEYJqAiadDg+8IbUCTWof5GM/S8kN7DgfwksFXjy8/4Zf8VXpzYpwiAcjZjGsAHO+2Yf5wvbKXTfA34/cLmvCDi83xsMxqAtLtzQp4Cx8R9WFvLhE7LqZXNZjJWzZmfOanXaJhKI3y9/J5vmJ7w3v7DBgl7eaudtUIdnMsoC5e90x6JNnG3HoDrq+s=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7cdec26481eb11f18a64525400826444
+    ReservedCode2: ZPEYJqAiadDg+8IbUCTWof5GM/S8kN7DgfwksFXjy8/4Zf8VXpzYpwiAcjZjGsAHO+2Yf5wvbKXTfA34/cLmvCDi83xsMxqAtLtzQp4Cx8R9WFvLhE7LqZXNZjJWzZmfOanXaJhKI3y9/J5vmJ7w3v7DBgl7eaudtUIdnMsoC5e90x6JNnG3HoDrq+s=
+---
+
 # 怪物/NPC 总索引
 
 > 基于《凡人修仙传》原著世界观，定义 MMORPG 项目中所有怪物与 NPC 的数据结构与完整清单。
@@ -76,3 +87,4 @@ L3 §1.2（操作模型）定义了战斗的实时 ARPG 框架。本表怪物行
 - 最后更新：2026-07-17
 - 怪物条目数：43
 - NPC 条目数：25
+*（内容由AI生成，仅供参考）*

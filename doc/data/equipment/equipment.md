@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7b5d25ef81eb11f184135254006c9bbf
+    ReservedCode1: XbJVY8JvzGbadi7CV4oSBE8GSl1SRImtr/xpletof73h26+c3wKh0KXJHdYnJqUE/mMrPUi3NtOn2wr8lF99US928wpqjiSFloFHOuditsM/3H0T186QRXnWslajE3O6oEKwnyo+CiTg4232OmvhLqBbBNDdt/Ww8YO3I+NHTNPku54azIsw3Dt+3S0=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7b5d25ef81eb11f184135254006c9bbf
+    ReservedCode2: XbJVY8JvzGbadi7CV4oSBE8GSl1SRImtr/xpletof73h26+c3wKh0KXJHdYnJqUE/mMrPUi3NtOn2wr8lF99US928wpqjiSFloFHOuditsM/3H0T186QRXnWslajE3O6oEKwnyo+CiTg4232OmvhLqBbBNDdt/Ww8YO3I+NHTNPku54azIsw3Dt+3S0=
+---
+
 # 装备数据表
 
 > 基于《凡人修仙传》原著法宝器物体系与 MMORPG 项目需求，涵盖 8 大类、70 条装备条目，按凡器→道器（品阶 1~5）排列。材料 ID 引用自 data/materials/ 下 ores.md / beast_materials.md / spirit_treasures.md。
@@ -209,4 +220,5 @@
 | 游戏原创 | 29 | 41.4% |
 | 原著扩展 | 11 | 15.7% |
 
+*（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*

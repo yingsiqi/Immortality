@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7eef884981eb11f180b3525400bff409
+    ReservedCode1: YbSxrJmyMtWqZT7OXpJwTxgjXm2PHCJXwBfDI6kY4sUp3aM7r6QJrjeYer7fcgVOBxl8tThwACdX309oY7t4xPvyu+LFjF0Hx+0wq0cgk80jB20UEF6xWKhPyfOAzkztcDu7z4Axec+yg+w8ttHxJv6HovxRjMW25TAwEtnjFJa8UBlrUxG+KDjA/O4=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7eef884981eb11f180b3525400bff409
+    ReservedCode2: YbSxrJmyMtWqZT7OXpJwTxgjXm2PHCJXwBfDI6kY4sUp3aM7r6QJrjeYer7fcgVOBxl8tThwACdX309oY7t4xPvyu+LFjF0Hx+0wq0cgk80jB20UEF6xWKhPyfOAzkztcDu7z4Axec+yg+w8ttHxJv6HovxRjMW25TAwEtnjFJa8UBlrUxG+KDjA/O4=
+---
+
 # 大陆地图数据表
 
 > 基于《凡人修仙传》原著世界观，定义 MMORPG 两大主要大陆——天南与乱星海。
@@ -111,3 +122,4 @@
 | **核心玩法** | 宗门任务、新手引导 | 海上冒险、深海探索 |
 | **最危险区域** | 大晋皇陵（Lv8-10） | 星海核心（Lv8-10） |
 | **特色资源** | 铁精、千年药材、符纸 | 炼晶、妖丹、深海灵物 |
+*（内容由AI生成，仅供参考）*

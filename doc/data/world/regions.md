@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7f5e644a81eb11f180b3525400bff409
+    ReservedCode1: FBEZAChXJhFpW29f4i0VLLwKHZMAqMWhx3JESy7ytu6I6Alb/GQf/ywf8Jf1wgxE8RwEjN9fnEtACaa2mvp4/sOuXxH/X7DQ02WkrG2tcWFp1qtET+VljUkyRq0UtIrmk/CbGbm5XOM0ekkEQ1ZedAYgMG9IbgTHOyrle7v75BJYNeCuiG4wdiwz+CU=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7f5e644a81eb11f180b3525400bff409
+    ReservedCode2: FBEZAChXJhFpW29f4i0VLLwKHZMAqMWhx3JESy7ytu6I6Alb/GQf/ywf8Jf1wgxE8RwEjN9fnEtACaa2mvp4/sOuXxH/X7DQ02WkrG2tcWFp1qtET+VljUkyRq0UtIrmk/CbGbm5XOM0ekkEQ1ZedAYgMG9IbgTHOyrle7v75BJYNeCuiG4wdiwz+CU=
+---
+
 # 区域地图数据表
 
 > 基于《凡人修仙传》原著世界观，定义 MMORPG 中天南（15 个）与乱星海（15 个）的区域数据。
@@ -568,3 +579,4 @@
 | 其他 | 3（秘境/高台/雪原） | 0 |
 
 > 总计：30 个区域（天南 15 + 乱星海 15）
+*（内容由AI生成，仅供参考）*

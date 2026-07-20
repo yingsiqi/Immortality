@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7e66217881eb11f1b625525400e6dd8f
+    ReservedCode1: jWB+vXhyXj9MQN4QlolNM7msbRKP4SZDMr/HXABkeHvQzcsT5YgtMscl5EUVZpDIcE42pJcxgPfUdcK+k1mePngO0i23+vYA/FgXTwbi5FTkOtkyvQ3K2nnKqr17ij/h3IYcyjf913KN0LI7a2RcIx+hKKQ0Zwai4rKk+IguixgH8DWfMUBO0axisyY=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7e66217881eb11f1b625525400e6dd8f
+    ReservedCode2: jWB+vXhyXj9MQN4QlolNM7msbRKP4SZDMr/HXABkeHvQzcsT5YgtMscl5EUVZpDIcE42pJcxgPfUdcK+k1mePngO0i23+vYA/FgXTwbi5FTkOtkyvQ3K2nnKqr17ij/h3IYcyjf913KN0LI7a2RcIx+hKKQ0Zwai4rKk+IguixgH8DWfMUBO0axisyY=
+---
+
 # 地图/副本总索引
 
 > 基于《凡人修仙传》原著世界观，定义 MMORPG 项目中所有大陆、区域和副本的数据结构与完整清单。
@@ -126,3 +137,4 @@ L7 §4 定义了传送阵网络和秘境生成规则：
 - 大陆数：2
 - 区域数：30
 - 副本数：20
+*（内容由AI生成，仅供参考）*

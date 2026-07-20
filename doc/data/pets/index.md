@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7bda2ce281eb11f180b3525400bff409
+    ReservedCode1: BONbxOjPAgys+xToDDMm90je4E/3f3lwt7yrF2lKIFPU7wu+7/dV8VpBVeIVA7sB9sagPCupayC3xSAXaRRhQoDXt0ygS7dXq5hgiz6xIGrOZqDVtmulQabZ7JT1/JMl03pyHK0cKuFJg7bWPw/J6UboVvIamgsAfwVH/QpMt3cEDyWj6k8eotjAlRg=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7bda2ce281eb11f180b3525400bff409
+    ReservedCode2: BONbxOjPAgys+xToDDMm90je4E/3f3lwt7yrF2lKIFPU7wu+7/dV8VpBVeIVA7sB9sagPCupayC3xSAXaRRhQoDXt0ygS7dXq5hgiz6xIGrOZqDVtmulQabZ7JT1/JMl03pyHK0cKuFJg7bWPw/J6UboVvIamgsAfwVH/QpMt3cEDyWj6k8eotjAlRg=
+---
+
 # 灵宠总索引
 
 > 基于《凡人修仙传》原著妖兽体系与 MMORPG 项目需求，定义游戏中所有灵宠的分类体系、品阶标准与具体数据。
@@ -96,4 +107,5 @@ data/pets/          → 定义「可以捕捉/培养什么灵宠」
 |------|--------|------|------|------|
 | 1 | 灵宠数据表 | 30 种灵宠，4 大类，1~5 品阶 | 无（直接设计） | ✅ 已完成 |
 
+*（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*

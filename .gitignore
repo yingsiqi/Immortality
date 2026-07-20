@@ -54,3 +54,7 @@ yarn-error.log*
 
 # Local agent artifacts
 .codely-cli/auto-saves/
+.codely-cli/tool-outputs/
+mem-log/
+doc/.vitepress/dist/
+*.md.test

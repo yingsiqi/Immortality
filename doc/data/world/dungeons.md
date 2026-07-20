@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7fe2690581eb11f1b625525400e6dd8f
+    ReservedCode1: MMAgGn1lVlVlcjaJKX2CxR63hNiz7QJRk2ltZN5vpA/j4byz95Et47ozr3znNnjE/hpW1LcIdM37LfMrgLdwbl5K/fHvCjG4rc9VmxII7b/sAnGRbRNFjiFUfGmqZMHFRvVZUsVVrl+j28ITG6sErw1fn8MFSRKcN+x3NfxbYhCzF6IRCRzJMT95K5U=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7fe2690581eb11f1b625525400e6dd8f
+    ReservedCode2: MMAgGn1lVlVlcjaJKX2CxR63hNiz7QJRk2ltZN5vpA/j4byz95Et47ozr3znNnjE/hpW1LcIdM37LfMrgLdwbl5K/fHvCjG4rc9VmxII7b/sAnGRbRNFjiFUfGmqZMHFRvVZUsVVrl+j28ITG6sErw1fn8MFSRKcN+x3NfxbYhCzF6IRCRzJMT95K5U=
+---
+
 # 副本数据表
 
 > 基于《凡人修仙传》原著世界观，定义 MMORPG 中的 20 个副本（天南 10 + 乱星海 10），覆盖剧情/挑战/材料/团队/秘境五种类型。
@@ -441,3 +452,4 @@
 | 秘境 | 2 | 星海秘境（Raid）、荒岛求生（Roguelike） |
 
 > 总计：20 个副本（天南 10 + 乱星海 10）
+*（内容由AI生成，仅供参考）*

@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7dd4f09181eb11f18a64525400826444
+    ReservedCode1: dvAjAee5MeJO2B8e+qRVggv5L8dKSKZcezFBiMy2j+2UAAj8pswSsejJFfEPlNrCnof09ldnEuQyORFvCxmgg5I+bR4UvYNJWVy/0ByOMwBTpfKkCzKFKkq0BcT9ToR5Zbq9VyhJACmjBwqVH1Yw6Scb5MUXLiiKG7O7Oqb8R3Jl5K4hYQoRsXyy8BY=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7dd4f09181eb11f18a64525400826444
+    ReservedCode2: dvAjAee5MeJO2B8e+qRVggv5L8dKSKZcezFBiMy2j+2UAAj8pswSsejJFfEPlNrCnof09ldnEuQyORFvCxmgg5I+bR4UvYNJWVy/0ByOMwBTpfKkCzKFKkq0BcT9ToR5Zbq9VyhJACmjBwqVH1Yw6Scb5MUXLiiKG7O7Oqb8R3Jl5K4hYQoRsXyy8BY=
+---
+
 # NPC 数据表
 
 > MMORPG 非玩家角色数据定义，共 25 条，5 大类（宗门/城镇/功能/原著角色/敌对）。
@@ -456,3 +467,4 @@
 | 敌对 | 3 | 七玄门暗影首脑、阴魂宗长老、天魔宗护法 |
 
 > 总计：25 条 NPC
+*（内容由AI生成，仅供参考）*

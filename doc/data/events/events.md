@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_8100b2fe81eb11f180b3525400bff409
+    ReservedCode1: HUmAKyAS1XkNBpQyNVkFkGXFvurl4xsZ3cUHct4uccTzQzxvO/IpuGO+G8Y+ElXcrLHsk5blrqJst1wNiKl/AdsTH5x/bzxEsWAN+/cf4vUbY52w0ZAl/cLObTF7EukUQrky9fMUxcGGjDg+BXidFhWfpS4WUl/0Cun1foEt48aQUwSwcq+TPXX/GWk=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_8100b2fe81eb11f180b3525400bff409
+    ReservedCode2: HUmAKyAS1XkNBpQyNVkFkGXFvurl4xsZ3cUHct4uccTzQzxvO/IpuGO+G8Y+ElXcrLHsk5blrqJst1wNiKl/AdsTH5x/bzxEsWAN+/cf4vUbY52w0ZAl/cLObTF7EukUQrky9fMUxcGGjDg+BXidFhWfpS4WUl/0Cun1foEt48aQUwSwcq+TPXX/GWk=
+---
+
 # 事件数据表
 
 > 基于《凡人修仙传》原著世界观与 MMORPG 项目需求，涵蓋 5 大类、38 条事件，覆盖全等级段（Lv1-10）。区域 ID 引用自 data/world/regions.md，奖励 ID 引用自 data/equipment/equipment.md、data/alchemy/pills.md、data/pets/pets.md。
@@ -1008,4 +1019,5 @@
 
 > 总计：38 条事件（随机奇遇 10 + 天道事件 6 + 任务链 8 + 连锁事件 6 + 赛季事件 8）
 
+*（内容由AI生成，仅供参考）*
 *（内容由AI生成，仅供参考）*

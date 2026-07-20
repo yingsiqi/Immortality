@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: acf5f01197289133e867ecab2f78b94b_7d62ab1b81eb11f1b625525400e6dd8f
+    ReservedCode1: 6xQQ5UEcIKnKTSSjenHnkPe5iDf9I1T/AVgZx1axCZd1dQ2iuRd2bc1WmedsQmaDuUq553FO4HZt1eh6rmLqfFLBF4wwRcRSS2A5WPR9f9MHvgHAyWvxJki8K2TpI6LUj8ZY+al1x4Ucfh/A4+PeLmQfKNOrTHiPYooAq8qsAwYvR3fpHQnXx/xzSXQ=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: acf5f01197289133e867ecab2f78b94b_7d62ab1b81eb11f1b625525400e6dd8f
+    ReservedCode2: 6xQQ5UEcIKnKTSSjenHnkPe5iDf9I1T/AVgZx1axCZd1dQ2iuRd2bc1WmedsQmaDuUq553FO4HZt1eh6rmLqfFLBF4wwRcRSS2A5WPR9f9MHvgHAyWvxJki8K2TpI6LUj8ZY+al1x4Ucfh/A4+PeLmQfKNOrTHiPYooAq8qsAwYvR3fpHQnXx/xzSXQ=
+---
+
 # 怪物数据表
 
 > MMORPG 怪物数据定义，共 43 种怪物，6 大类，覆盖 1-10 级（对应炼气~大乘以上）。
@@ -789,3 +800,4 @@
 | 野生灵宠 | 2 | 噬金虫幼虫、冰蟾 |
 
 > 总计：43 种怪物
+*（内容由AI生成，仅供参考）*
