@@ -15,9 +15,10 @@ namespace Immortality.Core.Systems
         /// <summary>
         /// 系统初始化。
         /// </summary>
-        public virtual async Task Initialize()
+        public virtual Task Initialize()
         {
             IsInitialized = true;
+            return Task.CompletedTask;
         }
 
         /// <summary>

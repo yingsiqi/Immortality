@@ -30,8 +30,8 @@
 ### 环境与工程初始化
 
 - [x] `P0-ENV-001` 在开发机安装 `.NET SDK` 并验证 `dotnet build`（实际安装 8.0.423，`global.json` rollForward 改为 `latestFeature`；`dotnet build` 0 error 0 warning，9 项目全部通过）
-- [ ] `P0-ENV-002` 用团结引擎打开 `game/` 并生成正式 `ProjectVersion.txt`
-- [ ] `P0-ENV-003` 校正 `Packages/manifest.json` 与实际团结版本兼容性
+- [x] `P0-ENV-002` 用团结引擎打开 `game/` 并生成正式 `ProjectVersion.txt`（团结引擎 1.9.3，基底 2022.3.62t11）
+- [x] `P0-ENV-003` 校正 `Packages/manifest.json` 与实际团结版本兼容性（引擎已自动解析并生成 packages-lock.json）
 - [ ] `P0-ENV-004` 为 `game/` 增加最小场景、启动入口与基础 GameObject 装配
 - [ ] `P0-ENV-005` 验证 Docker 基础设施可本地启动
 

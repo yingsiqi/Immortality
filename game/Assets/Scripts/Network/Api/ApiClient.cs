@@ -145,22 +145,22 @@ namespace Immortality.Network.Api
 
         public async Task<(bool success, string json, string error)> Get(string path)
         {
-            return await SendRequest(UnityWebRequest.Method.Get, path, null);
+            return await SendRequest("GET", path, null);
         }
 
         public async Task<(bool success, string json, string error)> Post(string path, string body)
         {
-            return await SendRequest(UnityWebRequest.Method.Post, path, body);
+            return await SendRequest("POST", path, body);
         }
 
         public async Task<(bool success, string json, string error)> Put(string path, string body)
         {
-            return await SendRequest(UnityWebRequest.Method.Put, path, body);
+            return await SendRequest("PUT", path, body);
         }
 
         public async Task<(bool success, string json, string error)> Delete(string path)
         {
-            return await SendRequest(UnityWebRequest.Method.Delete, path, null);
+            return await SendRequest("DELETE", path, null);
         }
 
         private async Task<(bool success, string json, string error)> SendRequest(string method, string path, string body)

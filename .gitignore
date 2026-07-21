@@ -51,6 +51,12 @@ yarn-error.log*
 *.mdb
 *.opendb
 *.VC.db
+*.sln
+
+# Tuanjie Codely Bridge extensions (auto-installed, large)
+game/.codely-cli/extensions/
+game/.com-unity-codely.json
+game/UpgradeLog.htm
 
 # Local agent artifacts
 .codely-cli/auto-saves/
