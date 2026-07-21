@@ -4,6 +4,7 @@
 
 执行任务前，优先读取：
 
+- `doc/guides/technical/global-constraints.md` — 全局硬约束速查
 - `doc/guides/project-management/task-board.md`
 - `doc/guides/project-management/agent-execution-protocol.md`
 - `doc/guides/project-management/design-review-queue.md`

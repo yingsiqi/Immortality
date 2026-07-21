@@ -21,6 +21,13 @@
 - [阶段审查清单](./review-checklist.md)
 - [Alpha开发计划（历史方案）](./alpha-development-plan.md)
 
+### 关联技术文档
+
+- [全局硬约束](../technical/global-constraints.md) — 仓库/API/客户端/服务端/任务的不可违反约束
+- [P1 资产需求清单](../technical/asset-requirements-p1.md) — MVP 阶段所需资产及占位策略
+- [技术栈总览](../technical/alpha-tech-stack.md) — 客户端+服务端完整技术栈
+- [开发环境搭建](../technical/development-environment.md) — Docker/VS Code/SDK 配置指南
+
 ## 使用方式
 
 ### 1. 看全貌
