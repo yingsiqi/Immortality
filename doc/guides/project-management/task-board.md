@@ -33,7 +33,7 @@
 - [x] `P0-ENV-002` 用团结引擎打开 `game/` 并生成正式 `ProjectVersion.txt`（团结引擎 1.9.3，基底 2022.3.62t11）
 - [x] `P0-ENV-003` 校正 `Packages/manifest.json` 与实际团结版本兼容性（引擎已自动解析并生成 packages-lock.json）
 - [x] `P0-ENV-004` 为 `game/` 增加最小场景、启动入口与基础 GameObject 装配（Main.scene + GameManager 已通过 Codely Bridge 创建）
-- [~] `P0-ENV-005` 验证 Docker 基础设施可本地启动（`deploy/docker/docker-compose.yml` 已就绪，需人工执行 `docker-compose up -d` 验证）
+- [x] `P0-ENV-005` 验证 Docker 基础设施可本地启动（PostgreSQL/Redis/EventStoreDB/MinIO 全部 healthy，EF Core 迁移已应用到 PostgreSQL，5 张表已生成）
 
 ### 数据库初始化
 
