@@ -80,7 +80,7 @@ namespace Immortality.EventSourcing.Stores
         {
             var result = _client.ReadAllAsync(
                 Direction.Forwards,
-                Position.FromInt64(checked((long)position), checked((long)position)));
+                Position.Start);
 
             await foreach (var resolvedEvent in result)
             {

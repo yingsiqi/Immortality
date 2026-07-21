@@ -50,7 +50,7 @@ dotnet_diagnostic.CS8602.severity = error
 dotnet_diagnostic.CS8603.severity = error
 
 # 异步规范
-dotnet_diagnostic.CA2007.severity = warning
+dotnet_diagnostic.CA2007.severity = none
 
 # using 排序
 csharp_using_directive_placement = outside_namespace:warning

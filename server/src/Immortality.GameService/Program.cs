@@ -1,4 +1,5 @@
 using System.Text;
+using EventStore.Client;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
@@ -34,6 +35,8 @@ try
         options.Configuration = builder.Configuration.GetConnectionString("Redis"));
 
     // 事件溯源
+    var eventStoreUrl = builder.Configuration.GetConnectionString("EventStore") ?? "esdb://localhost:2113?tls=false";
+    builder.Services.AddSingleton(new EventStoreClient(EventStoreClientSettings.Create(eventStoreUrl)));
     builder.Services.AddSingleton<IEventStoreService, EventStoreService>();
 
     // 游戏服务注册

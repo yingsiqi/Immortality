@@ -29,7 +29,7 @@
 
 ### 环境与工程初始化
 
-- [ ] `P0-ENV-001` 在开发机安装 `.NET SDK 8.0.200` 并验证 `dotnet build`
+- [x] `P0-ENV-001` 在开发机安装 `.NET SDK` 并验证 `dotnet build`（实际安装 8.0.423，`global.json` rollForward 改为 `latestFeature`；`dotnet build` 0 error 0 warning，9 项目全部通过）
 - [ ] `P0-ENV-002` 用团结引擎打开 `game/` 并生成正式 `ProjectVersion.txt`
 - [ ] `P0-ENV-003` 校正 `Packages/manifest.json` 与实际团结版本兼容性
 - [ ] `P0-ENV-004` 为 `game/` 增加最小场景、启动入口与基础 GameObject 装配
@@ -37,7 +37,7 @@
 
 ### 数据库初始化
 
-- [ ] `P0-DB-001` 创建 EF Core 初始迁移并验证 `Users`、`Players`、`GameEvents`、`PlayerSnapshots` 等基础表生成
+- [x] `P0-DB-001` 创建 EF Core 初始迁移并验证 `Users`、`Players`、`GameEvents`、`PlayerSnapshots` 等基础表生成（AuthDbContext 生成 Users 表，GameDbContext 生成 Players/GameEvents/PlayerSnapshots 三张表）
 - [ ] `P0-DB-002` 约定本地数据库初始化、迁移执行与回滚步骤
 
 ### 协作与文档治理
@@ -53,9 +53,9 @@
 
 ### 认证与账号
 
-- [~] `P1-AUTH-001` 真实 JWT 生成与服务端校验（已实现，待编译验证）
-- [~] `P1-AUTH-002` Gateway JWT 校验配置（已实现，待编译验证）
-- [~] `P1-AUTH-003` 客户端登录后注入 Bearer Token（已实现，待联调验证）
+- [x] `P1-AUTH-001` 真实 JWT 生成与服务端校验（编译通过，TokenService 使用 SymmetricSecurityKey + HmacSha256）
+- [x] `P1-AUTH-002` Gateway JWT 校验配置（编译通过，Gateway 使用本地 JWT 校验参数）
+- [~] `P1-AUTH-003` 客户端登录后注入 Bearer Token（代码已实现，待团结引擎编译验证）
 - [ ] `P1-AUTH-004` 增加 token 有效性检查与自动登录验证
 - [ ] `P1-AUTH-005` 增加刷新 token 或重新登录策略
 - [ ] `P1-AUTH-006` 增加认证错误码与客户端提示映射
@@ -166,15 +166,30 @@
 
 ## 当前优先认领顺序
 
+> 已完成：P0-ENV-001 ✅、P0-DB-001 ✅
+
 建议下一批执行器按下面顺序认领：
 
-1. `P0-ENV-001` 安装并验证 `.NET SDK 8.0.200`
-2. `P0-DB-001` 创建初始数据库迁移并验证基础表生成
-3. `P0-ENV-002` 初始化团结引擎真实工程
-4. `P1-CHAR-001` 登录后角色检查流程
-5. `P1-CHAR-002` 角色创建联调
-6. `P1-CHAR-004` 玩家数据管理器落地
-7. `P1-CULT-001` 修炼进度查询闭环
+1. ~~`P0-ENV-001` 安装并验证 `.NET SDK`~~ ✅ 已完成
+2. ~~`P0-DB-001` 创建初始数据库迁移并验证基础表生成~~ ✅ 已完成
+3. `P0-ENV-002` 初始化团结引擎真实工程（人工主导，AI 辅助）
+4. `P0-DB-002` 约定本地数据库初始化、迁移执行与回滚步骤
+5. `P1-CHAR-001` 登录后角色检查流程
+6. `P1-CHAR-002` 角色创建联调
+7. `P1-CHAR-004` 玩家数据管理器落地
+8. `P1-CULT-001` 修炼进度查询闭环
+
+## 后续开发注意事项
+
+> 以下提示来自 P0 阶段实际执行中发现的问题，后续执行器必须注意：
+
+1. **EventStore.Client 包名变更**：v23+ 的 NuGet 包名是 `EventStore.Client.Grpc.Streams`（不是 `EventStore.Client`），`Position.FromInt64` 已移除，使用 `Position.Start` 替代。
+2. **AddStackExchangeRedisCache 需要额外包**：`Microsoft.Extensions.Caching.StackExchangeRedis` 8.0.2 必须显式引用，`StackExchange.Redis` 不包含此扩展方法。
+3. **EventStoreClient 必须手动注册 DI**：`builder.Services.AddSingleton(new EventStoreClient(EventStoreClientSettings.Create(connectionString)))`，不会自动注册。
+4. **CA2007 与 TreatWarningsAsErrors 冲突**：已在 `.editorconfig` 中将 CA2007 设为 `none`，后续不要在代码中手动添加 `.ConfigureAwait(false)`（除非有特殊需求）。
+5. **global.json rollForward 为 latestFeature**：允许 SDK 8.0.4xx 匹配 8.0.200 的请求，不要改回 latestMinor。
+6. **EF Core 迁移位置**：AuthService 迁移在 `src/Immortality.AuthService/Migrations/`，GameService 迁移在 `src/Immortality.GameService/Migrations/`，新增迁移时指定 `--project` 和 `--startup-project` 为同一项目。
+7. **P0-DB-002 尚未完成**：首次运行时需要 PostgreSQL 实例，执行 `dotnet ef database update` 来创建表。或在 Program.cs 中添加 `dbContext.Database.Migrate()` 实现自动迁移。
 
 ## 当前你需要优先确认的事项
 
