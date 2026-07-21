@@ -2,48 +2,9 @@
 outline: deep
 ---
 
-# Runtime API Examples
+# API 参考
 
-This page demonstrates usage of some of the runtime APIs provided by VitePress.
+> 完整的 API 契约文档请参考 [API 契约](./api-contract) 和 [服务注册表](./service-registry)。
 
-The main `useData()` API can be used to access site, theme, and page data for the current page. It works in both `.md` and `.vue` files:
-
-```md
-<script setup>
-import { useData } from 'vitepress'
-
-const { theme, page, frontmatter } = useData()
-</script>
-
-## Results
-
-### Theme Data
-<pre>{{ theme }}</pre>
-
-### Page Data
-<pre>{{ page }}</pre>
-
-### Page Frontmatter
-<pre>{{ frontmatter }}</pre>
-```
-
-<script setup>
-import { useData } from 'vitepress'
-
-const { site, theme, page, frontmatter } = useData()
-</script>
-
-## Results
-
-### Theme Data
-<pre>{{ theme }}</pre>
-
-### Page Data
-<pre>{{ page }}</pre>
-
-### Page Frontmatter
-<pre>{{ frontmatter }}</pre>
-
-## More
-
-Check out the documentation for the [full list of runtime APIs](https://vitepress.dev/reference/runtime-api#usedata).
+- [API 契约](./api-contract) — 所有 HTTP 接口的请求/响应格式、错误码、枚举值
+- [服务注册表](./service-registry) — 服务端口、路由规则、依赖关系、健康检查

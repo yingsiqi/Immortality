@@ -301,6 +301,9 @@ export default withMermaid(
             { text: '后端架构设计', link: '/guides/technical/backend-architecture' },
             { text: '数据库设计', link: '/guides/technical/database-design' },
             { text: '开发环境配置', link: '/guides/technical/development-environment' },
+            { text: '数据库迁移指南', link: '/guides/technical/database-migration-guide' },
+            { text: '全局硬约束', link: '/guides/technical/global-constraints' },
+            { text: 'P1 资产需求', link: '/guides/technical/asset-requirements-p1' },
             { text: '实施计划', link: '/guides/technical/implementation-plan' },
             { text: '单台VPS部署方案', link: '/guides/technical/single-vps-deployment-plan' },
             { text: 'GitHub Pages部署', link: '/guides/technical/github-pages-deployment' }

@@ -24,21 +24,21 @@
 - [x] `P0-ARCH-002` 移除旧 Web 客户端冲突，确认 `game/` 为唯一客户端目录
 - [x] `P0-ARCH-003` 建立 `.trae/rules` 基础规则文件
 - [x] `P0-ARCH-004` 修正 README、结构文档、部署文档中的客户端路径
-- [ ] `P0-ARCH-005` 建立 `docs/api/openapi.yaml` 或等价 HTTP 单一契约源
-- [ ] `P0-ARCH-006` 建立 `service-registry` 文档，统一说明服务、端口、责任边界
+- [x] `P0-ARCH-005` 建立 API 单一契约源（`doc/reference/api-contract.md`，含全部接口请求/响应/错误码/枚举）
+- [x] `P0-ARCH-006` 建立服务注册表文档（`doc/reference/service-registry.md`，含端口/路由/依赖/健康检查）
 
 ### 环境与工程初始化
 
 - [x] `P0-ENV-001` 在开发机安装 `.NET SDK` 并验证 `dotnet build`（实际安装 8.0.423，`global.json` rollForward 改为 `latestFeature`；`dotnet build` 0 error 0 warning，9 项目全部通过）
 - [x] `P0-ENV-002` 用团结引擎打开 `game/` 并生成正式 `ProjectVersion.txt`（团结引擎 1.9.3，基底 2022.3.62t11）
 - [x] `P0-ENV-003` 校正 `Packages/manifest.json` 与实际团结版本兼容性（引擎已自动解析并生成 packages-lock.json）
-- [ ] `P0-ENV-004` 为 `game/` 增加最小场景、启动入口与基础 GameObject 装配
-- [ ] `P0-ENV-005` 验证 Docker 基础设施可本地启动
+- [x] `P0-ENV-004` 为 `game/` 增加最小场景、启动入口与基础 GameObject 装配（Main.scene + GameManager 已通过 Codely Bridge 创建）
+- [~] `P0-ENV-005` 验证 Docker 基础设施可本地启动（`deploy/docker/docker-compose.yml` 已就绪，需人工执行 `docker-compose up -d` 验证）
 
 ### 数据库初始化
 
 - [x] `P0-DB-001` 创建 EF Core 初始迁移并验证 `Users`、`Players`、`GameEvents`、`PlayerSnapshots` 等基础表生成（AuthDbContext 生成 Users 表，GameDbContext 生成 Players/GameEvents/PlayerSnapshots 三张表）
-- [ ] `P0-DB-002` 约定本地数据库初始化、迁移执行与回滚步骤
+- [x] `P0-DB-002` 约定本地数据库初始化、迁移执行与回滚步骤（`doc/guides/technical/database-migration-guide.md`）
 
 ### 协作与文档治理
 
@@ -47,7 +47,7 @@
 - [x] `P0-PM-003` 建立设计确认队列
 - [x] `P0-PM-004` 建立 Agent 执行协议
 - [x] `P0-PM-005` 建立任务模板
-- [~] `P0-PM-006` 约定任务认领流程、更新频率与完成回写方式（协议已增强，待实际验证）
+- [x] `P0-PM-006` 约定任务认领流程、更新频率与完成回写方式（协议已增强，本轮已实际执行验证）
 
 ## P1：MVP 核心纵切
 
