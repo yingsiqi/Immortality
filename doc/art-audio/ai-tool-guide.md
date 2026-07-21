@@ -2,17 +2,29 @@
 
 > 本文档为每类美术/音频资源提供 AI 生成工具的操作步骤和提示词模板。
 
+## 工具说明
+
+| 工具 | 是什么 | 能力 | 如何调用 |
+|------|--------|------|----------|
+| **TJGenerators** | 团结引擎内置的 AI 资产生成器 | 生成 2D 图片、3D 模型、材质、天空盒、音乐、音效 | 团结引擎菜单 `Window → AI Generators`，或通过 Codely Bridge 用 `unity_asset` 工具触发 |
+| **Codely Bridge** | 团结引擎内的 AI 编程助手（GLM5.2MAX） | 代码编写、场景操作、调用 TJGenerators API | 团结引擎内的 Codely 对话框 |
+| **Midjourney** | 外部 AI 图片生成 | 高质量 2D 图片生成 | Discord / 官网，生成后手动导入 Unity |
+| **Stable Diffusion** | 本地 AI 图片生成 | 可定制模型和 LoRA | 本地部署 |
+| **Figma** | UI 设计工具 | 界面布局、切图、图标设计 | 在线使用，导出 PNG 导入 Unity |
+
+> **注意**：Codely Bridge 使用的 GLM5.2MAX 是文本模型，本身不生成图片。但 Codely Bridge 可以调用 TJGenerators 的 API 来触发生成，就像它调用 `unity_scene` 创建场景一样。
+
 ## 1. 2D 角色/怪物 Sprite
 
 ### 1.1 使用 TJGenerators Sprite（推荐）
 
-在团结引擎编辑器中通过 Codely Bridge 调用：
+**方式 A — 通过 Codely Bridge 调用：**
 
-**步骤：**
-1. 在 Codely Bridge 对话中请求生成角色 Sprite
-2. TJGenerators 生成角色立绘图片
-3. 在 Unity 中用 Sprite Editor 切割为 Sprite Sheet
-4. 配置 Billboard 组件
+在团结引擎 Codely Bridge 对话中请求生成，Codely 会调用 TJGenerators API 完成生成。
+
+**方式 B — 手动在 TJGenerators 面板操作：**
+
+打开 `Window → AI Generators → Sprite Generator`，输入提示词，生成后保存到 `Assets/Art/Sprites/`。
 
 **提示词模板（中文）：**
 ```
@@ -23,7 +35,7 @@
 - 透明背景
 - 8 方向站立姿势（上/下/左/右/左上/右上/左下/右下）
 - 每个方向需要：待机、行走4帧
-- 像素尺寸：256×256 每帧
+- 像素尺寸：512×512 每帧
 - 色调：墨青为主，仙金点缀
 - 参考风格：仙境传说 RO 的角色质量，但更精致
 ```
@@ -114,7 +126,7 @@ BOSS 名称：{名称}
 ### 4.1 使用 Figma
 
 **步骤：**
-1. 在 Figma 中创建 1920×1080 画板
+1. 在 Figma 中创建 3840×2160 画板
 2. 参考美术风格指南的色彩体系和字体规范
 3. 设计界面布局
 4. 切图导出为 PNG
@@ -124,7 +136,7 @@ BOSS 名称：{名称}
 - 面板背景：墨青 `#2C4A6E` + 90% 透明度 + 8px 圆角
 - 按钮底色：墨青，边框：仙金 `#D4A847`
 - 文字：思源宋体/黑体
-- 图标尺寸：64×64 或 48×48
+- 图标尺寸：128×128
 
 ### 4.2 UI 图标使用 TJGenerators
 
@@ -134,7 +146,7 @@ BOSS 名称：{名称}
 图标类型：{物品名/技能名/境界名}
 风格：国风写意，精致小图标
 要求：
-- 尺寸：64×64 像素
+- 尺寸：128×128 像素
 - 透明背景
 - 色调：参考品质颜色（{灰/蓝/紫/金/虹}）
 ```
@@ -255,7 +267,7 @@ BOSS 名称：{名称}
 | 3D 场景 | TJGenerators 3D Model | 手工搭建 | FBX / Unity Scene |
 | 3D BOSS | TJGenerators 3D Model | — | FBX + PBR 材质 |
 | UI 界面 | Figma | — | PNG 切图 |
-| UI 图标 | TJGenerators Sprite | Figma 手工 | PNG 64×64 |
+| UI 图标 | TJGenerators Sprite | Figma 手工 | PNG 128×128 |
 | 特效 | Unity Particle System | TJGenerators Effect Video | .prefab |
 | 音效 | TJGenerators Audio | Freesound / OpenGameArt | OGG |
 | BGM | TJGenerators Music | — | OGG loop |

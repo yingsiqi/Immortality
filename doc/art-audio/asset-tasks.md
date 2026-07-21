@@ -18,10 +18,10 @@
 
 | 任务 ID | 名称 | 关联 | 状态 | 说明 |
 |---------|------|------|------|------|
-| `ART-A0-001` | 确认整体美术风格 | DRV-ART-001 | `[ ]` 阻塞 | 在设计确认队列中确认风格方向 |
-| `ART-A0-002` | 制作风格参考板 | — | `[ ]` | 收集 5-10 张参考图，定义视觉关键词 |
-| `ART-A0-003` | 确认 UI 视觉风格 | DRV-ART-002 | `[ ]` 阻塞 | 确认 UI 是古风卷轴还是半透明灵气面板 |
-| `ART-A0-004` | 确认角色 2D 风格 | DRV-ART-001 | `[ ]` | 确定 Q 版比例（2.5-3 头身）和画风 |
+| `ART-A0-001` | 确认整体美术风格 | DRV-ART-001 | `[x]` | ✅ 2.5D 混合模式，Paper Doll 装备分层，4K 分辨率，墨青+仙金色彩 |
+| `ART-A0-002` | 制作风格参考板 | — | `[x]` | ✅ 风格关键词和参考游戏已定义在 art-style-guide.md §6 |
+| `ART-A0-003` | 确认 UI 视觉风格 | DRV-ART-002 | `[x]` | ✅ 半透明灵气面板 + 现代布局，墨青底+仙金边框，4K |
+| `ART-A0-004` | 确认角色 2D 风格 | DRV-ART-001 | `[x]` | ✅ Q版 2.5-3 头身，512×512 单帧，8方向，Billboard 渲染 |
 
 ---
 
@@ -35,18 +35,18 @@
 
 | 任务 ID | 资源名称 | 类型 | 关联编程任务 | 工具 | 规格 | 状态 |
 |---------|----------|------|-------------|------|------|------|
-| `ART-P1-SPRITE-001` | 玩家角色待机/行走 Sprite Sheet | 2D Sprite | P1-CHAR-003, P1-COMB-003 | TJGenerators Sprite / Midjourney | 256×256, 8方向×4帧 | `[ ]` |
-| `ART-P1-SPRITE-002` | 创角界面背景 | UI 背景 | P1-CHAR-003 | Midjourney / Figma | 1920×1080 | `[ ]` |
-| `ART-P1-SPRITE-003` | 灵根选择图标 ×5 | 2D Sprite | P1-CHAR-003 | Figma 手工 / TJGenerators | 64×64 each | `[ ]` |
-| `ART-P1-SPRITE-004` | 角色头像占位 | 2D Sprite | P1-CHAR-004 | TJGenerators | 128×128 | `[ ]` |
+| `ART-P1-SPRITE-001` | 玩家角色待机/行走 Sprite Sheet | 2D Sprite | P1-CHAR-003, P1-COMB-003 | TJGenerators Sprite / Midjourney | 512×512, 8方向×4帧 | `[ ]` |
+| `ART-P1-SPRITE-002` | 创角界面背景 | UI 背景 | P1-CHAR-003 | Midjourney / Figma | 3840×2160 | `[ ]` |
+| `ART-P1-SPRITE-003` | 灵根选择图标 ×5 | 2D Sprite | P1-CHAR-003 | Figma 手工 / TJGenerators | 128×128 each | `[ ]` |
+| `ART-P1-SPRITE-004` | 角色头像占位 | 2D Sprite | P1-CHAR-004 | TJGenerators | 256×256 | `[ ]` |
 | `ART-P1-UI-001` | 创角界面 UI 组件 | UI 设计 | P1-CHAR-003 | Figma | — | `[ ]` |
 
 ### P1-CULT：修炼系统
 
 | 任务 ID | 资源名称 | 类型 | 关联编程任务 | 工具 | 规格 | 状态 |
 |---------|----------|------|-------------|------|------|------|
-| `ART-P1-SPRITE-005` | 修炼界面背景 | UI 背景 | P1-CULT-004 | Midjourney | 1920×1080 | `[ ]` |
-| `ART-P1-SPRITE-006` | 境界图标 ×15 | 2D Sprite | P1-CULT-004 | Figma 手工 | 48×48 each | `[ ]` |
+| `ART-P1-SPRITE-005` | 修炼界面背景 | UI 背景 | P1-CULT-004 | Midjourney | 3840×2160 | `[ ]` |
+| `ART-P1-SPRITE-006` | 境界图标 ×15 | 2D Sprite | P1-CULT-004 | Figma 手工 | 96×96 each | `[ ]` |
 | `ART-P1-EFFECT-001` | 突破特效 | 粒子 | P1-CULT-003 | Unity Particle System | — | `[ ]` |
 | `ART-P1-EFFECT-002` | 灵气粒子背景 | 粒子 | P1-CULT-004 | Unity Particle System | — | `[ ]` |
 | `ART-P1-ANIM-001` | 打坐呼吸动画 | Sprite 动画 | P1-CULT-004 | Sprite Sheet 帧动画 | 4帧 | `[ ]` |
@@ -55,31 +55,31 @@
 
 | 任务 ID | 资源名称 | 类型 | 关联编程任务 | 工具 | 规格 | 状态 |
 |---------|----------|------|-------------|------|------|------|
-| `ART-P1-SPRITE-007` | 基础敌人待机/行走 Sprite Sheet | 2D Sprite | P1-COMB-003 | TJGenerators Sprite / Midjourney | 128×128, 8方向×4帧 | `[ ]` |
+| `ART-P1-SPRITE-007` | 基础敌人待机/行走 Sprite Sheet | 2D Sprite | P1-COMB-003 | TJGenerators Sprite / Midjourney | 256×256, 8方向×4帧 | `[ ]` |
 | `ART-P1-EFFECT-003` | 攻击特效 ×3 | 粒子 | P1-COMB-003 | Unity Particle System | — | `[ ]` |
 | `ART-P1-EFFECT-004` | 受击特效 ×2 | 粒子 | P1-COMB-003 | Unity Particle System | — | `[ ]` |
-| `ART-P1-SPRITE-008` | 技能图标 ×4 | 2D Sprite | P1-COMB-003 | Figma / TJGenerators | 64×64 each | `[ ]` |
+| `ART-P1-SPRITE-008` | 技能图标 ×4 | 2D Sprite | P1-COMB-003 | Figma / TJGenerators | 128×128 each | `[ ]` |
 | `ART-P1-SCENE-001` | 战斗场景（3D 低多边形） | 3D 场景 | P1-COMB-003 | TJGenerators 3D / 手工 | Plane + 简单地形 | `[ ]` |
-| `ART-P1-SPRITE-009` | 玩家攻击 Sprite Sheet | 2D Sprite | P1-COMB-003 | TJGenerators Sprite | 256×256, 8方向×4帧 | `[ ]` |
-| `ART-P1-SPRITE-010` | 敌人攻击 Sprite Sheet | 2D Sprite | P1-COMB-003 | TJGenerators Sprite | 128×128, 8方向×4帧 | `[ ]` |
+| `ART-P1-SPRITE-009` | 玩家攻击 Sprite Sheet | 2D Sprite | P1-COMB-003 | TJGenerators Sprite | 512×512, 8方向×4帧 | `[ ]` |
+| `ART-P1-SPRITE-010` | 敌人攻击 Sprite Sheet | 2D Sprite | P1-COMB-003 | TJGenerators Sprite | 256×256, 8方向×4帧 | `[ ]` |
 
 ### P1-INV：背包与掉落
 
 | 任务 ID | 资源名称 | 类型 | 关联编程任务 | 工具 | 规格 | 状态 |
 |---------|----------|------|-------------|------|------|------|
-| `ART-P1-SPRITE-011` | 物品图标 ×10 | 2D Sprite | P1-INV-003 | Figma / TJGenerators | 64×64 each | `[ ]` |
-| `ART-P1-SPRITE-012` | 装备品质边框 ×5 | 2D Sprite | P1-INV-003 | Figma 手工 | 68×68 each | `[ ]` |
+| `ART-P1-SPRITE-011` | 物品图标 ×10 | 2D Sprite | P1-INV-003 | Figma / TJGenerators | 128×128 each | `[ ]` |
+| `ART-P1-SPRITE-012` | 装备品质边框 ×5 | 2D Sprite | P1-INV-003 | Figma 手工 | 132×132 each | `[ ]` |
 | `ART-P1-UI-002` | 背包界面 UI 组件 | UI 设计 | P1-INV-003 | Figma | — | `[ ]` |
 
 ### P1-UI：客户端主流程
 
 | 任务 ID | 资源名称 | 类型 | 关联编程任务 | 工具 | 规格 | 状态 |
 |---------|----------|------|-------------|------|------|------|
-| `ART-P1-UI-003` | 登录界面 UI 设计 | UI 设计 | P1-UI-002 | Figma | 1920×1080 | `[ ]` |
-| `ART-P1-SPRITE-013` | 登录界面背景 | UI 背景 | P1-UI-002 | Midjourney | 1920×1080 | `[ ]` |
+| `ART-P1-UI-003` | 登录界面 UI 设计 | UI 设计 | P1-UI-002 | Figma | 3840×2160 | `[ ]` |
+| `ART-P1-SPRITE-013` | 登录界面背景 | UI 背景 | P1-UI-002 | Midjourney | 3840×2160 | `[ ]` |
 | `ART-P1-UI-004` | 主界面 HUD 设计 | UI 设计 | P1-UI-002 | Figma | — | `[ ]` |
-| `ART-P1-SPRITE-014` | 导航按钮图标 ×4 | 2D Sprite | P1-UI-002 | Figma / TJGenerators | 48×48 each | `[ ]` |
-| `ART-P1-UI-005` | 加载页设计 | UI 设计 | P1-UI-004 | Figma | 1920×1080 | `[ ]` |
+| `ART-P1-SPRITE-014` | 导航按钮图标 ×4 | 2D Sprite | P1-UI-002 | Figma / TJGenerators | 96×96 each | `[ ]` |
+| `ART-P1-UI-005` | 加载页设计 | UI 设计 | P1-UI-004 | Figma | 3840×2160 | `[ ]` |
 | `ART-P1-UI-006` | 错误提示弹窗设计 | UI 设计 | P1-UI-003 | Figma | — | `[ ]` |
 
 ### P1-AUDIO：音频
