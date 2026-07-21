@@ -265,6 +265,20 @@ export default withMermaid(
         }
       ],
 
+      '/art-audio/': [
+        {
+          text: '美术与音频',
+          collapsed: false,
+          items: [
+            { text: '总览', link: '/art-audio/' },
+            { text: '美术风格指南', link: '/art-audio/art-style-guide' },
+            { text: '音频设计指南', link: '/art-audio/audio-guide' },
+            { text: '美术音频任务清单', link: '/art-audio/asset-tasks' },
+            { text: 'AI工具操作指南', link: '/art-audio/ai-tool-guide' }
+          ]
+        }
+      ],
+
       '/guides/': [
         {
           text: '指南文档',
